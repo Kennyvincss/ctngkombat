@@ -3,8 +3,8 @@
 
 Text-to-speech is Piper (https://github.com/rhasspy/piper) with the "Ryan (high)" US English
 voice (dataset licence CC BY-NC-SA 4.0: fine for this non-commercial fan game, credited in the
-README). The voice is then pitched down, layered with a sub-octave copy, compressed and given a
-short echo with ffmpeg.
+README). Piper speaks slowly and steadily; ffmpeg then lowers the pitch with rubberband while
+keeping the formants (so the words stay clear), adds a faint sub-octave layer and a light echo.
 
 Usage:
   python3 scripts/make_voices.py <piper-dir> <voice.onnx> [id ...]
@@ -19,7 +19,10 @@ import json
 import subprocess
 import sys
 import tempfile
+import wave
 from pathlib import Path
+
+import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "public" / "assets" / "voice"
@@ -73,6 +76,9 @@ SAY = {
     "evansofweb3": "Evans of Web Three!",
     "codexbt": "Code X B T!",
     "swazy": "Swazee!",
+    "rugway": "Rugway!",
+    "hate": "Hate!",
+    "xeverade": "Zeverade!",
 }
 EXTRA = {
     "title": "Trenches... Kombat!",
@@ -85,37 +91,72 @@ EXTRA = {
     "round5": "Round five!",
     "final": "Final round!",
     "start": "Start!",
-    "ko": "K. O.!",
+    "ko": "Kay oh!",
     "draw": "Draw!",
     "finish": "Finish them!",
     "fatality": "Fatality!",
 }
 
-# pitch down ~7 semitones, keep it slow and heavy, add a quiet sub-octave layer and a short echo
+# Clear but deep: pitch down ~3 semitones with the formants kept (vowels and consonants stay
+# readable), a quiet sub-octave rumble, a presence lift around 3 kHz and a short, light echo.
 FILTER = (
-    "[0:a]apad=pad_dur=1,asetrate=22050*0.66,aresample=44100,atempo=1.18,asplit=2[main][sub];"
-    "[sub]asetrate=44100*0.82,aresample=44100,atempo=1.22,volume=0.35,lowpass=f=900[subl];"
+    "[0:a]apad=pad_dur=1,aresample=44100,rubberband=pitch=0.84:formant=preserved:transients=crisp,asplit=2[main][sub];"
+    "[sub]rubberband=pitch=0.5,volume=0.08,lowpass=f=250[subl];"
     "[main][subl]amix=inputs=2:duration=first:normalize=0,"
-    "lowshelf=g=5:f=110,equalizer=f=2800:t=q:w=1.2:g=-4,"
-    "acompressor=threshold=-22dB:ratio=5:attack=4:release=140,"
-    "aecho=0.8:0.55:70|160:0.3|0.16,"
+    "highpass=f=60,lowshelf=g=3:f=120,equalizer=f=3000:t=q:w=1:g=3,"
+    "acompressor=threshold=-20dB:ratio=4:attack=5:release=150,"
+    "aecho=0.8:0.3:55:0.1,"
     "loudnorm=I=-11:TP=-1,aresample=44100,"
     # drop the padding again (keeping the echo tail)
     "areverse,silenceremove=start_periods=1:start_threshold=-48dB,afade=t=in:d=0.03,areverse"
 )
+# slow, steady delivery: longer phonemes, less random variation
+PIPER_ARGS = ["--length_scale", "2.0", "--noise_scale", "0.5", "--noise_w", "0.5", "--sentence_silence", "0.05"]
+
+
+# Piper squeezes and clips a line that ends right after a short word ("Lahka!" came out in a
+# quarter of a second, cut mid-vowel). So every line is spoken with a throwaway word after a
+# comma, and the audio is cut in the pause before it: the line keeps its full length and ends
+# on a natural decay.
+CARRIER = ", go."
+
+
+def last_pause(path: Path) -> float | None:
+    """start (seconds) of the last pause of 80 ms or more inside the clip"""
+    with wave.open(str(path)) as w:
+        sr = w.getframerate()
+        a = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(float)
+    hop = sr // 100
+    env = np.array([np.sqrt(np.mean(a[i : i + hop] ** 2)) for i in range(0, len(a) - hop, hop)])
+    quiet = env < env.max() * 0.02
+    found, i = None, 1
+    while i < len(quiet):
+        if quiet[i]:
+            j = i
+            while j < len(quiet) and quiet[j]:
+                j += 1
+            if j - i >= 8 and j < len(quiet):
+                found = i / 100
+            i = j
+        else:
+            i += 1
+    return found
 
 
 def synth(piper: Path, model: Path, text: str, out: Path):
     with tempfile.TemporaryDirectory() as td:
         raw = Path(td) / "raw.wav"
         subprocess.run(
-            [str(piper / "piper"), "--model", str(model), "--length_scale", "1.3", "--sentence_silence", "0.05", "--output_file", str(raw)],
-            input=text.encode(),
+            [str(piper / "piper"), "--model", str(model), *PIPER_ARGS, "--output_file", str(raw)],
+            input=(text.rstrip("!.") + CARRIER).encode(),
             check=True,
             capture_output=True,
         )
+        cut = last_pause(raw)
+        if cut is None:
+            raise SystemExit(f"no pause before the carrier word in {out.name}")
         subprocess.run(
-            ["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-filter_complex", FILTER, "-ac", "1", "-b:a", "64k", str(out)],
+            ["ffmpeg", "-y", "-loglevel", "error", "-t", f"{cut + 0.05:.2f}", "-i", str(raw), "-filter_complex", FILTER, "-ac", "1", "-b:a", "80k", str(out)],
             check=True,
         )
 
@@ -127,7 +168,7 @@ def main():
     roster = json.load(open(ROOT / "public" / "fighters.json"))
     lines = {f["id"]: SAY.get(f["id"], f["name"] + "!") for f in roster}
     # "<name> wins!" for the end of each round
-    lines.update({f"{k}-wins": v.rstrip("!") + " wins!" for k, v in list(lines.items())})
+    lines.update({f"{k}-wins": v.rstrip("!.") + " wins!" for k, v in list(lines.items())})
     lines.update(EXTRA)
     for key, text in lines.items():
         if only and key not in only:

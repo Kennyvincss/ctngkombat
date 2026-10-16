@@ -251,5 +251,20 @@ export const MOVES: Record<string, FighterMoves> = {
     { mech: 'strike', startup: 20, active: 6, recovery: 24, damage: 160, type: 'overhead', box: { x: 0, y: -300, w: 180, h: 300 }, anim: 'overhead', knockdown: true, armor: true, art: 'candleR', ai: 'close' },
     { mech: 'grab', startup: 6, range: 140, recovery: 28, damage: 180, heal: 50, banner: 'MAULED', art: 'candleR', ai: 'close' },
     { mech: 'buff', startup: 8, recovery: 8, buffs: [{ kind: 'armor', amount: 3, frames: 300 }, { kind: 'regen', amount: 90, frames: 180 }], art: 'candleG', ai: 'buff' },
+  ],  // ---------------------------------------------------------------- batch 4
+  rugway: [
+    { mech: 'decoy', startup: 8, distance: 0, recovery: 14, decoyLife: 110, decoyDamage: 70, invuln: 6, walk: 5, color: 0xa64bff, ai: 'mid' },
+    { mech: 'projectile', art: 'rug', startup: 14, recovery: 20, damage: 70, speed: 10, low: true, y: 12, ground: true, radius: 40, knockdown: true, ai: 'far' },
+    { mech: 'projectile', art: 'page', startup: 12, recovery: 22, damage: 22, speed: 12, shots: 5, interval: 5, spreadY: 60, spin: 0.35, ai: 'far' },
+  ],
+  hate: [
+    { mech: 'projectile', art: 'ratio', startup: 12, recovery: 20, damage: 45, speed: 11, status: { kind: 'freeze', frames: 40 }, ai: 'far' },
+    { mech: 'trap', startup: 12, recovery: 16, distance: 260, life: 420, damage: 90, stun: 40, art: 'puddle', ai: 'far' },
+    { mech: 'buff', startup: 8, recovery: 8, buffs: [{ kind: 'armor', amount: 3, frames: 360 }, { kind: 'damage', amount: 20, frames: 360 }], art: 'blueflame', ai: 'buff' },
+  ],
+  xeverade: [
+    { mech: 'projectile', art: 'crescent', startup: 12, recovery: 18, damage: 70, speed: 14, low: true, y: 34, ai: 'far' },
+    { mech: 'teleport', startup: 6, vanish: 10, dest: 'behind', recovery: 14, slash: true, attack: { damage: 95, type: 'mid', box: { x: 0, y: -260, w: 160, h: 240 }, active: 5, anim: 'heavy', knockdown: true }, color: 0x39ff6a, ai: 'mid' },
+    { mech: 'counter', startup: 3, window: 26, recovery: 24, damage: 120, effect: 'knockdown', popup: 'EXIT LIQUIDITY', popupColor: 0x39ff6a, ai: 'defense' },
   ],
 };

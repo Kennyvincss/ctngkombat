@@ -1173,5 +1173,80 @@
    "walk",
    "win"
   ]
+ },
+ "hate": {
+  "idleH": 380,
+  "poses": [
+   "block",
+   "cast",
+   "crouch",
+   "dash",
+   "dizzy",
+   "getup",
+   "grab",
+   "heavy",
+   "hit",
+   "idle",
+   "jump",
+   "kick",
+   "knockdown",
+   "light",
+   "overhead",
+   "special",
+   "sweep",
+   "uppercut",
+   "walk",
+   "win"
+  ]
+ },
+ "rugway": {
+  "idleH": 380,
+  "poses": [
+   "block",
+   "cast",
+   "crouch",
+   "dash",
+   "dizzy",
+   "getup",
+   "grab",
+   "heavy",
+   "hit",
+   "idle",
+   "jump",
+   "kick",
+   "knockdown",
+   "light",
+   "overhead",
+   "special",
+   "sweep",
+   "uppercut",
+   "walk",
+   "win"
+  ]
+ },
+ "xeverade": {
+  "idleH": 380,
+  "poses": [
+   "block",
+   "cast",
+   "crouch",
+   "dash",
+   "dizzy",
+   "getup",
+   "grab",
+   "heavy",
+   "hit",
+   "idle",
+   "jump",
+   "kick",
+   "knockdown",
+   "light",
+   "overhead",
+   "special",
+   "sweep",
+   "uppercut",
+   "walk",
+   "win"
+  ]
  }
 }

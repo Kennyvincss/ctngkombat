@@ -1146,5 +1146,80 @@
     ],
     "fatality": "Capitulation: the chart crashes and a giant red candle flattens the opponent.",
     "card": "assets/cards/swazy.webp"
+  },
+  {
+    "id": "rugway",
+    "order": 48,
+    "name": "Rugway",
+    "handle": "@observingweb3",
+    "cardNameplate": "RUGWAY",
+    "archetype": "Puppet master / Setups",
+    "playstyle": "Calm, patient and cold. Watches you, lays traps, then pulls the floor out from under you.",
+    "specials": [
+      {
+        "name": "Phantom Double",
+        "description": "Leaves a shadow copy of himself that walks forward and strikes when the opponent comes close."
+      },
+      {
+        "name": "Rug Pull",
+        "description": "Yanks a rug along the floor that trips the opponent and knocks them down."
+      },
+      {
+        "name": "Phantom Pages",
+        "description": "Opens his book, and a stream of black pages flies forward and cuts the opponent."
+      }
+    ],
+    "fatality": "Total Rug: a giant carpet rolls the opponent up and disappears into his book.",
+    "card": "assets/cards/rugway.webp"
+  },
+  {
+    "id": "hate",
+    "order": 49,
+    "name": "Hate",
+    "handle": "@hate_ofx",
+    "cardNameplate": "HATE",
+    "archetype": "Mastermind / Zoner",
+    "playstyle": "Stern, calculated and dangerous at range. Fills the screen with chemistry and hate.",
+    "specials": [
+      {
+        "name": "Ratio",
+        "description": "Throws a burst of hate comments that stun the opponent on hit."
+      },
+      {
+        "name": "Hazard",
+        "description": "Tosses a flask that leaves a bubbling blue puddle. Anyone who steps in it gets burned and stunned."
+      },
+      {
+        "name": "Hate Mode",
+        "description": "Burns with blue fire, gaining armour and extra damage for a few seconds."
+      }
+    ],
+    "fatality": "Hater's Formula: drops a flask and walks away as it explodes in blue fire behind him.",
+    "card": "assets/cards/hate.webp"
+  },
+  {
+    "id": "xeverade",
+    "order": 50,
+    "name": "Xeverade",
+    "handle": "@xeverade",
+    "cardNameplate": "XEVERADE",
+    "archetype": "Technical / Precision",
+    "playstyle": "A clean, cold executioner who wins with perfect spacing and punishes every mistake.",
+    "specials": [
+      {
+        "name": "Ever Blade",
+        "description": "Throws a fast crescent of light along the ground."
+      },
+      {
+        "name": "Clean Entry",
+        "description": "Vanishes and reappears behind the opponent with a slash."
+      },
+      {
+        "name": "Exit Liquidity",
+        "description": "A counter stance. If hit, steps aside and knocks the attacker down."
+      }
+    ],
+    "fatality": "Final Exit: freezes the opponent inside a giant red candle, slices it in half, and it shatters into confetti.",
+    "card": "assets/cards/xeverade.webp"
   }
 ]

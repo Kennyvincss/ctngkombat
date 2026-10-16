@@ -722,6 +722,101 @@ const ART: Record<string, [number, number, Draw]> = {
     for (let y = 14; y < 64; y += 7) c.fillRect(9, y, 38 - ((y * 7) % 13), 2);
     text(c, 'WP', 28, 12, 10, '#333');
   }],
+  // ---------------------------------------------------------------- batch 4
+  rug: [150, 34, (c) => {
+    rr(c, 8, 4, 134, 26, 3);
+    c.fillStyle = '#9e1b2a';
+    c.fill();
+    c.strokeStyle = '#e8b64a';
+    c.lineWidth = 3;
+    rr(c, 13, 8, 124, 18, 2);
+    c.stroke();
+    c.fillStyle = '#e8b64a';
+    star(c, 75, 17, 4, 7, 3);
+    c.fill();
+    c.strokeStyle = '#f3d27a';
+    c.lineWidth = 1.5;
+    for (let y = 6; y <= 28; y += 4) {
+      c.beginPath();
+      c.moveTo(0, y);
+      c.lineTo(8, y);
+      c.moveTo(142, y);
+      c.lineTo(150, y);
+      c.stroke();
+    }
+  }],
+  page: [44, 56, (c) => {
+    c.shadowColor = '#b26bff';
+    c.shadowBlur = 8;
+    c.fillStyle = '#141018';
+    rr(c, 5, 5, 34, 46, 2);
+    c.fill();
+    c.shadowBlur = 0;
+    c.strokeStyle = '#a64bff';
+    c.lineWidth = 1.5;
+    c.stroke();
+    c.fillStyle = '#7d5aa6';
+    for (let y = 13; y < 46; y += 6) c.fillRect(10, y, 24 - ((y * 5) % 9), 2);
+  }],
+  ratio: [110, 50, (c) => {
+    rr(c, 3, 3, 104, 34, 8);
+    c.fillStyle = '#ffffff';
+    c.fill();
+    c.strokeStyle = '#e0245e';
+    c.lineWidth = 3;
+    c.stroke();
+    c.beginPath();
+    c.moveTo(20, 36);
+    c.lineTo(14, 48);
+    c.lineTo(32, 36);
+    c.fill();
+    text(c, 'RATIO', 55, 21, 22, '#e0245e');
+  }],
+  puddle: [130, 40, (c) => {
+    const g = c.createRadialGradient(65, 26, 4, 65, 26, 64);
+    g.addColorStop(0, '#9fe8ff');
+    g.addColorStop(0.5, '#2a8dff');
+    g.addColorStop(1, 'rgba(20,60,200,0)');
+    c.fillStyle = g;
+    c.beginPath();
+    c.ellipse(65, 28, 62, 11, 0, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = '#c8f4ff';
+    c.lineWidth = 2;
+    for (const [x, y, r] of [[40, 20, 6], [70, 14, 8], [96, 22, 5], [58, 26, 4]]) {
+      c.beginPath();
+      c.arc(x, y, r, 0, Math.PI * 2);
+      c.stroke();
+    }
+  }],
+  blueflame: [48, 72, (c) => {
+    const g = c.createRadialGradient(24, 52, 2, 24, 44, 34);
+    g.addColorStop(0, '#f0fbff');
+    g.addColorStop(0.3, '#6fd0ff');
+    g.addColorStop(0.7, '#1f5bff');
+    g.addColorStop(1, 'rgba(0,40,255,0)');
+    c.fillStyle = g;
+    c.beginPath();
+    c.moveTo(24, 0);
+    c.quadraticCurveTo(48, 40, 38, 62);
+    c.quadraticCurveTo(24, 76, 10, 62);
+    c.quadraticCurveTo(0, 40, 24, 0);
+    c.fill();
+  }],
+  crescent: [70, 110, (c) => {
+    c.shadowColor = '#39ff6a';
+    c.shadowBlur = 14;
+    const g = c.createLinearGradient(0, 0, 70, 0);
+    g.addColorStop(0, 'rgba(57,255,106,0.2)');
+    g.addColorStop(0.6, '#8dffb0');
+    g.addColorStop(1, '#ffffff');
+    c.fillStyle = g;
+    c.beginPath();
+    c.moveTo(20, 6);
+    c.quadraticCurveTo(80, 55, 20, 104);
+    c.quadraticCurveTo(52, 55, 20, 6);
+    c.fill();
+  }],
 };
 
 export function generateArt(scene: Phaser.Scene) {

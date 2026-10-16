@@ -259,9 +259,10 @@ export class FightScene extends Phaser.Scene implements World {
       return;
     }
     const final = this.round === 3;
-    this.events.emit('announce', final ? 'FINAL ROUND' : `ROUND ${ROUND_WORDS[this.round] ?? this.round}`, 1100);
+    this.events.emit('announce', final ? 'FINAL ROUND' : `ROUND ${ROUND_WORDS[this.round] ?? this.round}`, 1500);
     void sfx.clip(voice(final ? 'final' : `round${this.round}`));
-    this.later(84, () => {
+    // START waits for the slow round call (up to ~1.5 s) to finish
+    this.later(100, () => {
       if (this.phase !== 'intro') return;
       this.events.emit('announce', 'START', 700, true);
       void sfx.clip(voice('start'));
@@ -292,21 +293,22 @@ export class FightScene extends Phaser.Scene implements World {
     this.later(132, () => {
       // "KARO WINS" / "DRAW"
       if (winner) {
-        this.events.emit('announce', `${winner.data.name.toUpperCase()} WINS`, 1300);
+        this.events.emit('announce', `${winner.data.name.toUpperCase()} WINS`, 2200);
         void sfx.clip(voice(`${winner.id}-wins`));
       } else {
         this.events.emit('announce', 'DRAW', 1000);
         void sfx.clip(voice('draw'));
       }
+      // the longest "<name> wins" line runs ~2.5 s: let it finish before the next call
       if (matchOver) {
-        this.later(96, () => this.finishThem(winner!));
+        this.later(150, () => this.finishThem(winner!));
         return;
       }
       if (winner) {
         winner.setState('win');
         winner.view.play('win');
       }
-      this.later(winner ? 110 : 70, () => {
+      this.later(winner ? 150 : 70, () => {
         this.round++;
         this.startRound();
       });

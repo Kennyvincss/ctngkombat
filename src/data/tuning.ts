@@ -56,6 +56,10 @@ const T: Record<string, Row> = {
   // batch 3
   codexbt: ['trickster', 930, 4.4, 0.95, false, 0xff2030, 'Patched you out of the game.'],
   swazy: ['powerhouse', 1120, 3.2, 1.15, false, 0x2bd46b, "Everything's going down. Starting with you."],
+  // batch 4
+  rugway: ['trickster', 940, 4.2, 0.95, false, 0xa64bff, 'I was watching the whole time.'],
+  hate: ['zoner', 960, 3.6, 1.0, false, 0x3a8dff, 'Now you know my name.'],
+  xeverade: ['balanced', 1000, 4.0, 1.05, false, 0x39ff6a, 'Perfect entry. Perfect exit.'],
 };
 
 export function tuningFor(id: string): FighterTuning {

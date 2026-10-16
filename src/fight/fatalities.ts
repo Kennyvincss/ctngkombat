@@ -779,6 +779,95 @@ const SCRIPTS: Record<string, Script> = {
     k.dropOn('candleR', 1700, 5);
     k.winPose(2600);
   },
+  // ---------------------------------------------------------------- batch 4
+  rugway: (k) => {
+    let rug: Phaser.GameObjects.Image;
+    let book: Phaser.GameObjects.Image;
+    k.banner('TOTAL RUG', 0xa64bff, 0);
+    k.at(300, () => {
+      rug = k.s.add.image(k.lx - 700, k.ly - 6, 'rug').setDepth(k.L.depth - 1).setScale(3.4, 2);
+      k.s.tweens.add({ targets: rug, x: k.lx, duration: 450, ease: 'Quad.easeOut' });
+      k.c.sfx.play('whoosh');
+    });
+    // the carpet rolls up with the opponent inside
+    k.at(1000, () => {
+      rug.setDepth(k.L.depth + 1);
+      k.s.tweens.add({ targets: rug, y: k.ly - 140, scaleX: 1.9, scaleY: 3.2, angle: 90, duration: 500, ease: 'Back.easeIn' });
+      k.s.tweens.add({ targets: k.L, scaleX: 0, duration: 450, ease: 'Quad.easeIn' });
+      k.c.sfx.play('grab');
+    });
+    k.at(1700, () => {
+      book = k.s.add.image(k.lx, k.ly - 420, 'book').setDepth(k.L.depth + 2).setScale(0);
+      k.s.tweens.add({ targets: book, scale: 3.2, duration: 300, ease: 'Back.easeOut' });
+      k.c.fx.aura(k.lx, k.ly - 300, 0xa64bff);
+    });
+    k.at(2100, () => {
+      k.s.tweens.add({ targets: rug, x: k.lx, y: k.ly - 420, scaleX: 0, scaleY: 0, duration: 450, ease: 'Quad.easeIn' });
+    });
+    // the book snaps shut
+    k.at(2600, () => {
+      k.s.tweens.add({ targets: book, scaleX: 0.6, duration: 90, yoyo: true });
+      k.c.fx.shockwave(k.lx, k.ly - 420, 0xa64bff, 2);
+      k.c.sfx.play('wall');
+      k.s.cameras.main.shake(260, 0.02);
+      k.s.tweens.add({ targets: book, alpha: 0, delay: 900, duration: 300, onComplete: () => book.destroy() });
+    });
+    k.popups(['rugged', 'LP removed', 'dev is gone', 'gm?', 'where did he go'], 0xa64bff, 2700, 5, 110);
+    k.winPose(3200);
+  },
+  hate: (k) => {
+    let puddle: Phaser.GameObjects.Image;
+    k.popups(['ratio', 'L', 'who asked', 'cope', 'mid', 'ratio + L', 'skill issue'], 0xe0245e, 0, 8, 110);
+    k.at(800, () => {
+      puddle = k.s.add.image(k.lx, k.ly - 10, 'puddle').setDepth(k.L.depth + 1).setScale(0.2);
+      k.s.tweens.add({ targets: puddle, scale: 2.2, duration: 500, ease: 'Back.easeOut' });
+      k.c.sfx.play('status');
+    });
+    // he turns his back and walks away; he doesn't look at the explosion
+    k.at(1100, () => {
+      const away = k.c.winner.x < k.lx ? -1 : 1;
+      k.Wn.setFlipX(!k.Wn.flipX);
+      k.s.tweens.add({ targets: k.Wn, x: k.Wn.x + away * 220, duration: 1300, ease: 'Sine.easeInOut' });
+    });
+    k.at(2200, () => {
+      puddle.destroy();
+      k.c.fx.burst(k.lx, k.ly - 120, 0x3a8dff, 60, 600, 'blueflame');
+      k.c.fx.shockwave(k.lx, k.ly - 120, 0x6fd0ff, 3);
+    });
+    k.flash(2200, 80, 160, 255);
+    k.shake(2200, 500, 0.025);
+    k.pixelate(2250, [0x3a8dff, 0x9fe8ff, 0x0b1e5a]);
+    k.banner("HATER'S FORMULA", 0x3a8dff, 2400);
+    k.winPose(3200);
+  },
+  xeverade: (k) => {
+    let candle: Phaser.GameObjects.Image;
+    k.at(0, () => {
+      candle = k.s.add.image(k.lx, k.ly + 10, 'candleR').setOrigin(0.5, 1).setDepth(k.L.depth + 1).setScale(6.5, 4.4).setAlpha(0);
+      k.s.tweens.add({ targets: candle, alpha: 0.85, duration: 300 });
+      k.L.setTint(0xff6070);
+    });
+    k.sound('counter', 0);
+    k.banner('FINAL EXIT', 0x39ff6a, 200);
+    k.at(1300, () => {
+      const cut = k.s.add.image(k.lx, k.ly - 170, 'slash').setDepth(k.L.depth + 3).setScale(2.6, 1.6).setAngle(-18).setTint(0x8dffb0);
+      k.s.tweens.add({ targets: cut, alpha: 0, delay: 200, duration: 300, onComplete: () => cut.destroy() });
+      k.c.sfx.play('hitHeavy');
+    });
+    k.flash(1300, 140, 255, 170);
+    // the candle splits in two
+    k.at(1500, () => {
+      const parts = [0, 40].map((cy) =>
+        k.s.add.image(k.lx, k.ly + 10, 'candleR').setOrigin(0.5, 1).setDepth(k.L.depth + 1).setScale(6.5, 4.4).setAlpha(0.85).setCrop(0, cy, 24, 40),
+      );
+      candle.destroy();
+      k.s.tweens.add({ targets: parts[0], x: k.lx - 90, y: k.ly - 60, angle: -25, alpha: 0, duration: 700, ease: 'Quad.easeOut' });
+      k.s.tweens.add({ targets: parts[1], x: k.lx + 50, angle: 10, alpha: 0, duration: 700, ease: 'Quad.easeOut' });
+      k.c.fx.burst(k.lx, k.ly - 170, 0xea3943, 40, 420);
+    });
+    k.confetti(1600);
+    k.winPose(2600);
+  },
 };
 
 const DEFAULT: Script = (k) => {
