@@ -634,7 +634,9 @@ export class HudScene extends Phaser.Scene {
     if (this.finishCountdown && f.phase === 'finish') {
       const winner = f.fighters.find((x) => x.wins >= ROUNDS_TO_WIN);
       const human = winner && (winner.side === f.localSide || f.setup.mode === 'versus');
-      this.finishCountdown.setText(human ? (game.isTouch && winner!.side === f.localSide ? 'Tap FINISHER!' : '↓ ↓ → + HEAVY PUNCH') : '');
+      const dev = controlDevice(this);
+      const key = winner?.side === 1 && f.setup.mode === 'versus' ? 'FINISHER [NUM 6]' : btn(dev, 'finisher');
+      this.finishCountdown.setText(human ? (dev === 'touch' && winner!.side === f.localSide ? 'Tap FINISHER!' : `Press ${key}!`) : '');
     }
 
     // Debug Mode buff: show the opponent's next input above their head

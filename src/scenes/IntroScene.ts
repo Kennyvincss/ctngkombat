@@ -52,6 +52,9 @@ export class IntroScene extends Phaser.Scene {
   private synced = false;
   private lastSong = 0;
   private wrapMs = 0;
+  /** when the song's position last moved (to notice a stall) */
+  private lastClock = -1;
+  private lastMoved = 0;
 
   constructor() {
     super('Intro');
@@ -66,6 +69,8 @@ export class IntroScene extends Phaser.Scene {
     this.synced = false;
     this.lastSong = 0;
     this.wrapMs = 0;
+    this.lastClock = -1;
+    this.lastMoved = performance.now();
   }
 
   create() {
@@ -115,12 +120,23 @@ export class IntroScene extends Phaser.Scene {
 
   /** ms into the song (or since the intro began, if the song isn't playing) */
   private clock(): number {
+    const now = performance.now();
     const t = this.synced ? sfx.themeTime() : null;
-    if (t === null) return performance.now() - this.t0;
+    if (t === null) return now - this.t0;
     // the song loops: keep counting past its end (only with a much longer roster)
     if (t * 1000 < this.lastSong - 1000) this.wrapMs += this.lastSong;
+    const ms = t * 1000 + this.wrapMs;
+    if (ms !== this.lastClock) {
+      this.lastClock = ms;
+      this.lastMoved = now;
+    } else if (now - this.lastMoved > 1200) {
+      // the song stalled (slow network): carry on with our own clock from here
+      this.synced = false;
+      this.t0 = now - ms;
+      return ms;
+    }
     this.lastSong = t * 1000;
-    return t * 1000 + this.wrapMs;
+    return ms;
   }
 
   /** run fn at a fixed point of the song (ms into it), even if loading ran late */

@@ -190,8 +190,8 @@ export class ScriptedSource implements InputSource {
 
 // ---------------------------------------------------------------------------
 // Controller: turns raw input into per-frame intent relative to facing, with
-// edge detection, the simple buttons, a short input buffer, motion inputs (↓↘→, →↓↘, ↓↙←,
-// ↓↓→), dash double-taps and
+// edge detection, the simple buttons, a short input buffer, motion inputs (the CPU's classic
+// ↓↘→ style, still accepted), dash double-taps and
 // the status effects that mess with input (reversed controls, input lag).
 // ---------------------------------------------------------------------------
 
