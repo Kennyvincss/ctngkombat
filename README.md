@@ -41,7 +41,8 @@ Six simple buttons, the same on keyboard, gamepad and touch:
 - **Specials**: SPECIAL alone = 1st, forward + SPECIAL = 2nd, down + SPECIAL = 3rd. They recharge for 7 seconds (pressing early shows how long is left).
 - **COMBO** plays punch, kick, power punch, then the special if it's ready. **FINISHER** is the EX special (1 bar of meter), and the **fatality** when FINISH THEM appears.
 - **Input buffer**: a press made just before your fighter can act (end of a move, landing, getting up) still comes out.
-- **TIP CREATOR** (main menu) shows the creator's Solana wallet with a COPY button.
+- **TIP CREATOR** (main menu, and on the results screen after every match) shows the creator's Solana wallet with a COPY button (`C` on the results screen).
+- **MY RESULT CARD** (results screen): a 1080×1350 win or lose card to post: both fighters' cards (the winner crowned, the loser stamped K.O. / REKT), the score, FATALITY / FLAWLESS tags, handles and the game's link. DOWNLOAD saves it; on phones SHARE opens the share sheet (X, WhatsApp, Photos) with a caption.
 - **Gamepads** work everywhere: menus (A / ✕ ok, B / ○ back), the intro (any button skips), fights and the pause menu. On a phone or tablet the touch buttons hide while a controller is in use and come back on the next touch.
 
 **Touch** (phones and tablets, landscape): a big movement stick on the left and six large labelled buttons clustered on the right (the default layout; every control can be moved and resized).

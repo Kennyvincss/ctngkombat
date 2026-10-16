@@ -22,3 +22,6 @@ export const FATALITY_WINDOW_S = 5;
 
 /** the creator's Solana wallet, shown under TIP CREATOR on the menu */
 export const TIP_WALLET = 'cbWr6BiA2PqfVuQwDHSqTzwKs9zhySnjc5v1wwPvBgh';
+
+/** where the game lives (printed on the shareable result cards) */
+export const SITE_URL = 'trencheskombat.vercel.app';

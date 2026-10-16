@@ -306,6 +306,13 @@ export class ListMenu {
     this.marker.setVisible(v);
   }
 
+  /** draw above other layers (menus inside an overlay) */
+  setDepth(d: number) {
+    this.items.forEach((t) => t.setDepth(d));
+    this.marker.setDepth(d);
+    return this;
+  }
+
   destroy() {
     this.items.forEach((t) => t.destroy());
     this.marker.destroy();

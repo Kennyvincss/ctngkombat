@@ -391,6 +391,7 @@ export class FightScene extends Phaser.Scene implements World {
         winnerSide: winner.side,
         fatality,
         flawless: winner.health >= winner.maxHealth,
+        wins: [this.fighters[0].wins, this.fighters[1].wins],
       });
     });
   }

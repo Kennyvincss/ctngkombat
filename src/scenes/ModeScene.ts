@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
-import { GAME_H, GAME_W, GOLD_HEX, TIP_WALLET } from '../config';
+import { GAME_H, GAME_W, GOLD_HEX } from '../config';
 import type { Difficulty, GameMode } from '../data/types';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
 import { controlDevice, controlsLine } from '../ui/controlHelp';
-import { bodyText, copyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
+import { walletRow } from '../ui/tip';
+import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
 
 export class ModeScene extends Phaser.Scene {
   private menu!: ListMenu;
@@ -88,35 +89,13 @@ export class ModeScene extends Phaser.Scene {
     c.add(bodyText(this, GAME_W / 2, 238, 'Enjoying Trenches Kombat? Tips keep new fighters coming.', 26, '#d8cdb0').setOrigin(0.5));
     c.add(bodyText(this, GAME_W / 2, 300, 'SOLANA WALLET  (SOL or any Solana token)', 24, '#ff9a4a').setOrigin(0.5));
 
-    // the address (a font with lowercase letters: Solana addresses are case-sensitive) and a
-    // small COPY button right next to it
-    const addr = this.add
-      .text(0, 0, TIP_WALLET, { fontFamily: '"Courier New", ui-monospace, Menlo, Consolas, monospace', fontSize: '24px', fontStyle: 'bold', color: '#ffffff' })
-      .setOrigin(0, 0.5);
-    const boxW = addr.width + 40;
-    const btnW = 120;
-    const total = boxW + 12 + btnW;
-    const x0 = GAME_W / 2 - total / 2;
-    const y = 360;
-    c.add(this.add.rectangle(x0, y, boxW, 60, 0x0d0b08, 0.95).setOrigin(0, 0.5).setStrokeStyle(2, 0x6b5a2e));
-    addr.setPosition(x0 + 20, y);
-    c.add(addr);
-    const bx = x0 + boxW + 12 + btnW / 2;
-    const btn = this.add.rectangle(bx, y, btnW, 60, 0x2a1d05, 1).setStrokeStyle(2, GOLD_HEX).setInteractive({ useHandCursor: true });
-    const btnText = goldText(this, bx, y, 'COPY', 28);
-    c.add([btn, btnText]);
     const status = bodyText(this, GAME_W / 2, 430, '', 24, '#7dff9a').setOrigin(0.5);
-    c.add(status);
-    const copy = () => {
-      void copyText(TIP_WALLET).then((ok) => {
-        sfx.play(ok ? 'confirm' : 'select');
-        btnText.setText(ok ? 'COPIED ✓' : 'COPY');
-        status.setColor(ok ? '#7dff9a' : '#ffb35a');
-        status.setText(ok ? 'Copied! Paste it in your wallet app to send a tip. Thank you!' : "Couldn't copy on this device: the address is shown above.");
-        this.time.delayedCall(2000, () => btnText.active && btnText.setText('COPY'));
-      });
-    };
-    btn.on('pointerup', copy);
+    const row = walletRow(this, GAME_W / 2, 360, 24, (ok) => {
+      status.setColor(ok ? '#7dff9a' : '#ffb35a');
+      status.setText(ok ? 'Copied! Paste it in your wallet app to send a tip. Thank you!' : "Couldn't copy on this device: the address is shown above.");
+    });
+    c.add([...row.objects, status]);
+    const copy = row.copy;
 
     const close = this.add.rectangle(GAME_W / 2, 520, 220, 58, 0x000000, 0.6).setStrokeStyle(2, GOLD_HEX).setInteractive({ useHandCursor: true });
     c.add([close, goldText(this, GAME_W / 2, 520, 'CLOSE', 30)]);
