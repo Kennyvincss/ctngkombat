@@ -367,7 +367,8 @@ export class Fighter {
     this.vx = dir * PHYS.jumpVx * this.facing * this.speedMult;
     this.y -= 1;
     this.airAttackUsed = false;
-    this.view.play('jump', { restart: true });
+    // forward / back jumps are somersaults, like the arcade games
+    this.view.play(dir > 0 ? 'flip' : dir < 0 ? 'flipBack' : 'jump', { restart: true });
     this.world.sfx.play('jump');
   }
 

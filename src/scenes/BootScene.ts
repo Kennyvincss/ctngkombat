@@ -42,6 +42,11 @@ export class BootScene extends Phaser.Scene {
         for (const pose of poses) this.load.image(`sprite-${id}-${pose}`, `assets/sprites/${id}/${pose}.png`);
       }
     });
+    // skeletal rigs available (loaded per match by the fight scene)
+    this.load.json('rigs', 'assets/rigs/index.json');
+    this.load.on('filecomplete-json-rigs', (_k: string, _t: string, data: string[]) => {
+      game.rigs = Array.isArray(data) ? data : [];
+    });
     this.load.on('loaderror', (file: Phaser.Loader.File) => {
       if (file.key !== 'sprites') console.warn('Failed to load', file.src);
     });

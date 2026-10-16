@@ -177,6 +177,10 @@ export class PuppetView implements FighterView {
         sx = 0.97;
         rot = 0.05;
         break;
+      case 'flip':
+      case 'flipBack':
+        rot = (this._anim === 'flip' ? 1 : -1) * Math.PI * 2 * ease(Math.min(1, t / 34));
+        break;
       case 'light':
         dx = 22 * pulse(t, 9);
         rot = 0.07 * pulse(t, 9);

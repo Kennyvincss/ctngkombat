@@ -5,6 +5,8 @@ export const game = {
   roster: [] as FighterData[],
   /** Phase B sprite poses per fighter, from assets/sprites/manifest.json (optional) */
   sprites: {} as Record<string, string[]>,
+  /** fighters that have a skeletal rig in assets/rigs/ */
+  rigs: [] as string[],
   lastSetup: null as MatchSetup | null,
   isTouch: false,
 };

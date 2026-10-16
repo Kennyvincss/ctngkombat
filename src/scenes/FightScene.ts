@@ -9,6 +9,7 @@ import { CpuBrain } from '../fight/ai';
 import { Effects } from '../fight/Effects';
 import { Fighter } from '../fight/Fighter';
 import { GROUND_SHADOW_Y, PuppetView, SpriteView, type FighterView } from '../fight/FighterView';
+import { RigView, type RigData } from '../fight/RigView';
 import { runFatality } from '../fight/fatalities';
 import { buildStage } from '../fight/stages';
 import type { ActiveHit, Entity, HitInfo, HitResult, World } from '../fight/types';
@@ -77,8 +78,21 @@ export class FightScene extends Phaser.Scene implements World {
     this.cpu = null;
   }
 
+  /** load the skeletal rigs for the two fighters in this match */
+  preload() {
+    for (const id of new Set([this.setup.p1, this.setup.p2])) {
+      if (!game.rigs.includes(id)) continue;
+      if (!this.cache.json.exists(`rig-${id}`)) this.load.json(`rig-${id}`, `assets/rigs/${id}.json`);
+      if (!this.textures.exists(`rig-${id}`)) this.load.image(`rig-${id}`, `assets/rigs/${id}.webp`);
+    }
+  }
+
   create() {
     this.cameras.main.fadeIn(300);
+    // only keep the rig textures for this match in GPU memory
+    for (const id of game.rigs) {
+      if (id !== this.setup.p1 && id !== this.setup.p2 && this.textures.exists(`rig-${id}`)) this.textures.remove(`rig-${id}`);
+    }
     this.cameras.main.setBounds(-150, -100, PHYS.stageW + 300, GAME_H + 200);
     GROUND_SHADOW_Y.value = this.groundY;
     this.stageFx = buildStage(this, this.setup.stage ?? 'temple');
@@ -110,6 +124,7 @@ export class FightScene extends Phaser.Scene implements World {
     sfx.music(true);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      for (const f of this.fighters) f.view.destroy();
       this.scene.stop('Hud');
       for (const e of this.entities) e.destroy();
       this.entities = [];
@@ -120,9 +135,11 @@ export class FightScene extends Phaser.Scene implements World {
     const data = fighterById(id);
     const tuning = tuningFor(id);
     const poses = game.sprites[id];
-    const view: FighterView = poses?.length
-      ? new SpriteView(this, id, new Set(poses), `fighter-${id}`, tuning.artFacesRight, tuning.accent, 20 + side)
-      : new PuppetView(this, `fighter-${id}`, tuning.artFacesRight, tuning.accent, 20 + side);
+    const rig = this.cache.json.get(`rig-${id}`) as RigData | undefined;
+    let view: FighterView;
+    if (poses?.length) view = new SpriteView(this, id, new Set(poses), `fighter-${id}`, tuning.artFacesRight, tuning.accent, 20 + side);
+    else if (rig && this.textures.exists(`rig-${id}`)) view = new RigView(this, id, rig, tuning.accent, 20 + side, tuning.artFacesRight);
+    else view = new PuppetView(this, `fighter-${id}`, tuning.artFacesRight, tuning.accent, 20 + side);
     const moves = MOVES[id];
     if (!moves) throw new Error(`No moves for ${id}`);
     return new Fighter(data, tuning, moves, side, new Controller(src), view, this);

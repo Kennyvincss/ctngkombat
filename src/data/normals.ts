@@ -17,6 +17,8 @@ export type AnimKey =
   | 'walk'
   | 'crouch'
   | 'jump'
+  | 'flip'
+  | 'flipBack'
   | 'light'
   | 'heavy'
   | 'kick'
