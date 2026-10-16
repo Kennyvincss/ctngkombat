@@ -48,26 +48,27 @@ function glow(c: Ctx, x: number, y: number, r: number, color: string, alpha = 1)
 
 // ---------------------------------------------------------------- temple
 function templeFar(c: Ctx, w: number, h: number) {
-  c.fillStyle = vgrad(c, 0, h, [[0, '#120302'], [0.45, '#4a1004'], [0.7, '#b8410d'], [1, '#2a0a03']]);
+  c.fillStyle = vgrad(c, 0, h, [[0, '#120302'], [0.4, '#4a1004'], [0.68, '#b8410d'], [1, '#2a0a03']]);
   c.fillRect(0, 0, w, h);
-  glow(c, w * 0.5, h * 0.62, 260, 'rgba(255,170,60,0.9)');
+  // blood-orange sun hanging above the ruins
+  glow(c, w * 0.6, h * 0.34, 200, 'rgba(255,170,60,0.85)');
   c.fillStyle = '#ffcf7a';
   c.beginPath();
-  c.arc(w * 0.5, h * 0.62, 70, 0, Math.PI * 2);
+  c.arc(w * 0.6, h * 0.34, 46, 0, Math.PI * 2);
   c.fill();
   const r = rand(7);
   c.fillStyle = '#1e0805';
   c.beginPath();
-  c.moveTo(0, h * 0.75);
-  for (let x = 0; x <= w; x += 40) c.lineTo(x, h * 0.66 - r() * 70 - Math.sin(x / 140) * 30);
+  c.moveTo(0, h * 0.8);
+  for (let x = 0; x <= w; x += 40) c.lineTo(x, h * 0.7 - r() * 60 - Math.sin(x / 140) * 26);
   c.lineTo(w, h);
   c.lineTo(0, h);
   c.fill();
-  // distant stepped temple
+  // distant stepped temples
   c.fillStyle = '#140504';
-  const tx = w * 0.5;
-  for (let i = 0; i < 6; i++) c.fillRect(tx - 220 + i * 30, h * 0.72 - i * 26, 440 - i * 60, 28);
-  c.fillRect(tx - 30, h * 0.72 - 210, 60, 60);
+  for (const [tx, sc] of [[w * 0.3, 1], [w * 0.75, 0.7]] as const) {
+    for (let i = 0; i < 5; i++) c.fillRect(tx - (110 - i * 18) * sc, h * 0.78 - (i + 1) * 16 * sc, (220 - i * 36) * sc, 17 * sc);
+  }
 }
 
 function templeMid(c: Ctx, w: number, _h: number) {

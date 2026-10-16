@@ -10,6 +10,7 @@ export class ModeScene extends Phaser.Scene {
   private diffMenu: ListMenu | null = null;
   private input0!: MenuInput;
   private hint!: Phaser.GameObjects.Text;
+  private hints: string[] = [];
 
   constructor() {
     super('Mode');
@@ -44,10 +45,7 @@ export class ModeScene extends Phaser.Scene {
     const back = bodyText(this, 30, 30, '◀ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
     back.on('pointerdown', () => this.back());
 
-    this.events.on('update', () => {
-      const hints = modes.map((m) => m.hint);
-      this.hint.setText(this.diffMenu ? 'Easy: learning the ropes. Normal: a fair fight. Hard: it punishes mistakes.' : hints[this.menu.index]);
-    });
+    this.hints = modes.map((m) => m.hint);
   }
 
   private openDifficulty() {
@@ -84,5 +82,6 @@ export class ModeScene extends Phaser.Scene {
     }
     if (this.diffMenu) this.diffMenu.handle(p);
     else this.menu.handle(p);
+    this.hint.setText(this.diffMenu ? 'Easy: learning the ropes. Normal: a fair fight. Hard: it punishes mistakes.' : this.hints[this.menu.index]);
   }
 }
