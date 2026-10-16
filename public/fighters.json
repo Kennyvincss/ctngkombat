@@ -294,9 +294,9 @@
   {
     "id": "crypto-hak",
     "order": 13,
-    "name": "Crypto Hak",
+    "name": "Crypto Hako",
     "handle": "@cryptohak0",
-    "cardNameplate": "CRYPTO HAK",
+    "cardNameplate": "CRYPTO HAKO",
     "archetype": "Aggressive pressure",
     "specials": [
       {
@@ -342,9 +342,9 @@
   {
     "id": "illusions",
     "order": 15,
-    "name": "Illusions",
+    "name": "Amin",
     "handle": "@illusionsW3",
-    "cardNameplate": "ILLUSIONS",
+    "cardNameplate": "AMIN",
     "archetype": "Mind game specialist",
     "specials": [
       {
@@ -366,9 +366,9 @@
   {
     "id": "fgs",
     "order": 16,
-    "name": "FGS",
+    "name": "Shalli",
     "handle": "@fgsbilll",
-    "cardNameplate": "FGS",
+    "cardNameplate": "SHALLI",
     "archetype": "Heavy hitter",
     "specials": [
       {
@@ -438,9 +438,9 @@
   {
     "id": "ugly-grm",
     "order": 19,
-    "name": "Ugly Grm",
+    "name": "Ugly",
     "handle": "@uglygrm",
-    "cardNameplate": "UGLY GRM",
+    "cardNameplate": "UGLY",
     "archetype": "Unorthodox brawler",
     "specials": [
       {
@@ -462,9 +462,9 @@
   {
     "id": "one-random-guy",
     "order": 20,
-    "name": "One Random Guy",
+    "name": "Praise",
     "handle": "@onerandomguyyyy",
-    "cardNameplate": "ONE RANDOM GUY",
+    "cardNameplate": "PRAISE",
     "archetype": "Underdog / Comeback",
     "specials": [
       {

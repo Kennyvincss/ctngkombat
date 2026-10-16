@@ -108,7 +108,7 @@ Poses that exist replace the cut-out for that animation; anything missing falls 
 
 - Title: **Trenches Kombat** (set in `src/config.ts`)
 - Laka's handle: @Iaksalter
-- The five mismatched card nameplates were mistakes in the art. They've been relettered to the roster names (Crypto Hak, Illusions, FGS, Ugly Grm, One Random Guy).
+- The five names that differed between the roster and the cards: the cards were right. Those fighters are Crypto Hako, Amin, Shalli, Ugly and Praise (their ids and handles are unchanged).
 - Several cards are based on existing anime/comic characters and NFT collections. Fine for a private fan project; they'd need original art before any public or commercial release.
 
 This is a fan-made parody. It isn't affiliated with any game studio and uses no Mortal Kombat logos, fonts or audio.
