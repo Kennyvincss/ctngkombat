@@ -20,6 +20,7 @@ npm run preview    # serve dist/ locally
 - **VS CPU**: pick your fighter, then your opponent. Easy, Normal or Hard.
 - **VS Player 2**: two players on one keyboard, or two gamepads.
 - **Training**: infinite health and meter, move list on screen, and a dummy you can switch between stand, block, crouch-block, jump and CPU (`T`).
+- **Play Online**: fight a friend on their own phone or computer. One player picks CREATE ROOM and sends the 5-digit code; the other picks JOIN ROOM and types it in. Both pick fighters, then fight; after the match, REMATCH (both must accept), CHARACTER SELECT or LEAVE.
 
 ## Controls
 
@@ -56,6 +57,28 @@ npm run preview    # serve dist/ locally
 - **Full screen**: the game fills any screen shape. On Android, iPad and desktop the first tap goes full screen (also in the pause menu). Safari on iPhone doesn't allow web pages to go full screen: use Share → Add to Home Screen and open Trenches Kombat from the home screen.
 - Gamepads use the standard mapping: X/Y punches, A/B kicks, LB/RB/LT specials, RT EX, Start pauses.
 
+## Online play
+
+Online matches are peer to peer: the two browsers connect directly over WebRTC
+([PeerJS](https://peerjs.com)). PeerJS's free public server only introduces the two players
+(room code → connection); no game server is needed, so the game stays a static site.
+
+- **Lockstep netcode** (`src/net/Lockstep.ts`): both games run the same fight and only send each
+  other button states, 60 per second. Input is applied 3 frames (50 ms) after it is pressed, which
+  gives it time to arrive; if the other player's input for a frame is late, the game waits for it
+  ("WAITING FOR OPPONENT").
+- **Determinism**: anything that changes the fight uses the seeded `rng` (`src/systems/rng.ts`),
+  the round flow is timed in simulation ticks, and the fight math uses only plain arithmetic, so
+  phones and computers with different browsers compute the same result. Every 2 seconds the two
+  games compare a fingerprint of the fight; a mismatch shows "OUT OF SYNC" and logs to the console.
+- **Versions**: both players must run the same build (each build has an id; mismatches are refused
+  with a "refresh the page" message).
+- **Limits**: some mobile networks and office/school Wi-Fi block direct connections; those players
+  can't connect without a relay (TURN) server. Players far apart (different continents) will feel
+  the delay. There is no random matchmaking, only room codes.
+- **Testing locally**: run your own signalling server (`npx peerjs --port 9000`) and open the game
+  with `?peer=127.0.0.1:9000` in two browser windows.
+
 ## How it's put together
 
 ```
@@ -86,7 +109,8 @@ src/
     art.ts                    code-drawn effect art (SOL coins, wallets, Cybertruck, garri, candles, ...)
     stages.ts                 the three arenas: Ruined Temple, Neon Chart City, Rain-Soaked Rooftop
     Effects.ts                hit sparks, shockwaves, popups, confetti
-  scenes/                     Boot, Title, Mode, Select, Versus, Fight, Hud, Win
+  net/                        online play: PeerJS connection (Net.ts) and lockstep input sync (Lockstep.ts)
+  scenes/                     Boot, Title, Mode, Online, Select, Versus, Fight, Hud, Win, Controls
   audio/Sfx.ts                synthesized sound effects and a procedural dark-trap loop (no audio files)
 ```
 

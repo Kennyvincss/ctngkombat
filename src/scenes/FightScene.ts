@@ -15,6 +15,9 @@ import { buildStage } from '../fight/stages';
 import type { ActiveHit, Entity, HitInfo, HitResult, World } from '../fight/types';
 import { Controller, GamepadSource, KeyboardSource, KEYMAP_P1, KEYMAP_P2, KEYMAP_SOLO_EXTRA, MergedSource, ScriptedSource, type InputSource } from '../systems/input';
 import { fighterById, game } from '../state';
+import { Lockstep } from '../net/Lockstep';
+import { net } from '../net/Net';
+import { rng } from '../systems/rng';
 
 export type Phase = 'intro' | 'fight' | 'ko' | 'finish' | 'fatality' | 'over' | 'paused';
 
@@ -46,6 +49,12 @@ export class FightScene extends Phaser.Scene implements World {
   private winnerSide: 0 | 1 = 0;
   private fatalityDone = false;
   private trainingRefill = 0;
+  /** simulation ticks (every fixed step, including hitstop and slow motion) */
+  private tick = 0;
+  /** round flow events, timed in ticks so both online players run them on the same tick */
+  private timers: { at: number; fn: () => void }[] = [];
+  /** online play: input exchange with the other player */
+  lock: Lockstep | null = null;
   /** remembers the last few seconds of combo info for the HUD */
   combo = { side: 0, hits: 0, damage: 0, shownUntil: 0 };
 
@@ -62,6 +71,20 @@ export class FightScene extends Phaser.Scene implements World {
     return this.setup.mode === 'training';
   }
 
+  get online() {
+    return this.setup.mode === 'online';
+  }
+
+  /** the fighter this device controls (online guests play the right-hand fighter) */
+  get localSide(): 0 | 1 {
+    return this.lock ? this.lock.side : 0;
+  }
+
+  /** run fn after n simulation ticks */
+  private later(ticks: number, fn: () => void) {
+    this.timers.push({ at: this.tick + ticks, fn });
+  }
+
   init(setup: MatchSetup) {
     this.setup = setup;
     this.frame = 0;
@@ -76,6 +99,10 @@ export class FightScene extends Phaser.Scene implements World {
     this.fatalityDone = false;
     this.touch = new ScriptedSource();
     this.cpu = null;
+    this.tick = 0;
+    this.timers = [];
+    this.lock = null;
+    rng.seed(setup.seed ?? Math.floor(Math.random() * 2 ** 32));
   }
 
   /** load the pose atlases (or skeletal rigs) for the two fighters in this match */
@@ -105,9 +132,14 @@ export class FightScene extends Phaser.Scene implements World {
 
     const solo = this.setup.mode !== 'versus';
     const p1Sources: InputSource[] = [new KeyboardSource(this, KEYMAP_P1, solo ? KEYMAP_SOLO_EXTRA : undefined), new GamepadSource(this, 0), this.touch];
-    const p1src = new MergedSource(p1Sources);
+    let p1src: InputSource = new MergedSource(p1Sources);
     let p2src: InputSource;
-    if (this.setup.mode === 'versus') {
+    if (this.online) {
+      // this device's keyboard / pad / touch drive our fighter; the other comes over the network
+      this.lock = new Lockstep(this.setup.match ?? 0, net.localSide, p1src);
+      [p1src, p2src] = this.lock.sources;
+      net.onClose(this, () => this.events.emit('netlost'));
+    } else if (this.setup.mode === 'versus') {
       p2src = new MergedSource([new KeyboardSource(this, KEYMAP_P2), new GamepadSource(this, 1)]);
     } else {
       this.cpu = new CpuBrain(this.setup.difficulty);
@@ -207,7 +239,7 @@ export class FightScene extends Phaser.Scene implements World {
     }
     this.events.emit('announce', this.round === 3 ? 'FINAL ROUND' : `ROUND ${this.round}`, 1100);
     sfx.play('announce');
-    this.time.delayedCall(1300, () => {
+    this.later(78, () => {
       if (this.phase !== 'intro') return;
       this.events.emit('announce', 'FIGHT', 700, true);
       sfx.play('announce');
@@ -234,14 +266,14 @@ export class FightScene extends Phaser.Scene implements World {
     }
     if (winner) winner.wins++;
     const matchOver = !!winner && winner.wins >= ROUNDS_TO_WIN;
-    this.time.delayedCall(2200, () => {
+    this.later(132, () => {
       if (matchOver) this.finishThem(winner!);
       else {
         if (winner) {
           winner.setState('win');
           winner.view.play('win');
         }
-        this.time.delayedCall(winner ? 1200 : 200, () => {
+        this.later(winner ? 72 : 12, () => {
           this.round++;
           this.startRound();
         });
@@ -327,19 +359,67 @@ export class FightScene extends Phaser.Scene implements World {
     if (this.phase === 'paused') return;
     this.acc += Math.min(delta, 100);
     let steps = 0;
+    let stalled = false;
     while (this.acc >= STEP_MS && steps < 4) {
+      if (this.lock && !this.lock.ready(this.tick)) {
+        // the other player's input for this tick hasn't arrived: wait (don't bank time)
+        this.acc = Math.min(this.acc, STEP_MS * 2);
+        stalled = true;
+        break;
+      }
       this.acc -= STEP_MS;
       steps++;
-      if (this.slowmo > 0) {
-        this.slowmo--;
-        if (this.slowmo % 3 !== 0) {
-          this.syncViews();
-          continue;
-        }
+      this.runTick();
+    }
+    if (this.lock) {
+      this.lock.waitMs = stalled ? this.lock.waitMs + delta : 0;
+      if (this.lock.desync && !this.desyncShown) {
+        this.desyncShown = true;
+        this.events.emit('netdesync');
       }
-      this.step();
     }
     this.updateCamera();
+  }
+  private desyncShown = false;
+
+  /** one fixed simulation tick */
+  private runTick() {
+    const t = this.tick;
+    this.lock?.apply(t);
+    this.tick++;
+    if (this.timers.length) {
+      const due = this.timers.filter((x) => x.at <= t);
+      if (due.length) {
+        this.timers = this.timers.filter((x) => x.at > t);
+        for (const x of due) x.fn();
+      }
+    }
+    if (this.slowmo > 0) {
+      this.slowmo--;
+      if (this.slowmo % 3 !== 0) {
+        this.syncViews();
+        return;
+      }
+    }
+    this.step();
+    this.lock?.check(t, () => this.fingerprint());
+  }
+
+  /** a number that differs if the two online games have drifted apart */
+  private fingerprint(): number {
+    let h = rng.state ^ this.frame;
+    const mix = (v: number) => {
+      h = Math.imul(h ^ (Math.round(v * 16) | 0), 0x01000193) >>> 0;
+    };
+    for (const f of this.fighters) {
+      mix(f.x);
+      mix(f.y);
+      mix(f.health);
+      mix(f.meter);
+      mix(f.state.length + f.state.charCodeAt(0));
+    }
+    mix(this.entities.length);
+    return h;
   }
 
   private step() {
@@ -548,6 +628,7 @@ export class FightScene extends Phaser.Scene implements World {
 
   // ------------------------------------------------------------------ pause / training
   pause(on: boolean) {
+    if (this.online) return;
     if (on && (this.phase === 'fight' || this.phase === 'intro')) {
       this.prevPhase = this.phase;
       this.phase = 'paused';

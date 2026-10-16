@@ -9,6 +9,8 @@ import { FightScene } from './scenes/FightScene';
 import { HudScene } from './scenes/HudScene';
 import { WinScene } from './scenes/WinScene';
 import { ControlsScene } from './scenes/ControlsScene';
+import { OnlineScene } from './scenes/OnlineScene';
+import { net } from './net/Net';
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -30,8 +32,9 @@ const game = new Phaser.Game({
     powerPreference: 'high-performance',
   },
   fps: { target: 60 },
-  scene: [BootScene, TitleScene, ModeScene, SelectScene, VersusScene, FightScene, HudScene, WinScene, ControlsScene],
+  scene: [BootScene, TitleScene, ModeScene, SelectScene, VersusScene, FightScene, HudScene, WinScene, ControlsScene, OnlineScene],
 });
 
 // handy for debugging in the console
-(window as unknown as { trenches: Phaser.Game }).trenches = game;
+(window as unknown as { trenches: Phaser.Game; trenchesNet: typeof net }).trenches = game;
+(window as unknown as { trenchesNet: typeof net }).trenchesNet = net;

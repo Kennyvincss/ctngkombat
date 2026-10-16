@@ -140,6 +140,25 @@ export function stickSensitivityControl(scene: Phaser.Scene, x: number, y: numbe
   return c;
 }
 
+/** "Opponent left" box for online play; OK goes back to the title screen. */
+export function showDisconnected(scene: Phaser.Scene, text = 'YOUR OPPONENT LEFT') {
+  const c = scene.add.container(0, 0).setDepth(500);
+  c.add(scene.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W + 1600, GAME_H + 800, 0x000000, 0.75).setInteractive());
+  c.add(scene.add.rectangle(GAME_W / 2, GAME_H / 2, 620, 260, 0x0a0705, 0.96).setStrokeStyle(4, 0xf5c542));
+  c.add(goldText(scene, GAME_W / 2, GAME_H / 2 - 60, text, 46));
+  c.add(bodyText(scene, GAME_W / 2, GAME_H / 2 - 10, 'The connection to the other player ended.', 22, '#d8cdb0').setOrigin(0.5));
+  const bg = scene.add.rectangle(GAME_W / 2, GAME_H / 2 + 70, 200, 58, 0x8a5a00).setStrokeStyle(3, 0xf5c542).setInteractive({ useHandCursor: true });
+  c.add([bg, goldText(scene, GAME_W / 2, GAME_H / 2 + 70, 'OK', 34)]);
+  const go = () => {
+    scene.scene.stop('Hud');
+    for (const s of scene.scene.manager.getScenes(true)) if (s.scene.key !== 'Title') s.scene.stop();
+    scene.scene.start('Title');
+  };
+  bg.on('pointerup', go);
+  scene.input.keyboard?.once('keydown-ENTER', go);
+  return c;
+}
+
 /** Small speaker toggle in the top-right corner. */
 export function muteButton(scene: Phaser.Scene, x = GAME_W - 34, y = 30) {
   const t = bodyText(scene, x, y, sfx.muted ? 'SOUND OFF' : 'SOUND ON', 20, '#bfb59a').setOrigin(1, 0.5).setDepth(1000);

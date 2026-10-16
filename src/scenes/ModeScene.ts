@@ -27,15 +27,19 @@ export class ModeScene extends Phaser.Scene {
     const modes: { label: string; mode: GameMode; hint: string }[] = [
       { label: 'VS CPU', mode: 'cpu', hint: 'Fight the computer. Pick your fighter, then your opponent.' },
       { label: 'VS PLAYER 2', mode: 'versus', hint: 'Two players on one keyboard (or two gamepads).' },
+      { label: 'PLAY ONLINE', mode: 'online', hint: 'Fight a friend on their own device with a room code.' },
       { label: 'TRAINING', mode: 'training', hint: 'Infinite health and meter, with the move list on screen.' },
     ];
-    this.menu = new ListMenu(this, GAME_W / 2, 230, modes.map((m) => m.label), (i) => {
+    this.menu = new ListMenu(this, GAME_W / 2, 200, modes.map((m) => m.label), (i) => {
       const m = modes[i].mode;
       if (m === 'cpu') this.openDifficulty();
-      else this.go(m, 'normal');
-    }, 84, 58);
+      else if (m === 'online') {
+        this.menu.enabled = false;
+        fadeTo(this, 'Online');
+      } else this.go(m, 'normal');
+    }, 72, 54);
 
-    this.hint = bodyText(this, GAME_W / 2, 470, '', 26, '#d8cdb0').setOrigin(0.5);
+    this.hint = bodyText(this, GAME_W / 2, 494, '', 26, '#d8cdb0').setOrigin(0.5);
     const controls = game.isTouch
       ? 'TOUCH: left thumb = move   ·   buttons = attacks and specials'
       : 'P1: WASD move · U/I punch · J/K kick · O/L/; specials · P = EX        P2: arrows · numpad 4/5 punch · 1/2 kick · 6/3/. specials';

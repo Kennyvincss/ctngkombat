@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { rng } from '../systems/rng';
 import type {
   BuffMoveSpec,
   CounterSpec,
@@ -151,13 +152,13 @@ class ProjectileAction extends BaseAction {
   private fire(i: number, shots: number) {
     const s = this.s;
     const u = this.u;
-    const y = u.y - (s.y ?? 190) + (s.spreadY ? (Math.random() - 0.5) * s.spreadY : 0);
+    const y = u.y - (s.y ?? 190) + (s.spreadY ? (rng.next() - 0.5) * s.spreadY : 0);
     let tint: number | undefined;
     let onHit: ((v: Fighter) => void) | undefined;
     let status = s.status;
     const hits = (s.hits ?? 1) + (this.ex && (s.hits ?? 1) > 1 ? 1 : 0);
     if (s.randomEffect) {
-      const roll = Math.floor(Math.random() * 4);
+      const roll = Math.floor(rng.next() * 4);
       tint = [0xff5d5d, 0x7dd3ff, 0xb57dff, 0x7dff9a][roll];
       if (roll === 0) onHit = (v) => v.world.fx.popup(v.x, v.y - 330, 'CRINGE', 0xff5d5d, 28);
       if (roll === 1) status = { kind: 'freeze', frames: 36 };
@@ -217,10 +218,10 @@ class DropAction extends BaseAction {
       const count = s.count + (this.ex ? Math.max(1, Math.floor(s.count / 2)) : 0);
       const tx = this.opp.x;
       for (let i = 0; i < count; i++) {
-        const off = count === 1 ? 0 : (i / (count - 1) - 0.5) * s.spread + (Math.random() - 0.5) * 40;
+        const off = count === 1 ? 0 : (i / (count - 1) - 0.5) * s.spread + (rng.next() - 0.5) * 40;
         const x = Phaser.Math.Clamp(tx + off, this.w.left - 20, this.w.right + 20);
         this.w.addEntity(
-          new Drop(this.u, { art: s.art, x, damage: this.dmg(s.damage * count, { hits: count }), delay: (s.warn ?? 18) + i * s.interval, scale: s.scale, fallSpeed: s.fallSpeed, color: this.color, knockdown: s.knockdown, radius: s.radius, spin: (Math.random() - 0.5) * 0.3 }, this.w),
+          new Drop(this.u, { art: s.art, x, damage: this.dmg(s.damage * count, { hits: count }), delay: (s.warn ?? 18) + i * s.interval, scale: s.scale, fallSpeed: s.fallSpeed, color: this.color, knockdown: s.knockdown, radius: s.radius, spin: (rng.next() - 0.5) * 0.3 }, this.w),
         );
       }
       this.w.sfx.play('summon');
@@ -748,7 +749,7 @@ class StrikeAction extends BaseAction {
     super(u, ex, s, b);
     this.startup = s.startup;
     this.type = s.type;
-    if (s.mixup) this.type = Math.random() < 0.5 ? 'overhead' : 'low';
+    if (s.mixup) this.type = rng.next() < 0.5 ? 'overhead' : 'low';
     this.lowProfile = this.type === 'low';
     if (s.charge) this.phase = 'charge';
     this.armored = !!s.armor || ex && !!s.charge;
@@ -886,7 +887,7 @@ class StringAction extends BaseAction {
     super(u, ex, s, b);
     this.startup = s.startup;
     this.next = s.startup;
-    if (s.ender === 'highlow') this.enderType = Math.random() < 0.5 ? 'overhead' : 'low';
+    if (s.ender === 'highlow') this.enderType = rng.next() < 0.5 ? 'overhead' : 'low';
     this.play('cast');
   }
   private get total() {
@@ -939,7 +940,7 @@ class StringAction extends BaseAction {
   }
   private cashRain() {
     for (let i = 0; i < 10; i++) {
-      this.w.addEntity(new Drop(this.u, { art: 'cash', x: this.opp.x + (Math.random() - 0.5) * 200, damage: 0, delay: 4 + i * 2, scale: 0.9, fallSpeed: 14, color: 0x7fbf6a, spin: 0.2 }, this.w));
+      this.w.addEntity(new Drop(this.u, { art: 'cash', x: this.opp.x + (rng.next() - 0.5) * 200, damage: 0, delay: 4 + i * 2, scale: 0.9, fallSpeed: 14, color: 0x7fbf6a, spin: 0.2 }, this.w));
     }
   }
   onConnect(r: HitResult) {
@@ -1116,7 +1117,7 @@ export function startSpecial(u: Fighter, spec: SpecialSpec, n: 1 | 2 | 3, intent
     ex = true;
   }
   if (spec.mech === 'random') {
-    const i = Math.floor(Math.random() * spec.options.length);
+    const i = Math.floor(rng.next() * spec.options.length);
     w.callout(u, spec.labels[i], spec.color ?? u.accent);
     return startSpecial(u, spec.options[i], n, { ...intent, exWanted: ex });
   }

@@ -19,7 +19,7 @@ export interface FighterData {
   card: string;
 }
 
-export type GameMode = 'cpu' | 'versus' | 'training';
+export type GameMode = 'cpu' | 'versus' | 'training' | 'online';
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
 export interface MatchSetup {
@@ -28,6 +28,9 @@ export interface MatchSetup {
   p1: string;
   p2: string;
   stage?: string;
+  /** online: shared random seed and match number (both players use the same) */
+  seed?: number;
+  match?: number;
 }
 
 /** How a fighter's CPU plays and how its stats lean. */

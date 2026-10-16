@@ -6,7 +6,8 @@ import { METER_BAR, METER_MAX, SPECIAL_COOLDOWN } from '../fight/Fighter';
 import { game, settings, stickDeadzone } from '../state';
 import { BUTTON_IDS, BUTTON_R, drawButton, drawMove, dpadDirection, resolveSpots, type ButtonId, type ButtonParts, type MoveParts, type Spot } from '../ui/touchControls';
 import { emptyRaw, type Button } from '../systems/input';
-import { bodyText, fitCamera, goFullscreen, goldText, screenEdges } from '../ui/ui';
+import { bodyText, fitCamera, goFullscreen, goldText, screenEdges, showDisconnected } from '../ui/ui';
+import { net } from '../net/Net';
 import type { FightScene } from './FightScene';
 
 const BAR_W = 480;
@@ -53,6 +54,7 @@ export class HudScene extends Phaser.Scene {
   /** a press made by a touch button this frame, held for a few fight frames so it's seen */
   private taps: { until: number; b: Button }[] = [];
   private padPrevStart = false;
+  private waitText: Phaser.GameObjects.Text | null = null;
 
   constructor() {
     super('Hud');
@@ -73,6 +75,7 @@ export class HudScene extends Phaser.Scene {
     this.specialHint = null;
     this.queue = [];
     this.taps = [];
+    this.waitText = null;
     this.stick = { id: -1, bx: 0, by: 0, dx: 0, dy: 0 };
   }
 
@@ -100,6 +103,11 @@ export class HudScene extends Phaser.Scene {
     this.announceText.setShadow(0, 0, '#ff4500', 30, true, true);
 
     f.events.on('announce', this.announce, this);
+    if (f.online) {
+      this.waitText = bodyText(this, GAME_W / 2, GAME_H / 2 + 60, '', 30, '#ffd23f').setOrigin(0.5).setDepth(70).setVisible(false);
+      f.events.on('netlost', () => showDisconnected(this));
+      f.events.on('netdesync', () => bodyText(this, GAME_W / 2, BAR_Y + 120, 'OUT OF SYNC: finish the round, then rematch', 18, '#ff6060').setOrigin(0.5).setDepth(70));
+    }
     // fade the HUD out during fatalities so the show takes the whole screen
     f.events.on('darken', (on: boolean) => this.tweens.add({ targets: this.cameras.main, alpha: on ? 0.12 : 1, duration: 300 }));
     f.events.on('finish', this.showFinish, this);
@@ -107,6 +115,8 @@ export class HudScene extends Phaser.Scene {
       f.events.off('announce', this.announce, this);
       f.events.off('finish', this.showFinish, this);
       f.events.off('darken');
+      f.events.off('netlost');
+      f.events.off('netdesync');
     });
 
     // pause
@@ -285,7 +295,7 @@ export class HudScene extends Phaser.Scene {
     this.move = drawMove(this, spots.move);
     layer.add(this.move.c);
 
-    const ft = this.fight.fighters[0];
+    const ft = this.fight.fighters[this.fight.localSide];
     for (const id of BUTTON_IDS) {
       const spot = spots[id];
       const parts = drawButton(this, id, spot, ft.accent);
@@ -316,13 +326,13 @@ export class HudScene extends Phaser.Scene {
   private stickSpecial(): 1 | 2 | 3 {
     const d = this.readDir();
     if (d.y > 0) return 3;
-    if (d.x * this.fight.fighters[0].facing > 0) return 2;
+    if (d.x * this.fight.fighters[this.fight.localSide].facing > 0) return 2;
     return 1;
   }
 
   private writeTouch() {
     const f = this.fight;
-    const me = f.fighters[0];
+    const me = f.fighters[f.localSide];
     const r = emptyRaw();
     const d = this.readDir();
     r.left = d.x < 0;
@@ -342,7 +352,8 @@ export class HudScene extends Phaser.Scene {
     if (pressed('special')) tap(`s${this.stickSpecial()}` as Button);
     if (pressed('finisher')) {
       const winner = f.fighters.find((x) => x.wins >= ROUNDS_TO_WIN);
-      if (f.phase === 'finish' && winner === me) f.tryFatality(me);
+      // the fatality goes through the input like ↓↓→+HP, so online players stay in sync
+      if (f.phase === 'finish' && winner === me) tap('fat');
       else {
         tap(`s${this.stickSpecial()}` as Button);
         tap('ex');
@@ -408,7 +419,7 @@ export class HudScene extends Phaser.Scene {
   private showFinish(on: boolean) {
     if (on) {
       const winner = this.fight.fighters.find((f) => f.wins >= ROUNDS_TO_WIN);
-      const humanWinner = winner && (winner.side === 0 || this.fight.setup.mode === 'versus');
+      const humanWinner = winner && (winner.side === this.fight.localSide || this.fight.setup.mode === 'versus');
       this.finishCountdown = bodyText(this, GAME_W / 2, GAME_H - 90, '', 30, '#ff9a4a').setOrigin(0.5).setDepth(60);
       // a touch player with no touch controls on screen (P2 in versus) still gets a button
       if (humanWinner && game.isTouch && !this.touchLayer) {
@@ -438,12 +449,28 @@ export class HudScene extends Phaser.Scene {
       return;
     }
     if (f.phase !== 'fight' && f.phase !== 'intro') return;
-    f.pause(true);
+    // online the fight can't stop for one player: the menu opens over the running fight
+    if (!f.online) f.pause(true);
     sfx.play('select');
     const c = this.add.container(0, 0).setDepth(100);
     c.add(this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W + 1600, GAME_H + 800, 0x000000, 0.7).setInteractive());
-    c.add(goldText(this, GAME_W / 2, 150, 'PAUSED', 80));
-    const items: [string, () => void][] = [
+    c.add(goldText(this, GAME_W / 2, 150, f.online ? 'MENU' : 'PAUSED', 80));
+    if (f.online) c.add(bodyText(this, GAME_W / 2, 200, 'Online matches keep running while this menu is open', 20, '#ff9a4a').setOrigin(0.5));
+    const items: [string, () => void][] = f.online
+      ? [
+          ['RESUME', () => this.togglePause()],
+          ['MOVE LIST', () => this.toggleMoveList()],
+          [sfx.muted ? 'SOUND: OFF' : 'SOUND: ON', () => {
+            sfx.toggleMute();
+            this.togglePause();
+            this.togglePause();
+          }],
+          ['LEAVE MATCH', () => {
+            net.leave();
+            this.leave('Title');
+          }],
+        ]
+      : [
       ['RESUME', () => this.togglePause()],
       ['MOVE LIST', () => this.toggleMoveList()],
       ...(game.isTouch ? ([['CUSTOMIZE CONTROLS', () => this.openControls()]] as [string, () => void][]) : []),
@@ -459,7 +486,7 @@ export class HudScene extends Phaser.Scene {
       }],
       ['CHARACTER SELECT', () => this.leave('Select')],
       ['QUIT TO TITLE', () => this.leave('Title')],
-    ];
+        ];
     items.forEach(([label, fn], i) => {
       const t = goldText(this, GAME_W / 2, 236 + i * 60, label, 38).setInteractive({ useHandCursor: true });
       t.on('pointerup', () => {
@@ -498,7 +525,7 @@ export class HudScene extends Phaser.Scene {
       this.moveList = null;
       return;
     }
-    const ft = this.fight.fighters[0];
+    const ft = this.fight.fighters[this.fight.localSide];
     const c = this.add.container(0, 0).setDepth(this.pauseLayer ? 110 : 30);
     const w = 470;
     const x = 20;
@@ -538,6 +565,10 @@ export class HudScene extends Phaser.Scene {
     this.padPrevStart = start;
 
     if (game.isTouch) this.writeTouch();
+    if (this.waitText) {
+      const w = f.lock?.waitMs ?? 0;
+      this.waitText.setVisible(w > 700).setText(`WAITING FOR OPPONENT… ${Math.floor(w / 1000)}s`);
+    }
 
     f.fighters.forEach((ft, i) => {
       const s = this.sides[i];
@@ -584,8 +615,8 @@ export class HudScene extends Phaser.Scene {
     if (!f.training) this.timerText.setText(String(f.timer).padStart(2, '0'));
     if (this.finishCountdown && f.phase === 'finish') {
       const winner = f.fighters.find((x) => x.wins >= ROUNDS_TO_WIN);
-      const human = winner && (winner.side === 0 || f.setup.mode === 'versus');
-      this.finishCountdown.setText(human ? (game.isTouch && winner!.side === 0 ? 'Tap FINISHER!' : '↓ ↓ → + HEAVY PUNCH') : '');
+      const human = winner && (winner.side === f.localSide || f.setup.mode === 'versus');
+      this.finishCountdown.setText(human ? (game.isTouch && winner!.side === f.localSide ? 'Tap FINISHER!' : '↓ ↓ → + HEAVY PUNCH') : '');
     }
 
     // Debug Mode buff: show the opponent's next input above their head

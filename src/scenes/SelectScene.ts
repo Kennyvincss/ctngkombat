@@ -5,7 +5,8 @@ import { tuningFor } from '../data/tuning';
 import { STAGES } from '../fight/stages';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
-import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
+import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton, fitCamera, showDisconnected } from '../ui/ui';
+import { net } from '../net/Net';
 
 const COLS = 10;
 const TILE = 66;
@@ -61,6 +62,15 @@ export class SelectScene extends Phaser.Scene {
     this.tiles = [];
   }
 
+  private get online() {
+    return this.mode === 'online';
+  }
+
+  /** online: which cursor this device controls */
+  private get me(): 0 | 1 {
+    return this.online ? net.localSide : 0;
+  }
+
   private get count() {
     return game.roster.length + 1; // + random tile
   }
@@ -114,7 +124,15 @@ export class SelectScene extends Phaser.Scene {
       this.sides.push({ card, name, sub, specials, lockText, shownId: '' });
     }
 
-    const labels = this.mode === 'versus' ? ['P1', 'P2'] : this.mode === 'training' ? ['P1', 'DUMMY'] : ['P1', 'CPU'];
+    const labels = this.online
+      ? net.localSide === 0
+        ? ['YOU', 'RIVAL']
+        : ['RIVAL', 'YOU']
+      : this.mode === 'versus'
+        ? ['P1', 'P2']
+        : this.mode === 'training'
+          ? ['P1', 'DUMMY']
+          : ['P1', 'CPU'];
     for (const p of [0, 1] as const) {
       const frame = this.add.rectangle(0, 0, TILE + 6, TILE + 6).setStrokeStyle(4, P_COLORS[p]).setDepth(5);
       const tag = this.add
@@ -125,7 +143,21 @@ export class SelectScene extends Phaser.Scene {
       this.cursors.push({ index: p === 0 ? 0 : Math.min(COLS - 1, this.count - 1), locked: false, pick: null, frame, tag });
     }
     // In 1-player modes the second cursor appears after P1 locks in.
-    if (this.mode !== 'versus') this.setCursorVisible(1, false);
+    if (this.mode !== 'versus' && !this.online) this.setCursorVisible(1, false);
+    if (this.online) {
+      this.active = this.me;
+      this.title.setText('SELECT YOUR FIGHTER · ONLINE');
+      net.listen(this, (m) => {
+        const them = (1 - this.me) as 0 | 1;
+        if (m.t === 'cursor') this.move(them, m.i, true, true);
+        else if (m.t === 'lock') this.lockIn(them, m.id);
+        else if (m.t === 'unlock') this.unlock(them);
+        else if (m.t === 'start') this.launch(m.setup);
+      });
+      net.onClose(this, () => showDisconnected(this));
+      // tell the other player where our cursor starts
+      this.time.delayedCall(200, () => net.send({ t: 'cursor', i: this.cursors[this.me].index }));
+    }
 
     this.inputs = [new MenuInput(this, 0, this.mode !== 'versus'), new MenuInput(this, 1)];
     // restore last picks for quick rematches
@@ -153,13 +185,14 @@ export class SelectScene extends Phaser.Scene {
     this.sides[p].specials.setVisible(v);
   }
 
-  private move(p: number, index: number, absolute = false) {
+  private move(p: number, index: number, absolute = false, remote = false) {
     const c = this.cursors[p];
     if (c.locked) return;
     const n = absolute ? index : index;
     if (n === c.index) return;
     c.index = Phaser.Math.Clamp(n, 0, this.count - 1);
-    sfx.play('select');
+    if (!remote) sfx.play('select');
+    if (this.online && !remote && p === this.me) net.send({ t: 'cursor', i: c.index });
     this.refresh();
   }
 
@@ -180,7 +213,8 @@ export class SelectScene extends Phaser.Scene {
   private confirm(p: number) {
     const c = this.cursors[p];
     if (c.locked || this.leaving || this.ask) return;
-    if (p === 1 && this.mode !== 'versus' && !this.cursors[0].locked) return;
+    if (p === 1 && this.mode !== 'versus' && !this.online && !this.cursors[0].locked) return;
+    if (this.online && p !== this.me) return;
     const random = c.index >= game.roster.length;
     const id = random ? Phaser.Utils.Array.GetRandom(game.roster).id : game.roster[c.index].id;
     sfx.play('select');
@@ -249,15 +283,17 @@ export class SelectScene extends Phaser.Scene {
 
   private lockIn(p: number, id: string) {
     const c = this.cursors[p];
+    if (c.locked) return;
     c.locked = true;
     c.pick = id;
     sfx.play('confirm');
+    if (this.online && p === this.me) net.send({ t: 'lock', id });
     const side = this.sides[p];
     this.showFighter(p, c.pick);
-    side.lockText.setText(this.mode === 'versus' || p === 0 ? 'LOCKED IN' : this.mode === 'training' ? 'DUMMY' : 'OPPONENT').setVisible(true).setScale(2).setAlpha(0);
+    side.lockText.setText(this.mode === 'versus' || this.online || p === 0 ? 'LOCKED IN' : this.mode === 'training' ? 'DUMMY' : 'OPPONENT').setVisible(true).setScale(2).setAlpha(0);
     this.tweens.add({ targets: side.lockText, scale: 1, alpha: 1, duration: 160, ease: 'Back.easeOut' });
     this.cameras.main.flash(120, 255, 210, 120);
-    if (this.mode !== 'versus' && p === 0) {
+    if (this.mode !== 'versus' && !this.online && p === 0) {
       this.active = 1;
       this.setCursorVisible(1, true);
       this.title.setText(this.mode === 'training' ? 'CHOOSE A TRAINING DUMMY' : 'CHOOSE YOUR OPPONENT');
@@ -266,8 +302,29 @@ export class SelectScene extends Phaser.Scene {
     if (this.cursors.every((k) => k.locked)) this.start();
   }
 
+  /** online: a player changed their mind */
+  private unlock(p: number) {
+    const c = this.cursors[p];
+    if (!c.locked) return;
+    c.locked = false;
+    c.pick = null;
+    this.sides[p].lockText.setVisible(false);
+    this.refresh();
+  }
+
   private back() {
     sfx.play('back');
+    if (this.online) {
+      if (this.cursors[this.me].locked) {
+        if (this.leaving) return;
+        this.unlock(this.me);
+        net.send({ t: 'unlock' });
+        return;
+      }
+      net.leave();
+      fadeTo(this, 'Online');
+      return;
+    }
     // unlock the most recent pick first
     for (const p of [1, 0]) {
       const c = this.cursors[p];
@@ -288,7 +345,6 @@ export class SelectScene extends Phaser.Scene {
   }
 
   private start() {
-    this.leaving = true;
     const setup: MatchSetup = {
       mode: this.mode,
       difficulty: this.difficulty,
@@ -296,6 +352,18 @@ export class SelectScene extends Phaser.Scene {
       p2: this.cursors[1].pick!,
       stage: Phaser.Utils.Array.GetRandom(STAGES).id,
     };
+    if (this.online) {
+      // the room's creator decides the stage and the shared random seed
+      if (net.role !== 'host') return;
+      Object.assign(setup, net.newMatch());
+      net.send({ t: 'start', setup });
+    }
+    this.launch(setup);
+  }
+
+  private launch(setup: MatchSetup) {
+    if (this.leaving) return;
+    this.leaving = true;
     game.lastSetup = setup;
     this.time.delayedCall(600, () => fadeTo(this, this.mode === 'training' ? 'Fight' : 'Versus', setup));
   }

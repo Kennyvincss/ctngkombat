@@ -5,7 +5,8 @@ import { tuningFor } from '../data/tuning';
 import { STAGES } from '../fight/stages';
 import { sfx } from '../audio/Sfx';
 import { fighterById } from '../state';
-import { bodyText, fadeTo, goldText, menuBackdrop, fitCamera } from '../ui/ui';
+import { bodyText, fadeTo, goldText, menuBackdrop, fitCamera, showDisconnected } from '../ui/ui';
+import { net } from '../net/Net';
 
 /** Both cards slide in, "VS" slams down, hold, then fight. */
 export class VersusScene extends Phaser.Scene {
@@ -57,7 +58,8 @@ export class VersusScene extends Phaser.Scene {
 
     const stage = STAGES.find((s) => s.id === setup.stage);
     if (stage) bodyText(this, GAME_W / 2, GAME_H / 2 + 130, stage.name, 28, '#d8cdb0').setOrigin(0.5);
-    const tag = setup.mode === 'cpu' ? `CPU · ${setup.difficulty.toUpperCase()}` : 'PLAYER 1 VS PLAYER 2';
+    const tag = setup.mode === 'cpu' ? `CPU · ${setup.difficulty.toUpperCase()}` : setup.mode === 'online' ? `ONLINE MATCH · ROOM ${net.code}` : 'PLAYER 1 VS PLAYER 2';
+    if (setup.mode === 'online') net.onClose(this, () => showDisconnected(this));
     bodyText(this, GAME_W / 2, 40, tag, 26, '#d8cdb0').setOrigin(0.5);
 
     let gone = false;

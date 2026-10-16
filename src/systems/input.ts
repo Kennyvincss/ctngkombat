@@ -100,20 +100,25 @@ export class KeyboardSource implements InputSource {
     }
   }
 
+  /** when the last poll happened: a key tapped and released since then still counts once */
+  private lastPoll = performance.now();
+
   private down(name: string): boolean {
     const list = this.keys[name];
     if (!list) return false;
-    for (const k of list) if (k.isDown) return true;
+    for (const k of list) if (k.isDown || k.timeDown > this.lastPoll) return true;
     return false;
   }
 
   poll(): RawInput {
     const r = emptyRaw();
+    const now = performance.now();
     r.left = this.down('left');
     r.right = this.down('right');
     r.up = this.down('up');
     r.down = this.down('down');
     for (const b of BUTTONS) r.buttons[b] = this.down(b);
+    this.lastPoll = now;
     return r;
   }
 }
