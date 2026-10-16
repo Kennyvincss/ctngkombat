@@ -1,7 +1,7 @@
 // Global, easy-to-change settings. Gameplay tuning lives in src/data/tuning.ts.
 
-export const GAME_TITLE = 'THE TRENCHES';
-export const GAME_SUBTITLE = 'CRYPTO TWITTER KOMBAT';
+export const GAME_TITLE = 'TRENCHES KOMBAT';
+export const GAME_SUBTITLE = 'THE CRYPTO TWITTER FIGHTING GAME';
 
 export const GAME_W = 1280;
 export const GAME_H = 720;

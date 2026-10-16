@@ -1,4 +1,4 @@
-# The Trenches
+# Trenches Kombat
 
 A 2D anime-style fighting game in the spirit of Mortal Kombat, starring 31 fighters from the Crypto Twitter trenches. Pick a fighter, fight the CPU or a friend, then **FINISH THEM**.
 
@@ -104,11 +104,11 @@ Combat code only talks to the `FighterView` interface. To give a fighter real po
 
 Poses that exist replace the cut-out for that animation; anything missing falls back to the Phase A puppet.
 
-## Open questions (from the spec)
+## Decisions on the spec's open questions
 
-- Final game title (currently "The Trenches", set in `src/config.ts`)
-- Laka's X handle (`null` in `fighters.json` for now)
-- Five card nameplates differ from the roster names (Crypto Hak → "CRYPTO HAKO", Illusions → "AMIN", FGS → "SHALLI", Ugly Grm → "UGLY", One Random Guy → "PRAISE"). The game UI uses the roster names.
+- Title: **Trenches Kombat** (set in `src/config.ts`)
+- Laka's handle: @Iaksalter
+- The five mismatched card nameplates were mistakes in the art. They've been relettered to the roster names (Crypto Hak, Illusions, FGS, Ugly Grm, One Random Guy).
 - Several cards are based on existing anime/comic characters and NFT collections. Fine for a private fan project; they'd need original art before any public or commercial release.
 
 This is a fan-made parody. It isn't affiliated with any game studio and uses no Mortal Kombat logos, fonts or audio.

@@ -296,7 +296,7 @@
     "order": 13,
     "name": "Crypto Hak",
     "handle": "@cryptohak0",
-    "cardNameplate": "CRYPTO HAKO",
+    "cardNameplate": "CRYPTO HAK",
     "archetype": "Aggressive pressure",
     "specials": [
       {
@@ -344,7 +344,7 @@
     "order": 15,
     "name": "Illusions",
     "handle": "@illusionsW3",
-    "cardNameplate": "AMIN",
+    "cardNameplate": "ILLUSIONS",
     "archetype": "Mind game specialist",
     "specials": [
       {
@@ -368,7 +368,7 @@
     "order": 16,
     "name": "FGS",
     "handle": "@fgsbilll",
-    "cardNameplate": "SHALLI",
+    "cardNameplate": "FGS",
     "archetype": "Heavy hitter",
     "specials": [
       {
@@ -440,7 +440,7 @@
     "order": 19,
     "name": "Ugly Grm",
     "handle": "@uglygrm",
-    "cardNameplate": "UGLY",
+    "cardNameplate": "UGLY GRM",
     "archetype": "Unorthodox brawler",
     "specials": [
       {
@@ -464,7 +464,7 @@
     "order": 20,
     "name": "One Random Guy",
     "handle": "@onerandomguyyyy",
-    "cardNameplate": "PRAISE",
+    "cardNameplate": "ONE RANDOM GUY",
     "archetype": "Underdog / Comeback",
     "specials": [
       {
@@ -727,7 +727,7 @@
     "id": "laka",
     "order": 31,
     "name": "Laka",
-    "handle": null,
+    "handle": "@Iaksalter",
     "cardNameplate": "LAKA",
     "archetype": "Dark avenger / Rushdown",
     "specials": [

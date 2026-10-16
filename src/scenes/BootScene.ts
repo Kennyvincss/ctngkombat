@@ -14,7 +14,7 @@ export class BootScene extends Phaser.Scene {
   preload() {
     const w = GAME_W;
     const h = GAME_H;
-    const label = this.add.text(w / 2, h / 2 - 40, 'LOADING THE TRENCHES', { fontFamily: 'Impact, sans-serif', fontSize: '28px', color: '#f5c542' }).setOrigin(0.5);
+    const label = this.add.text(w / 2, h / 2 - 40, 'LOADING TRENCHES KOMBAT', { fontFamily: 'Impact, sans-serif', fontSize: '28px', color: '#f5c542' }).setOrigin(0.5);
     const frame = this.add.rectangle(w / 2, h / 2 + 10, 520, 22).setStrokeStyle(2, GOLD_HEX);
     const bar = this.add.rectangle(w / 2 - 256, h / 2 + 10, 0, 14, GOLD_HEX).setOrigin(0, 0.5);
     this.load.on('progress', (v: number) => (bar.width = 512 * v));
