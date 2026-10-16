@@ -1096,5 +1096,55 @@
     ],
     "fatality": "Spaces Ended: the opponent gets muted, their mic crosses out, and they fade away as the Space ends.",
     "card": "assets/cards/evansofweb3.webp"
+  },
+  {
+    "id": "codexbt",
+    "order": 46,
+    "name": "CodeXBT",
+    "handle": "@codexbt",
+    "cardNameplate": "CODEXBT",
+    "archetype": "Hacker / Glitch trickster",
+    "playstyle": "Hard to read and harder to pin down. Glitches through attacks and shuts down the opponent's tools.",
+    "specials": [
+      {
+        "name": "Zero-Day",
+        "description": "Fires a red virus packet that disables the opponent's specials for a few seconds."
+      },
+      {
+        "name": "Exploit",
+        "description": "Glitches out of sight and reappears behind the opponent with a strike."
+      },
+      {
+        "name": "Backdoor",
+        "description": "Leaves a hidden glitch trap on the floor that stuns whoever steps on it."
+      }
+    ],
+    "fatality": "Rugpull.exe: the opponent freezes into a 'SYSTEM COMPROMISED' error and breaks apart into red code.",
+    "card": "assets/cards/codexbt.webp"
+  },
+  {
+    "id": "swazy",
+    "order": 47,
+    "name": "Swazy",
+    "handle": "@Swazysol",
+    "cardNameplate": "SWAZY",
+    "archetype": "Bear market brawler / Powerhouse",
+    "playstyle": "Slow, grumpy and brutal up close. Every hit feels like a red candle.",
+    "specials": [
+      {
+        "name": "Bear Market",
+        "description": "A heavy overhead claw slam that can't be stopped once it starts."
+      },
+      {
+        "name": "Maul",
+        "description": "Grabs the opponent and mauls them, healing a little."
+      },
+      {
+        "name": "Hibernate",
+        "description": "Grumbles and tenses up: armour and slow health regeneration for a few seconds."
+      }
+    ],
+    "fatality": "Capitulation: the chart crashes and a giant red candle flattens the opponent.",
+    "card": "assets/cards/swazy.webp"
   }
 ]

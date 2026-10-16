@@ -241,4 +241,15 @@ export const MOVES: Record<string, FighterMoves> = {
     { mech: 'drop', art: 'avatar', startup: 16, recovery: 22, damage: 24, count: 5, interval: 6, spread: 280, scale: 1.1, ai: 'far' },
     { mech: 'buff', startup: 8, recovery: 8, buffs: [{ kind: 'speed', amount: 15, frames: 420 }, { kind: 'damage', amount: 15, frames: 420 }], art: 'candleG', ai: 'buff' },
   ],
+  // ---------------------------------------------------------------- batch 3
+  codexbt: [
+    { mech: 'status', startup: 12, recovery: 20, status: 'nospecials', frames: 240, delivery: 'projectile', damage: 25, art: 'code', speed: 11, color: 0xff2030, ai: 'far' },
+    { mech: 'teleport', startup: 6, vanish: 10, dest: 'behind', recovery: 14, slash: true, attack: { damage: 95, type: 'mid', box: { x: 0, y: -260, w: 160, h: 240 }, active: 5, anim: 'heavy', knockdown: true }, color: 0xff2030, ai: 'mid' },
+    { mech: 'trap', startup: 12, recovery: 16, distance: 240, life: 420, damage: 85, stun: 45, art: 'code', color: 0xff2030, ai: 'far' },
+  ],
+  swazy: [
+    { mech: 'strike', startup: 20, active: 6, recovery: 24, damage: 160, type: 'overhead', box: { x: 0, y: -300, w: 180, h: 300 }, anim: 'overhead', knockdown: true, armor: true, art: 'candleR', ai: 'close' },
+    { mech: 'grab', startup: 6, range: 140, recovery: 28, damage: 180, heal: 50, banner: 'MAULED', art: 'candleR', ai: 'close' },
+    { mech: 'buff', startup: 8, recovery: 8, buffs: [{ kind: 'armor', amount: 3, frames: 300 }, { kind: 'regen', amount: 90, frames: 180 }], art: 'candleG', ai: 'buff' },
+  ],
 };

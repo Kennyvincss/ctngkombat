@@ -763,6 +763,22 @@ const SCRIPTS: Record<string, Script> = {
     k.fadeLoser(1800, 800);
     k.winPose(2800);
   },
+  // ---------------------------------------------------------------- batch 3
+  codexbt: (k) => {
+    k.scroll(['$ ssh opponent@trenches', 'access granted', 'sudo rugpull.exe', 'deleting wallet...', 'deleting fighter...', '100% complete'], '#ff3040', 0, 1900);
+    k.tintLoser(0xff2030, 500);
+    k.banner('SYSTEM COMPROMISED', 0xff2030, 1700);
+    k.shake(1900, 500, 0.015);
+    k.pixelate(2500, [0xff2030, 0x000000, 0xffffff]);
+    k.winPose(2700);
+  },
+  swazy: (k) => {
+    k.banner('CAPITULATION', 0xea3943, 0);
+    k.chart(100, false);
+    k.popups(['-20%', '-50%', '-90%', 'sell everything'], 0xea3943, 500, 4, 250);
+    k.dropOn('candleR', 1700, 5);
+    k.winPose(2600);
+  },
 };
 
 const DEFAULT: Script = (k) => {

@@ -1123,5 +1123,55 @@
    "walk",
    "win"
   ]
+ },
+ "codexbt": {
+  "idleH": 380,
+  "poses": [
+   "block",
+   "cast",
+   "crouch",
+   "dash",
+   "dizzy",
+   "getup",
+   "grab",
+   "heavy",
+   "hit",
+   "idle",
+   "jump",
+   "kick",
+   "knockdown",
+   "light",
+   "overhead",
+   "special",
+   "sweep",
+   "uppercut",
+   "walk",
+   "win"
+  ]
+ },
+ "swazy": {
+  "idleH": 380,
+  "poses": [
+   "block",
+   "cast",
+   "crouch",
+   "dash",
+   "dizzy",
+   "getup",
+   "grab",
+   "heavy",
+   "hit",
+   "idle",
+   "jump",
+   "kick",
+   "knockdown",
+   "light",
+   "overhead",
+   "special",
+   "sweep",
+   "uppercut",
+   "walk",
+   "win"
+  ]
  }
 }
