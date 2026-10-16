@@ -304,16 +304,16 @@ export class FightScene extends Phaser.Scene implements World {
         this.events.emit('announce', 'DRAW', 1000);
         void sfx.clip(voice('draw'));
       }
-      // the longest "<name> wins" line runs ~2.5 s: let it finish before the next call
+      // the longest "<name> wins" line runs ~2.6 s: let it finish before the next call
       if (matchOver) {
-        this.later(150, () => this.finishThem(winner!));
+        this.later(160, () => this.finishThem(winner!));
         return;
       }
       if (winner) {
         winner.setState('win');
         winner.view.play('win');
       }
-      this.later(winner ? 150 : 70, () => {
+      this.later(winner ? 160 : 70, () => {
         this.round++;
         this.startRound();
       });

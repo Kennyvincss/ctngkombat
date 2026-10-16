@@ -3,8 +3,8 @@
 
 Text-to-speech is Piper (https://github.com/rhasspy/piper) with the "Ryan (high)" US English
 voice (dataset licence CC BY-NC-SA 4.0: fine for this non-commercial fan game, credited in the
-README). Piper speaks slowly and steadily; ffmpeg then lowers the pitch with rubberband while
-keeping the formants (so the words stay clear), adds a faint sub-octave layer and a light echo.
+README). Piper speaks slowly and steadily; ffmpeg then makes it deep and menacing (pitch down,
+a growl an octave below, saturation, a dark reverb) while keeping the consonants clear.
 
 Usage:
   python3 scripts/make_voices.py <piper-dir> <voice.onnx> [id ...]
@@ -23,6 +23,8 @@ import wave
 from pathlib import Path
 
 import numpy as np
+from scipy.io import wavfile
+from scipy.signal import butter, sosfilt
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "public" / "assets" / "voice"
@@ -97,21 +99,42 @@ EXTRA = {
     "fatality": "Fatality!",
 }
 
-# Clear but deep: pitch down ~3 semitones with the formants kept (vowels and consonants stay
-# readable), a quiet sub-octave rumble, a presence lift around 3 kHz and a short, light echo.
+# Bold, scary and still clear:
+#  - deep: ~6.5 semitones down in total. A small resample shift (x0.86) lowers pitch AND formants
+#    a little, for a bigger, darker body; the rest is a formant-preserving pitch shift, so the
+#    vowels keep their shape (shifting the formants all the way, as before, made words mushy).
+#  - menace: a growl one octave below, low-passed under 800 Hz so it never covers consonants.
+#  - bold: soft saturation and heavy compression.
+#  - clear: a lift at 3.2 kHz (consonants), a cut at 450 Hz (mud), and a dark hall reverb with
+#    25 ms of pre-delay in place of the old slap echo, so the words stay dry and on top.
 FILTER = (
-    "[0:a]apad=pad_dur=1,aresample=44100,rubberband=pitch=0.84:formant=preserved:transients=crisp,asplit=2[main][sub];"
-    "[sub]rubberband=pitch=0.5,volume=0.08,lowpass=f=250[subl];"
-    "[main][subl]amix=inputs=2:duration=first:normalize=0,"
-    "highpass=f=60,lowshelf=g=3:f=120,equalizer=f=3000:t=q:w=1:g=3,"
-    "acompressor=threshold=-20dB:ratio=4:attack=5:release=150,"
-    "aecho=0.8:0.3:55:0.1,"
+    "[0:a]apad=pad_dur=1.5,asetrate=22050*0.86,aresample=44100,"
+    "rubberband=pitch=0.80:formant=preserved:transients=crisp,highpass=f=55,asplit=3[m][g][r];"
+    "[g]rubberband=pitch=0.5:formant=preserved,lowpass=f=800,volume=0.25[gl];"
+    "[r]volume=0.18[rin];[rin][1:a]afir=dry=0:wet=1[rv];"
+    "[m][gl][rv]amix=inputs=3:duration=first:normalize=0,"
+    "lowshelf=g=4:f=140,equalizer=f=450:t=q:w=1:g=-2,equalizer=f=3200:t=q:w=1.1:g=4,"
+    "volume=1.8,asoftclip=type=tanh,volume=0.556,"
+    "acompressor=threshold=-22dB:ratio=5:attack=4:release=160,"
     "loudnorm=I=-11:TP=-1,aresample=44100,"
-    # drop the padding again (keeping the echo tail)
-    "areverse,silenceremove=start_periods=1:start_threshold=-48dB,afade=t=in:d=0.03,areverse"
+    # drop the padding again (keeping the reverb tail)
+    "areverse,silenceremove=start_periods=1:start_threshold=-50dB,afade=t=in:d=0.03,areverse"
 )
-# slow, steady delivery: longer phonemes, less random variation
-PIPER_ARGS = ["--length_scale", "2.0", "--noise_scale", "0.5", "--noise_w", "0.5", "--sentence_silence", "0.05"]
+
+
+def make_ir(path: Path):
+    """impulse response for the reverb: 1.6 s of dark, decaying noise after a 25 ms pre-delay"""
+    sr = 44100
+    t = np.arange(int(sr * 1.6)) / sr
+    ir = np.random.default_rng(7).standard_normal(len(t)) * np.exp(-t / 0.38)
+    ir = sosfilt(butter(2, 2500, "lp", fs=sr, output="sos"), ir)
+    ir[: int(sr * 0.025)] = 0
+    wavfile.write(str(path), sr, (ir / np.abs(ir).max() * 0.5).astype(np.float32))
+
+
+# slow, steady delivery: longer phonemes, less random variation (the x0.86 resample above
+# slows it a little more)
+PIPER_ARGS = ["--length_scale", "1.75", "--noise_scale", "0.5", "--noise_w", "0.5", "--sentence_silence", "0.05"]
 
 
 # Piper squeezes and clips a line that ends right after a short word ("Lahka!" came out in a
@@ -155,8 +178,10 @@ def synth(piper: Path, model: Path, text: str, out: Path):
         cut = last_pause(raw)
         if cut is None:
             raise SystemExit(f"no pause before the carrier word in {out.name}")
+        ir = Path(td) / "ir.wav"
+        make_ir(ir)
         subprocess.run(
-            ["ffmpeg", "-y", "-loglevel", "error", "-t", f"{cut + 0.05:.2f}", "-i", str(raw), "-filter_complex", FILTER, "-ac", "1", "-b:a", "80k", str(out)],
+            ["ffmpeg", "-y", "-loglevel", "error", "-t", f"{cut + 0.05:.2f}", "-i", str(raw), "-i", str(ir), "-filter_complex", FILTER, "-ac", "1", "-b:a", "80k", str(out)],
             check=True,
         )
 

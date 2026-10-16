@@ -60,21 +60,20 @@ npm run preview    # serve dist/ locally
 ## Intro
 
 After the first tap on the title screen (once per visit, or any time from **WATCH INTRO**), an
-intro plays: the title, then every fighter for 3.5 seconds performing their two flashiest
+intro plays: the title, then every fighter for two bars of the theme song (3.3 seconds) performing their two flashiest
 specials against a faded sparring partner while a deep announcer calls their name, then
 "ENTER THE TRENCHES". It runs on the real fight engine (`src/scenes/IntroScene.ts`, FightScene in
 showcase mode) and can be skipped (SKIP, Esc, Enter or Space).
 
-The soundtrack (`public/assets/music/intro.mp3`) is synthesized from scratch by
-`scripts/make_intro_music.py` (no samples, no licences): trailer-style drums, distorted bass, brass
-stabs and risers at 137 BPM, where each fighter's 3.5 s is exactly two bars and every fighter
-lands on a downbeat impact. The intro times itself by the soundtrack's clock. After adding
-fighters, rerun the script so the track matches the new length.
+The intro plays to the theme song (below): each fighter gets exactly two bars of it (143.96 BPM,
+3.33 s) and lands on a downbeat, the title card fills the first two bars, and ENTER THE TRENCHES
+slams on the downbeat after the last fighter. The intro reads its clock from the song's playback
+position, so it stays in time even if loading runs late.
 
-The game's theme song, "Blood on the Timeline" (`public/assets/music/theme.mp3`), loops behind
-the title, menus, character select, versus screen, fights and the win screen, carrying on between
-screens. It plays lower during fights and dips under every announcer line; the intro pauses it for
-its own soundtrack. If the file can't play, the game falls back to its synthesized loop.
+The game's theme song, "Blood on the Timeline" (`public/assets/music/theme.mp3`), plays under the
+intro and then loops behind the title, menus, character select, versus screen, fights and the win
+screen, carrying on between screens. It plays lower during fights and dips under every announcer
+line. If the file can't play, the game falls back to its synthesized loop.
 
 In fights the same announcer calls ROUND ONE / ROUND TWO / FINAL ROUND, START, K.O., "<NAME> WINS"
 (or DRAW) after every round, FINISH THEM and FATALITY, each shown on screen as it's said.
@@ -118,8 +117,7 @@ public/
   assets/sprites/<id>.webp    Phase B pose atlas per fighter (20 hand-drawn poses) + <id>.json frame data
   assets/sprites/manifest.json  which fighters have pose atlases
   assets/voice/<id>.mp3       announcer lines for the intro
-  assets/music/intro.mp3      the intro's soundtrack
-  assets/music/theme.mp3      the theme song (menus and fights)
+  assets/music/theme.mp3      the theme song (intro, menus and fights)
 source/cards/                 the original 1024×1536 card art
 source/sheets/<id>.jpg        the 20-pose sheets the atlases are cut from (prompt: docs/POSE_PROMPTS.md)
 scripts/                      asset pipeline (cut-outs, thumbnails, previews)

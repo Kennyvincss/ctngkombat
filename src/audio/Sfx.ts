@@ -312,8 +312,6 @@ export class Sfx {
   /** the theme couldn't play: use the synthesized loop instead */
   private themeFailed = false;
   private themeLevel: keyof typeof THEME_GAIN = 'menu';
-  /** a one-off track (the intro's soundtrack) is playing or loading: the theme waits */
-  private trackActive = false;
   /** the theme's first play() (inside a tap) hasn't resolved yet */
   private priming = false;
 
@@ -392,50 +390,6 @@ export class Sfx {
     src.start();
   }
 
-  private track: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
-
-  /**
-   * Play a recorded music track on the music bus instead of the synthesized loop (the intro's
-   * soundtrack). Resolves once it's playing, or false if audio is off or the file failed.
-   */
-  async playTrack(url: string, gain = 2.2): Promise<boolean> {
-    const synth = this.synth;
-    if (!synth) return false;
-    this.trackActive = true;
-    this.refreshMusic();
-    this.loadClip(url);
-    const buf = await this.clips.get(url);
-    if (!buf || !this.trackActive) {
-      this.trackActive = false;
-      this.refreshMusic();
-      return false;
-    }
-    this.stopTrack(0, false);
-    const src = synth.ctx.createBufferSource();
-    src.buffer = buf;
-    const g = synth.ctx.createGain();
-    g.gain.value = gain;
-    src.connect(g).connect(synth.music);
-    src.start();
-    this.track = { src, gain: g };
-    return true;
-  }
-
-  /** fade the track out; the theme comes back if music is on */
-  stopTrack(fadeMs = 400, resume = true) {
-    const synth = this.synth;
-    const tr = this.track;
-    this.track = null;
-    if (resume) {
-      this.trackActive = false;
-      this.refreshMusic();
-    }
-    if (!synth || !tr) return;
-    const t = synth.ctx.currentTime;
-    tr.gain.gain.setTargetAtTime(0, t, Math.max(0.001, fadeMs / 4000));
-    tr.src.stop(t + fadeMs / 1000 + 0.05);
-  }
-
   /** everything the game plays, as a stream (for recording trailers); needs unlock() first */
   captureStream(): MediaStream | null {
     const synth = this.synth;
@@ -450,11 +404,37 @@ export class Sfx {
     this.refreshMusic();
   }
 
+  /**
+   * Start the theme song from the top (the intro is timed to it). Resolves true once it plays,
+   * false if it can't (no audio, file failed).
+   */
+  async playThemeFromStart(): Promise<boolean> {
+    this.wantMusic = true;
+    this.themeLevel = 'menu';
+    this.refreshMusic();
+    const th = this.theme;
+    if (!th) return false;
+    th.el.currentTime = 0;
+    try {
+      await th.el.play();
+      return !this.themeFailed;
+    } catch (e) {
+      this.playFailed(e);
+      return false;
+    }
+  }
+
+  /** seconds into the theme song while it's playing, else null */
+  themeTime(): number | null {
+    const th = this.theme;
+    return th && !th.el.paused && !this.themeFailed ? th.el.currentTime : null;
+  }
+
   /** 'fight' plays the theme lower than in the menus */
   musicLevel(level: keyof typeof THEME_GAIN) {
     this.themeLevel = level;
     const synth = this.synth;
-    if (!synth || !this.theme || !this.wantMusic || this.trackActive) return;
+    if (!synth || !this.theme || !this.wantMusic) return;
     this.theme.gain.gain.setTargetAtTime(THEME_GAIN[level], synth.ctx.currentTime, 0.4);
   }
 
@@ -462,7 +442,7 @@ export class Sfx {
   private refreshMusic() {
     const synth = this.synth;
     if (!synth) return;
-    const play = this.wantMusic && !this.trackActive;
+    const play = this.wantMusic;
     if (!this.themeFailed && !this.theme && play) this.theme = this.makeTheme(synth);
     if (this.theme) {
       const g = this.theme.gain.gain;

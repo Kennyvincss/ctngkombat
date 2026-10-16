@@ -11,12 +11,13 @@ import { game } from '../state';
 import { bodyText, fitCamera, goldText, screenEdges } from '../ui/ui';
 import type { Button } from '../systems/input';
 
-/** how long each fighter is on screen (2 bars of the soundtrack) */
-const SEGMENT_MS = 3500;
-/** the title card before the first fighter */
-const TITLE_MS = 3000;
-/** the soundtrack, composed to this timeline by scripts/make_intro_music.py */
-const MUSIC = 'assets/music/intro.mp3';
+/** the theme song's beat grid (measured: 143.96 BPM, first downbeat 0.296 s into the file) */
+const BAR_MS = (4 * 60000) / 143.957;
+const FIRST_BAR_MS = 296;
+/** how long each fighter is on screen: 2 bars of the song */
+const SEGMENT_MS = 2 * BAR_MS;
+/** the title card fills the song's first 2 bars, so every fighter lands on a downbeat */
+const TITLE_MS = FIRST_BAR_MS + 2 * BAR_MS;
 /** fighters whose pose atlases are loaded ahead of time */
 const PRELOAD_AHEAD = 2;
 
@@ -45,8 +46,12 @@ export class IntroScene extends Phaser.Scene {
   private overlay: Phaser.GameObjects.Container | null = null;
   private counter!: Phaser.GameObjects.Text;
   private timers: Phaser.Time.TimerEvent[] = [];
-  /** when the soundtrack started (performance.now) */
+  /** when the intro started (performance.now); the clock if the song can't play */
   private t0 = 0;
+  /** the clock follows the theme song's playback position */
+  private synced = false;
+  private lastSong = 0;
+  private wrapMs = 0;
 
   constructor() {
     super('Intro');
@@ -58,6 +63,9 @@ export class IntroScene extends Phaser.Scene {
     this.done = false;
     this.overlay = null;
     this.timers = [];
+    this.synced = false;
+    this.lastSong = 0;
+    this.wrapMs = 0;
   }
 
   create() {
@@ -81,7 +89,7 @@ export class IntroScene extends Phaser.Scene {
     sfx.loadClip('assets/voice/enter.mp3');
     this.preload(0);
 
-    // the soundtrack sets the clock: every fighter lands on its downbeat (wait up to 3 s for it)
+    // the theme song sets the clock: every fighter lands on its downbeat (wait up to 3 s for it)
     let started = false;
     const begin = () => {
       if (started || this.done) return;
@@ -89,7 +97,10 @@ export class IntroScene extends Phaser.Scene {
       this.t0 = performance.now();
       this.titleCard();
     };
-    void sfx.playTrack(MUSIC).then(begin);
+    void sfx.playThemeFromStart().then((ok) => {
+      if (!started) this.synced = ok;
+      begin();
+    });
     this.time.delayedCall(3000, begin);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       for (const t of this.timers) t.remove();
@@ -101,9 +112,19 @@ export class IntroScene extends Phaser.Scene {
     this.timers.push(this.time.delayedCall(ms, fn));
   }
 
-  /** run fn at a fixed point of the soundtrack (ms after it started), even if loading ran late */
+  /** ms into the song (or since the intro began, if the song isn't playing) */
+  private clock(): number {
+    const t = this.synced ? sfx.themeTime() : null;
+    if (t === null) return performance.now() - this.t0;
+    // the song loops: keep counting past its end (only with a much longer roster)
+    if (t * 1000 < this.lastSong - 1000) this.wrapMs += this.lastSong;
+    this.lastSong = t * 1000;
+    return t * 1000 + this.wrapMs;
+  }
+
+  /** run fn at a fixed point of the song (ms into it), even if loading ran late */
   private atClock(ms: number, fn: () => void) {
-    this.at(Math.max(0, this.t0 + ms - performance.now()), fn);
+    this.at(Math.max(0, ms - this.clock()), fn);
   }
 
   /** queue pose atlases for the next fighters, and free ones already shown */
@@ -135,7 +156,8 @@ export class IntroScene extends Phaser.Scene {
     logo.setShadow(0, 0, '#ff4500', 36, true, true);
     const sub = bodyText(this, GAME_W / 2, GAME_H / 2 + 80, `${game.roster.length} FIGHTERS FROM THE CRYPTO TWITTER TRENCHES`, 30, '#ff9a4a').setOrigin(0.5).setAlpha(0);
     c.add([logo, sub]);
-    this.at(300, () => {
+    // the logo slams down on the song's second beat
+    this.atClock(FIRST_BAR_MS + BAR_MS / 4 - 260, () => {
       this.tweens.add({ targets: logo, scale: 1, alpha: 1, duration: 260, ease: 'Quad.easeIn' });
       this.at(260, () => this.cameras.main.shake(300, 0.012));
       void sfx.clip('assets/voice/title.mp3', 1.2);
@@ -157,12 +179,13 @@ export class IntroScene extends Phaser.Scene {
     b.setShadow(0, 0, '#ff4500', 30, true, true);
     c.add([a, b]);
     this.tweens.add({ targets: a, alpha: 1, duration: 400 });
-    this.at(700, () => {
+    // ENTER THE TRENCHES slams on the next downbeat
+    this.atClock(TITLE_MS + SEGMENT_MS * game.roster.length + BAR_MS - 240, () => {
       this.tweens.add({ targets: b, scale: 1, alpha: 1, duration: 240, ease: 'Quad.easeIn' });
       this.at(240, () => this.cameras.main.shake(300, 0.012));
       void sfx.clip('assets/voice/enter.mp3', 1.2);
     });
-    this.at(3600, () => this.finish());
+    this.atClock(TITLE_MS + SEGMENT_MS * game.roster.length + BAR_MS + 2600, () => this.finish());
   }
 
   // ---------------------------------------------------------------- fighters
@@ -243,9 +266,8 @@ export class IntroScene extends Phaser.Scene {
       /* fine */
     }
     for (const t of this.timers) t.remove();
-    // the theme song takes over from the intro's soundtrack
+    // the theme song simply carries on into the menus
     sfx.music(true);
-    sfx.stopTrack(500);
     this.cameras.main.fadeOut(300);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       this.scene.stop('Fight');
