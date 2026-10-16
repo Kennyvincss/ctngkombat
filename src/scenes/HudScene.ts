@@ -3,9 +3,9 @@ import { FONT_BODY, FONT_DISPLAY, GAME_H, GAME_W, GOLD_HEX, ROUNDS_TO_WIN } from
 import { sfx } from '../audio/Sfx';
 import type { Fighter } from '../fight/Fighter';
 import { METER_BAR, METER_MAX, SPECIAL_COOLDOWN } from '../fight/Fighter';
-import { game } from '../state';
+import { game, stickDeadzone } from '../state';
 import { emptyRaw, type Button } from '../systems/input';
-import { bodyText, fitCamera, goFullscreen, goldText, screenEdges } from '../ui/ui';
+import { bodyText, fitCamera, goFullscreen, goldText, screenEdges, stickSensitivityControl } from '../ui/ui';
 import type { FightScene } from './FightScene';
 
 const BAR_W = 480;
@@ -192,7 +192,7 @@ export class HudScene extends Phaser.Scene {
 
   private buildTraining() {
     const f = this.fight;
-    this.trainingText = bodyText(this, GAME_W / 2, 112, '', 20, '#9cff9c').setOrigin(0.5);
+    this.trainingText = bodyText(this, GAME_W / 2, game.isTouch ? 170 : 112, '', 20, '#9cff9c').setOrigin(0.5);
     const label = () => this.trainingText!.setText(`TRAINING  ·  DUMMY: ${f.cpu?.dummy ? f.cpu.dummy.toUpperCase() : 'CPU'}  ·  [T] change dummy  ·  [M] move list`);
     label();
     this.input.keyboard?.on('keydown-T', () => {
@@ -309,7 +309,7 @@ export class HudScene extends Phaser.Scene {
 
   /** which special the stick selects: neutral 1, forward 2, down 3 */
   private stickSpecial(): 1 | 2 | 3 {
-    const t = 26;
+    const t = stickDeadzone();
     const facing = this.fight.fighters[0].facing;
     if (this.stick.dy > t) return 3;
     if (this.stick.dx * facing > t) return 2;
@@ -320,7 +320,7 @@ export class HudScene extends Phaser.Scene {
     const f = this.fight;
     const me = f.fighters[0];
     const r = emptyRaw();
-    const t = 26;
+    const t = stickDeadzone();
     r.left = this.stick.dx < -t;
     r.right = this.stick.dx > t;
     r.up = this.stick.dy < -t * 1.4;
@@ -454,7 +454,7 @@ export class HudScene extends Phaser.Scene {
       ['QUIT TO TITLE', () => this.leave('Title')],
     ];
     items.forEach(([label, fn], i) => {
-      const t = goldText(this, GAME_W / 2, 250 + i * 66, label, 42).setInteractive({ useHandCursor: true });
+      const t = goldText(this, GAME_W / 2, 240 + i * 62, label, 40).setInteractive({ useHandCursor: true });
       t.on('pointerup', () => {
         sfx.play('confirm');
         fn();
@@ -463,6 +463,7 @@ export class HudScene extends Phaser.Scene {
       t.on('pointerout', () => t.setScale(1));
       c.add(t);
     });
+    if (game.isTouch) c.add(stickSensitivityControl(this, GAME_W / 2 + 60, 240 + items.length * 62 + 6));
     this.pauseLayer = c;
   }
 
@@ -484,7 +485,7 @@ export class HudScene extends Phaser.Scene {
     const c = this.add.container(0, 0).setDepth(this.pauseLayer ? 110 : 30);
     const w = 470;
     const x = 20;
-    const y = 130;
+    const y = game.isTouch ? 170 : 130;
     const lines: string[] = [];
     ft.data.specials.forEach((s, i) => {
       lines.push(`${s.name.toUpperCase()}`);

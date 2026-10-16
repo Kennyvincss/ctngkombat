@@ -105,7 +105,7 @@ export const BODY = {
 
 export const PHYS = {
   gravity: 0.95,
-  jumpVy: -19.5,
+  jumpVy: -23.5, // apex ≈ 290 px, about one body height
   jumpVx: 5.2,
   dashSpeed: 13,
   dashFrames: 14,

@@ -37,7 +37,7 @@ npm run preview    # serve dist/ locally
 
 | Button | What it does |
 |---|---|
-| Joystick | Move left and right, push up to jump, down to crouch |
+| Joystick | Move left and right, push up to jump, down to crouch. Sensitivity (5 levels) is set on the mode screen or in the pause menu and remembered on the device |
 | PUNCH | Quick punch. With the stick forward: power punch. With the stick down: uppercut |
 | KICK | Quick kick. With the stick forward: high kick. With the stick down: sweep |
 | BLOCK | Hold to guard; hold with the stick down to block low attacks |

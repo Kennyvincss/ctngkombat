@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { FONT_BODY, FONT_DISPLAY, GOLD, GAME_H, GAME_W } from '../config';
 import { sfx } from '../audio/Sfx';
+import { setStickSensitivity, settings, STICK_LEVELS } from '../state';
 import { emptyRaw, GamepadSource, KeyboardSource, KEYMAP_P1, KEYMAP_P2, KEYMAP_SOLO_EXTRA, MergedSource, type InputSource, type RawInput } from '../systems/input';
 
 export function goldText(scene: Phaser.Scene, x: number, y: number, text: string, size = 48, opts: Partial<Phaser.Types.GameObjects.Text.TextStyle> = {}) {
@@ -106,6 +107,37 @@ export function homeScreenTip(scene: Phaser.Scene, x: number, y: number) {
   return bodyText(scene, x, y, 'FULL SCREEN ON IPHONE:  Share  →  Add to Home Screen, then open Trenches Kombat from your home screen', 17, '#ffd23f')
     .setOrigin(0.5)
     .setDepth(10);
+}
+
+/** "STICK SENSITIVITY  −  ●●●○○  +" control for touch players. */
+export function stickSensitivityControl(scene: Phaser.Scene, x: number, y: number) {
+  const c = scene.add.container(x, y);
+  const label = bodyText(scene, -118, 0, 'STICK SENSITIVITY', 24, '#e8e2d0').setOrigin(1, 0.5);
+  const pips: Phaser.GameObjects.Arc[] = [];
+  for (let i = 0; i < STICK_LEVELS; i++) pips.push(scene.add.circle(-40 + i * 30, 0, 10, 0x222222).setStrokeStyle(2, 0xf5c542));
+  const word = bodyText(scene, 164, 0, '', 20, '#bfb59a').setOrigin(0, 0.5);
+  const refresh = () => {
+    pips.forEach((p, i) => p.setFillStyle(i < settings.stick ? 0xf5c542 : 0x222222));
+    word.setText(['LOW', 'LOW-MID', 'MEDIUM', 'HIGH', 'MAX'][settings.stick - 1]);
+  };
+  const step = (d: number) => {
+    setStickSensitivity(settings.stick + d);
+    sfx.play('select');
+    refresh();
+  };
+  const roundBtn = (bx: number, sign: string, d: number) => {
+    const ring = scene.add.circle(bx, 0, 22, 0x000000, 0.5).setStrokeStyle(2, 0xf5c542);
+    const t = bodyText(scene, bx, -1, sign, 36, '#f5c542').setOrigin(0.5);
+    ring.setInteractive({ useHandCursor: true });
+    ring.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, e: Phaser.Types.Input.EventData) => {
+      e?.stopPropagation();
+      step(d);
+    });
+    return [ring, t];
+  };
+  c.add([label, ...roundBtn(-82, '−', -1), ...pips, ...roundBtn(128, '+', 1), word]);
+  refresh();
+  return c;
 }
 
 /** Small speaker toggle in the top-right corner. */
