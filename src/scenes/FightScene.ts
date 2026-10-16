@@ -171,9 +171,14 @@ export class FightScene extends Phaser.Scene implements World {
     for (const f of [f1, f2]) sfx.loadClip(voice(`${f.id}-wins`));
 
     this.startRound();
-    sfx.music(true);
+    // the theme plays lower during fights; the intro's showcase fights keep the intro soundtrack
+    if (!this.setup.showcase) {
+      sfx.music(true);
+      sfx.musicLevel('fight');
+    }
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      if (!this.setup.showcase) sfx.musicLevel('menu');
       for (const f of this.fighters) f.view.destroy();
       this.scene.stop('Hud');
       for (const e of this.entities) e.destroy();

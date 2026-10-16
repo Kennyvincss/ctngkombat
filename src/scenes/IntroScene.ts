@@ -243,6 +243,8 @@ export class IntroScene extends Phaser.Scene {
       /* fine */
     }
     for (const t of this.timers) t.remove();
+    // the theme song takes over from the intro's soundtrack
+    sfx.music(true);
     sfx.stopTrack(500);
     this.cameras.main.fadeOut(300);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {

@@ -71,6 +71,11 @@ stabs and risers at 137 BPM, where each fighter's 3.5 s is exactly two bars and 
 lands on a downbeat impact. The intro times itself by the soundtrack's clock. After adding
 fighters, rerun the script so the track matches the new length.
 
+The game's theme song, "Blood on the Timeline" (`public/assets/music/theme.mp3`), loops behind
+the title, menus, character select, versus screen, fights and the win screen, carrying on between
+screens. It plays lower during fights and dips under every announcer line; the intro pauses it for
+its own soundtrack. If the file can't play, the game falls back to its synthesized loop.
+
 In fights the same announcer calls ROUND ONE / ROUND TWO / FINAL ROUND, START, K.O., "<NAME> WINS"
 (or DRAW) after every round, FINISH THEM and FATALITY, each shown on screen as it's said.
 
@@ -114,6 +119,7 @@ public/
   assets/sprites/manifest.json  which fighters have pose atlases
   assets/voice/<id>.mp3       announcer lines for the intro
   assets/music/intro.mp3      the intro's soundtrack
+  assets/music/theme.mp3      the theme song (menus and fights)
 source/cards/                 the original 1024×1536 card art
 source/sheets/<id>.jpg        the 20-pose sheets the atlases are cut from (prompt: docs/POSE_PROMPTS.md)
 scripts/                      asset pipeline (cut-outs, thumbnails, previews)

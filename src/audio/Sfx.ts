@@ -297,11 +297,25 @@ class Synth {
   }
 }
 
+/** the game's theme song ("Blood on the Timeline"), looped behind menus and fights */
+const THEME_URL = 'assets/music/theme.mp3';
+/** theme volume on the music bus: full in menus, lower in fights so hits and the announcer cut through */
+const THEME_GAIN = { menu: 1.6, fight: 0.85 } as const;
+
 /** Facade used by the game: safe to call before audio is unlocked. */
 export class Sfx {
   private synth: Synth | null = null;
   muted = loadMuted();
   private wantMusic = false;
+  /** the theme streams from an <audio> element routed through the music bus (ducking, mute) */
+  private theme: { el: HTMLAudioElement; gain: GainNode } | null = null;
+  /** the theme couldn't play: use the synthesized loop instead */
+  private themeFailed = false;
+  private themeLevel: keyof typeof THEME_GAIN = 'menu';
+  /** a one-off track (the intro's soundtrack) is playing or loading: the theme waits */
+  private trackActive = false;
+  /** the theme's first play() (inside a tap) hasn't resolved yet */
+  private priming = false;
 
   /** Call from a user gesture (browsers block audio until then). */
   unlock() {
@@ -314,7 +328,23 @@ export class Sfx {
     }
     if (this.synth.ctx.state === 'suspended') void this.synth.ctx.resume();
     this.applyMute();
-    if (this.wantMusic) this.synth.startMusic();
+    // create (and start, silently) the theme inside this user gesture: iOS only lets an audio
+    // element start from a tap, and the theme may first be wanted later (after the intro)
+    if (!this.theme && !this.themeFailed) this.theme = this.makeTheme(this.synth);
+    if (this.theme?.el.paused) {
+      this.priming = true;
+      this.theme.el.play().then(
+        () => {
+          this.priming = false;
+          this.refreshMusic();
+        },
+        (e) => {
+          this.priming = false;
+          this.playFailed(e);
+        },
+      );
+    }
+    this.refreshMusic();
   }
 
   play(name: SfxName) {
@@ -371,11 +401,16 @@ export class Sfx {
   async playTrack(url: string, gain = 2.2): Promise<boolean> {
     const synth = this.synth;
     if (!synth) return false;
+    this.trackActive = true;
+    this.refreshMusic();
     this.loadClip(url);
     const buf = await this.clips.get(url);
-    if (!buf) return false;
-    this.stopTrack(0);
-    synth.stopMusic();
+    if (!buf || !this.trackActive) {
+      this.trackActive = false;
+      this.refreshMusic();
+      return false;
+    }
+    this.stopTrack(0, false);
     const src = synth.ctx.createBufferSource();
     src.buffer = buf;
     const g = synth.ctx.createGain();
@@ -386,16 +421,19 @@ export class Sfx {
     return true;
   }
 
-  /** fade the track out; the synthesized music comes back if it was on */
-  stopTrack(fadeMs = 400) {
+  /** fade the track out; the theme comes back if music is on */
+  stopTrack(fadeMs = 400, resume = true) {
     const synth = this.synth;
     const tr = this.track;
     this.track = null;
+    if (resume) {
+      this.trackActive = false;
+      this.refreshMusic();
+    }
     if (!synth || !tr) return;
     const t = synth.ctx.currentTime;
     tr.gain.gain.setTargetAtTime(0, t, Math.max(0.001, fadeMs / 4000));
     tr.src.stop(t + fadeMs / 1000 + 0.05);
-    if (this.wantMusic) synth.startMusic();
   }
 
   /** everything the game plays, as a stream (for recording trailers); needs unlock() first */
@@ -409,9 +447,67 @@ export class Sfx {
 
   music(on: boolean) {
     this.wantMusic = on;
-    if (!this.synth) return;
-    if (on) this.synth.startMusic();
-    else this.synth.stopMusic();
+    this.refreshMusic();
+  }
+
+  /** 'fight' plays the theme lower than in the menus */
+  musicLevel(level: keyof typeof THEME_GAIN) {
+    this.themeLevel = level;
+    const synth = this.synth;
+    if (!synth || !this.theme || !this.wantMusic || this.trackActive) return;
+    this.theme.gain.gain.setTargetAtTime(THEME_GAIN[level], synth.ctx.currentTime, 0.4);
+  }
+
+  /** start or pause the background music to match what's wanted */
+  private refreshMusic() {
+    const synth = this.synth;
+    if (!synth) return;
+    const play = this.wantMusic && !this.trackActive;
+    if (!this.themeFailed && !this.theme && play) this.theme = this.makeTheme(synth);
+    if (this.theme) {
+      const g = this.theme.gain.gain;
+      g.cancelScheduledValues(synth.ctx.currentTime);
+      g.setTargetAtTime(play ? THEME_GAIN[this.themeLevel] : 0, synth.ctx.currentTime, play ? 0.3 : 0.02);
+      if (play && this.theme.el.paused) this.theme.el.play().catch((e) => this.playFailed(e));
+      if (!play && !this.theme.el.paused && !this.priming) {
+        this.theme.el.pause();
+        // only primed (never really heard): start the song from the top later
+        if (this.theme.el.currentTime < 3) this.theme.el.currentTime = 0;
+      }
+      return;
+    }
+    if (play) synth.startMusic();
+    else synth.stopMusic();
+  }
+
+  private makeTheme(synth: Synth) {
+    try {
+      const el = new Audio(THEME_URL);
+      el.loop = true;
+      el.preload = 'auto';
+      el.addEventListener('error', () => this.themeBroken());
+      const gain = synth.ctx.createGain();
+      gain.gain.value = 0;
+      synth.ctx.createMediaElementSource(el).connect(gain).connect(synth.music);
+      return { el, gain };
+    } catch {
+      this.themeFailed = true;
+      return null;
+    }
+  }
+
+  /** a pause() interrupting play() is fine; anything else means the theme can't play here */
+  private playFailed(e: unknown) {
+    if ((e as { name?: string })?.name !== 'AbortError') this.themeBroken();
+  }
+
+  /** the theme file failed: fall back to the synthesized loop */
+  private themeBroken() {
+    if (this.themeFailed) return;
+    this.themeFailed = true;
+    this.theme?.el.pause();
+    this.theme = null;
+    this.refreshMusic();
   }
 
   toggleMute() {

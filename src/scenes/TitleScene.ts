@@ -57,10 +57,11 @@ export class TitleScene extends Phaser.Scene {
       this.started = true;
       sfx.unlock();
       sfx.play('announce');
-      sfx.music(true);
       this.cameras.main.flash(200, 255, 200, 120);
       // first time this visit: the entry video, then the mode menu
       const intro = !game.introPlayed;
+      // the theme song starts now, or after the intro (which has its own soundtrack)
+      if (!intro) sfx.music(true);
       game.introPlayed = true;
       this.time.delayedCall(250, () => fadeTo(this, intro ? 'Intro' : 'Mode', intro ? { next: 'Mode' } : undefined));
     };
