@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>The Trenches</title>
+  <meta name="description" content="A 2D anime fighting game starring the Crypto Twitter trenches." />
+  <meta property="og:title" content="The Trenches" />
+  <meta property="og:description" content="31 fighters from Crypto Twitter. Pick yours. FINISH THEM." />
+  <meta property="og:image" content="assets/cards/promise-sol.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+    body { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    #game { position: fixed; inset: 0; }
+    #rotate {
+      display: none; position: fixed; inset: 0; z-index: 10; background: #050505; color: #f5c542;
+      font-family: 'Bebas Neue', 'Anton', Impact, sans-serif; letter-spacing: 2px;
+      align-items: center; justify-content: center; flex-direction: column; text-align: center; font-size: 34px;
+    }
+    #rotate .phone { width: 54px; height: 92px; border: 4px solid #f5c542; border-radius: 10px; margin-bottom: 22px; animation: turn 1.6s ease-in-out infinite; }
+    #rotate small { color: #aaa; font-size: 18px; margin-top: 8px; }
+    @keyframes turn { 0%, 30% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
+    @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div id="rotate"><div class="phone"></div>ROTATE YOUR PHONE<small>The Trenches plays in landscape</small></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

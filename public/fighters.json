@@ -1,0 +1,750 @@
+[
+  {
+    "id": "promise-sol",
+    "order": 1,
+    "name": "Promise.sol",
+    "handle": "@sol_promise",
+    "cardNameplate": "PROMISE.SOL",
+    "archetype": "Trickster / High mobility",
+    "playstyle": "Fast, slippery, annoying to fight. Relies on movement, baiting and sudden punishes.",
+    "specials": [
+      {
+        "name": "Trillion Flex",
+        "description": "Flashy dash that leaves a holographic $TRILLION trail and confuses the opponent."
+      },
+      {
+        "name": "Giveaway Rain",
+        "description": "Barrage of small SOL-coin projectiles that can be cancelled into a mix-up."
+      },
+      {
+        "name": "Trench Escape",
+        "description": "Quick backdash that leaves a fake body behind for a moment."
+      }
+    ],
+    "fatality": "Road to a Million: locks the opponent in a never-ending giveaway comment section until they explode.",
+    "card": "assets/cards/promise-sol.webp"
+  },
+  {
+    "id": "onepeterr",
+    "order": 2,
+    "name": "Onepeterr",
+    "handle": "@Onepeterrr",
+    "cardNameplate": "ONEPETERR",
+    "archetype": "Powerhouse / Pressure",
+    "playstyle": "Aggressive, relentless, always pushing forward. Strong normals, scary mid-range.",
+    "specials": [
+      {
+        "name": "ONEPETERWIN",
+        "description": "Command grab that steals a bit of health and flashes a Winner banner."
+      },
+      {
+        "name": "Moon or Rug",
+        "description": "Chargeable heavy overhead. Fully charged, it's unblockable."
+      },
+      {
+        "name": "Blessing Drop",
+        "description": "Rains wallets from the sky onto the opponent."
+      }
+    ],
+    "fatality": "Turns the opponent into a giveaway participant, then selects them as the loser.",
+    "card": "assets/cards/onepeterr.webp"
+  },
+  {
+    "id": "unscripted",
+    "order": 3,
+    "name": "Unscripted",
+    "handle": "@UnscriptedPnL",
+    "cardNameplate": "UNSCRIPTED",
+    "archetype": "Zoner / Mental warfare",
+    "playstyle": "Keeps distance, plays mind games, forces the opponent to approach on his terms.",
+    "specials": [
+      {
+        "name": "Unscripted Call",
+        "description": "Slow, multi-hitting projectile that tracks."
+      },
+      {
+        "name": "PnL Flex",
+        "description": "Counter stance. Hit him during it and he auto-punishes and shows a green PnL screenshot."
+      },
+      {
+        "name": "Forever on Motion",
+        "description": "Sliding low that can be cancelled into a teleport."
+      }
+    ],
+    "fatality": "Forces the opponent to stare at his red PnL until they rage quit out of existence.",
+    "card": "assets/cards/unscripted.webp"
+  },
+  {
+    "id": "king-sol",
+    "order": 4,
+    "name": "King.sol",
+    "handle": "@teddi_speaks",
+    "cardNameplate": "KING.SOL",
+    "archetype": "All-rounder / Balanced",
+    "playstyle": "Solid tools at every range. Plays like the main character.",
+    "specials": [
+      {
+        "name": "Cybertruck Drop",
+        "description": "Calls a Cybertruck down from the sky as a heavy projectile."
+      },
+      {
+        "name": "Payroll",
+        "description": "Flurry of quick hits that ends in a cash rain."
+      },
+      {
+        "name": "Logic Build",
+        "description": "Temporary armor that lets him walk through projectiles."
+      }
+    ],
+    "fatality": "Crowns himself in the opponent's place while the cash keeps falling.",
+    "card": "assets/cards/king-sol.webp"
+  },
+  {
+    "id": "degenbro",
+    "order": 5,
+    "name": "degenBRO",
+    "handle": "@degenBRO__",
+    "cardNameplate": "DEGENBRO",
+    "archetype": "Unpredictable chaos",
+    "specials": [
+      {
+        "name": "Garri Storm",
+        "description": "Throws bowls of garri that bounce around the stage."
+      },
+      {
+        "name": "Mudu Smash",
+        "description": "Heavy overhead that causes a wall bounce."
+      },
+      {
+        "name": "$0 Opportunity",
+        "description": "Temporarily invincible run that turns into a grab."
+      }
+    ],
+    "fatality": "Forces the opponent to buy garri at the top and watches them get rugged.",
+    "card": "assets/cards/degenbro.webp"
+  },
+  {
+    "id": "juniordip",
+    "order": 6,
+    "name": "Juniordip",
+    "handle": "@Juniordip0",
+    "cardNameplate": "JUNIORDIP",
+    "archetype": "Rushdown / Young blood",
+    "specials": [
+      {
+        "name": "Dip & Rip",
+        "description": "Quick low into a launch."
+      },
+      {
+        "name": "Road to Millions",
+        "description": "Chargeable dash attack."
+      },
+      {
+        "name": "Promo Rain",
+        "description": "Spams small projectiles while advancing."
+      }
+    ],
+    "fatality": "Turns the opponent into a reply guy who never gets noticed.",
+    "card": "assets/cards/juniordip.webp"
+  },
+  {
+    "id": "bloomstar",
+    "order": 7,
+    "name": "Bloomstar",
+    "handle": "@bloomstarbms",
+    "cardNameplate": "BLOOMSTAR",
+    "archetype": "Technical / Mix-up",
+    "specials": [
+      {
+        "name": "Bloom Barrage",
+        "description": "Quick hits that can end high or low."
+      },
+      {
+        "name": "Starfall",
+        "description": "Anti-air that pulls the opponent down."
+      },
+      {
+        "name": "Analysis Paralysis",
+        "description": "Counter that freezes the opponent briefly."
+      }
+    ],
+    "fatality": "Over-analyzes the opponent until they blue-screen.",
+    "card": "assets/cards/bloomstar.webp"
+  },
+  {
+    "id": "samuel-xeus",
+    "order": 8,
+    "name": "Samuel Xeus",
+    "handle": "@SamuelXeus",
+    "cardNameplate": "SAMUEL XEUS",
+    "archetype": "Educator / Balanced pressure",
+    "specials": [
+      {
+        "name": "Thread Storm",
+        "description": "Multi-hitting projectile made of text."
+      },
+      {
+        "name": "Masterclass",
+        "description": "Stance that boosts damage for a short time."
+      },
+      {
+        "name": "Community Call",
+        "description": "Summons a small army of reply guys."
+      }
+    ],
+    "fatality": "Forces the opponent to read a 47-part educational thread.",
+    "card": "assets/cards/samuel-xeus.webp"
+  },
+  {
+    "id": "achillas",
+    "order": 9,
+    "name": "Achillas",
+    "handle": "@Achillas_lens",
+    "cardNameplate": "ACHILLAS",
+    "archetype": "Precision / Footsies",
+    "specials": [
+      {
+        "name": "Lens Lock",
+        "description": "Long-range poke that stuns on counter-hit."
+      },
+      {
+        "name": "Technical Analysis",
+        "description": "Places a trap on the ground."
+      },
+      {
+        "name": "Eth Vision",
+        "description": "Temporary projectile invincibility."
+      }
+    ],
+    "fatality": "Charts the opponent's death with perfect technical analysis.",
+    "card": "assets/cards/achillas.webp"
+  },
+  {
+    "id": "dami-defi",
+    "order": 10,
+    "name": "Dami-Defi",
+    "handle": "@DamiDefi",
+    "cardNameplate": "DAMI-DEFI",
+    "archetype": "Slippery / Hit-and-run",
+    "specials": [
+      {
+        "name": "Gem Finder",
+        "description": "Low projectile that can be cancelled."
+      },
+      {
+        "name": "Whale Track",
+        "description": "Teleports behind the opponent."
+      },
+      {
+        "name": "Airdrop Ambush",
+        "description": "Fake retreat into a sudden attack."
+      }
+    ],
+    "fatality": "Tracks the opponent's wallet and drains it.",
+    "card": "assets/cards/dami-defi.webp"
+  },
+  {
+    "id": "prudent-sammy",
+    "order": 11,
+    "name": "Prudent Sammy",
+    "handle": "@PrudentSammy",
+    "cardNameplate": "PRUDENT SAMMY",
+    "archetype": "Defensive / Patient",
+    "specials": [
+      {
+        "name": "Prudent Guard",
+        "description": "Strong defensive stance with armor."
+      },
+      {
+        "name": "Calculated Risk",
+        "description": "Slow but very high-damage move."
+      },
+      {
+        "name": "Patience",
+        "description": "Heals a small amount while blocking."
+      }
+    ],
+    "fatality": "Waits until the opponent gets tired and finishes them calmly.",
+    "card": "assets/cards/prudent-sammy.webp"
+  },
+  {
+    "id": "udy",
+    "order": 12,
+    "name": "Udy",
+    "handle": "@udyszn",
+    "cardNameplate": "UDY",
+    "archetype": "Slippery trickster",
+    "specials": [
+      {
+        "name": "Udy Slide",
+        "description": "Low sliding attack that can be cancelled."
+      },
+      {
+        "name": "Fakeout",
+        "description": "Leaves a clone while teleporting."
+      },
+      {
+        "name": "Trend Rider",
+        "description": "Gains speed after successful hits."
+      }
+    ],
+    "fatality": "Trends over the opponent's dead body.",
+    "card": "assets/cards/udy.webp"
+  },
+  {
+    "id": "crypto-hak",
+    "order": 13,
+    "name": "Crypto Hak",
+    "handle": "@cryptohak0",
+    "cardNameplate": "CRYPTO HAKO",
+    "archetype": "Aggressive pressure",
+    "specials": [
+      {
+        "name": "Hak Attack",
+        "description": "Fast mid-range poke."
+      },
+      {
+        "name": "Onchain Pressure",
+        "description": "Continuous advancing string."
+      },
+      {
+        "name": "Gas Fee",
+        "description": "Drains the opponent's meter."
+      }
+    ],
+    "fatality": "Sends the opponent a gas fee they can't pay.",
+    "card": "assets/cards/crypto-hak.webp"
+  },
+  {
+    "id": "karo",
+    "order": 14,
+    "name": "Karo",
+    "handle": "@karoblaq",
+    "cardNameplate": "KARO",
+    "archetype": "Stylish all-rounder",
+    "specials": [
+      {
+        "name": "Blaq Style",
+        "description": "Flashy combo starter."
+      },
+      {
+        "name": "Smooth Operator",
+        "description": "Dash that goes through projectiles."
+      },
+      {
+        "name": "Cold Blooded",
+        "description": "Counter that freezes the opponent briefly."
+      }
+    ],
+    "fatality": "Freezes the opponent in a stylish pose forever.",
+    "card": "assets/cards/karo.webp"
+  },
+  {
+    "id": "illusions",
+    "order": 15,
+    "name": "Illusions",
+    "handle": "@illusionsW3",
+    "cardNameplate": "AMIN",
+    "archetype": "Mind game specialist",
+    "specials": [
+      {
+        "name": "Illusion Clone",
+        "description": "Creates a fake version of herself."
+      },
+      {
+        "name": "Mirage Strike",
+        "description": "Attack that hits from unexpected angles."
+      },
+      {
+        "name": "Perception Warp",
+        "description": "Temporarily reverses the opponent's controls."
+      }
+    ],
+    "fatality": "Traps the opponent in an endless illusion loop.",
+    "card": "assets/cards/illusions.webp"
+  },
+  {
+    "id": "fgs",
+    "order": 16,
+    "name": "FGS",
+    "handle": "@fgsbilll",
+    "cardNameplate": "SHALLI",
+    "archetype": "Heavy hitter",
+    "specials": [
+      {
+        "name": "Bill Smash",
+        "description": "Slow but high-damage overhead."
+      },
+      {
+        "name": "Full Gas",
+        "description": "Charged dash attack."
+      },
+      {
+        "name": "Statement",
+        "description": "Projectile that wall-bounces."
+      }
+    ],
+    "fatality": "Drops a full statement on the opponent's head.",
+    "card": "assets/cards/fgs.webp"
+  },
+  {
+    "id": "zaya",
+    "order": 17,
+    "name": "Zaya",
+    "handle": "@zayacodes",
+    "cardNameplate": "ZAYA",
+    "archetype": "Technical / Zoning",
+    "specials": [
+      {
+        "name": "Code Rain",
+        "description": "Multiple falling projectiles."
+      },
+      {
+        "name": "Debug",
+        "description": "Removes the opponent's current buffs."
+      },
+      {
+        "name": "Compile",
+        "description": "Builds meter faster for a short time."
+      }
+    ],
+    "fatality": "Compiles the opponent out of existence.",
+    "card": "assets/cards/zaya.webp"
+  },
+  {
+    "id": "senpai",
+    "order": 18,
+    "name": "Senpai",
+    "handle": "@Senpai_o1",
+    "cardNameplate": "SENPAI",
+    "archetype": "Mentorship fighter",
+    "specials": [
+      {
+        "name": "Senpai Notice",
+        "description": "Command grab that teaches the opponent a lesson."
+      },
+      {
+        "name": "Guidance",
+        "description": "Temporary damage-boost aura."
+      },
+      {
+        "name": "Discipline",
+        "description": "Counter that leads into a free combo."
+      }
+    ],
+    "fatality": "Makes the opponent train until they collapse.",
+    "card": "assets/cards/senpai.webp"
+  },
+  {
+    "id": "ugly-grm",
+    "order": 19,
+    "name": "Ugly Grm",
+    "handle": "@uglygrm",
+    "cardNameplate": "UGLY",
+    "archetype": "Unorthodox brawler",
+    "specials": [
+      {
+        "name": "Ugly Truth",
+        "description": "Attack that ignores armor."
+      },
+      {
+        "name": "Grm Force",
+        "description": "Heavy close-range smash."
+      },
+      {
+        "name": "Raw Energy",
+        "description": "Gains power the lower his health is."
+      }
+    ],
+    "fatality": "Hits the opponent with pure unfiltered reality.",
+    "card": "assets/cards/ugly-grm.webp"
+  },
+  {
+    "id": "one-random-guy",
+    "order": 20,
+    "name": "One Random Guy",
+    "handle": "@onerandomguyyyy",
+    "cardNameplate": "PRAISE",
+    "archetype": "Underdog / Comeback",
+    "specials": [
+      {
+        "name": "Random Chance",
+        "description": "Low damage, high reward."
+      },
+      {
+        "name": "Almost Famous",
+        "description": "Gains power when health is low."
+      },
+      {
+        "name": "Reply Energy",
+        "description": "Fast dashing attack."
+      }
+    ],
+    "fatality": "Finally gets noticed by finishing the opponent.",
+    "card": "assets/cards/one-random-guy.webp"
+  },
+  {
+    "id": "seunn",
+    "order": 21,
+    "name": "Seunn",
+    "handle": "@thisisseunn",
+    "cardNameplate": "SEUNN",
+    "archetype": "Business / Clean fighter",
+    "specials": [
+      {
+        "name": "Business Move",
+        "description": "Clean mid-range poke."
+      },
+      {
+        "name": "DM Open",
+        "description": "Command grab."
+      },
+      {
+        "name": "Deal Closer",
+        "description": "High-damage finisher."
+      }
+    ],
+    "fatality": "Closes the deal permanently.",
+    "card": "assets/cards/seunn.webp"
+  },
+  {
+    "id": "echo",
+    "order": 22,
+    "name": "Echo",
+    "handle": "@demolaW3",
+    "cardNameplate": "ECHO",
+    "archetype": "Support / Utility",
+    "specials": [
+      {
+        "name": "Echo Chamber",
+        "description": "Projectile that bounces."
+      },
+      {
+        "name": "Growth Strategy",
+        "description": "Temporary speed and damage buff."
+      },
+      {
+        "name": "Community Boost",
+        "description": "Heals a small amount of health."
+      }
+    ],
+    "fatality": "Grows the opponent out of the stage.",
+    "card": "assets/cards/echo.webp"
+  },
+  {
+    "id": "salam",
+    "order": 23,
+    "name": "Salam",
+    "handle": "@salamfvr",
+    "cardNameplate": "SALAM",
+    "archetype": "Fresh start / Adaptive",
+    "specials": [
+      {
+        "name": "New Beginnings",
+        "description": "Resets his own status effects and gains a small buff."
+      },
+      {
+        "name": "Clean Slate",
+        "description": "Fast neutral skip that avoids projectiles."
+      },
+      {
+        "name": "Second Chance",
+        "description": "Comeback move that gets stronger at low health."
+      }
+    ],
+    "fatality": "Gives the opponent a new beginning by deleting them.",
+    "card": "assets/cards/salam.webp"
+  },
+  {
+    "id": "raviel",
+    "order": 24,
+    "name": "Raviel",
+    "handle": "@ifwraviel",
+    "cardNameplate": "RAVIEL",
+    "archetype": "Aggressive nightmare",
+    "specials": [
+      {
+        "name": "Casino Nightmare",
+        "description": "Multi-hitting chaotic projectile."
+      },
+      {
+        "name": "House Edge",
+        "description": "Armor move that steals a bit of health."
+      },
+      {
+        "name": "All In",
+        "description": "High-risk, high-reward full-commitment attack."
+      }
+    ],
+    "fatality": "Makes the opponent go broke in a rigged casino.",
+    "card": "assets/cards/raviel.webp"
+  },
+  {
+    "id": "rex",
+    "order": 25,
+    "name": "Rex",
+    "handle": "@IfwRex",
+    "cardNameplate": "REX",
+    "archetype": "Faithful brawler",
+    "specials": [
+      {
+        "name": "If the Lord Wills",
+        "description": "Temporary invincibility frames."
+      },
+      {
+        "name": "Divine Timing",
+        "description": "Counter that only works with precise timing."
+      },
+      {
+        "name": "Blessing Force",
+        "description": "Heavy advancing strike."
+      }
+    ],
+    "fatality": "Sends the opponent to meet their maker.",
+    "card": "assets/cards/rex.webp"
+  },
+  {
+    "id": "noir",
+    "order": 26,
+    "name": "Noir",
+    "handle": "@dyknoir",
+    "cardNameplate": "NOIR",
+    "archetype": "Skilled mover",
+    "specials": [
+      {
+        "name": "Moving Man",
+        "description": "Fast dash that passes through the opponent."
+      },
+      {
+        "name": "Skill Check",
+        "description": "Precise counter that leads into a combo."
+      },
+      {
+        "name": "Silent Execution",
+        "description": "Low-profile sliding attack."
+      }
+    ],
+    "fatality": "Moves so clean the opponent never sees it coming.",
+    "card": "assets/cards/noir.webp"
+  },
+  {
+    "id": "rayan",
+    "order": 27,
+    "name": "Rayan",
+    "handle": "@theyfwRayan",
+    "cardNameplate": "RAYAN",
+    "archetype": "Seven figure climber",
+    "specials": [
+      {
+        "name": "Manoeuvre",
+        "description": "Movement option that changes direction mid-air."
+      },
+      {
+        "name": "Seven Figure Arc",
+        "description": "Chargeable powerful strike."
+      },
+      {
+        "name": "Blockchain Flow",
+        "description": "Continuous string that builds momentum."
+      }
+    ],
+    "fatality": "Climbs to seven figures while the opponent stays at zero.",
+    "card": "assets/cards/rayan.webp"
+  },
+  {
+    "id": "yoshai",
+    "order": 28,
+    "name": "Yoshai",
+    "handle": "@meetyoshai",
+    "cardNameplate": "YOSHAI",
+    "archetype": "Creative / Unorthodox",
+    "specials": [
+      {
+        "name": "Office Escape",
+        "description": "Quick mobility move that avoids pressure."
+      },
+      {
+        "name": "Meme Magic",
+        "description": "Projectile with random effects."
+      },
+      {
+        "name": "Marketing Push",
+        "description": "Temporary damage and speed boost."
+      }
+    ],
+    "fatality": "Markets the opponent out of relevance.",
+    "card": "assets/cards/yoshai.webp"
+  },
+  {
+    "id": "crypto-baddie",
+    "order": 29,
+    "name": "Crypto Baddie",
+    "handle": "@cryptobaddiee1",
+    "cardNameplate": "CRYPTO BADDIE",
+    "archetype": "Aggressive memecoin queen",
+    "specials": [
+      {
+        "name": "Green Candle",
+        "description": "Rising uppercut that launches."
+      },
+      {
+        "name": "Sell Button",
+        "description": "Counter that punishes aggressive approaches."
+      },
+      {
+        "name": "Beautiful Obsession",
+        "description": "Multi-hit rushdown string."
+      }
+    ],
+    "fatality": "Hits sell on the opponent's life at the peak.",
+    "card": "assets/cards/crypto-baddie.webp"
+  },
+  {
+    "id": "arlecchino",
+    "order": 30,
+    "name": "Arlecchino",
+    "handle": "@ms_arlecchino",
+    "cardNameplate": "ARLECCHINO",
+    "archetype": "Technical / Developer",
+    "specials": [
+      {
+        "name": "Rust Code",
+        "description": "Complex multi-hitting projectile."
+      },
+      {
+        "name": "Compile Error",
+        "description": "Disables the opponent's specials temporarily."
+      },
+      {
+        "name": "Debug Mode",
+        "description": "Stance that shows the opponent's next input."
+      }
+    ],
+    "fatality": "Crashes the opponent's system permanently.",
+    "card": "assets/cards/arlecchino.webp"
+  },
+  {
+    "id": "laka",
+    "order": 31,
+    "name": "Laka",
+    "handle": null,
+    "cardNameplate": "LAKA",
+    "archetype": "Dark avenger / Rushdown",
+    "specials": [
+      {
+        "name": "Violet Rift",
+        "description": "Teleport slash that crosses up."
+      },
+      {
+        "name": "Shadow Bid",
+        "description": "Projectile that marks the opponent for bonus damage."
+      },
+      {
+        "name": "Final Candle",
+        "description": "Super that ignites the whole screen."
+      }
+    ],
+    "fatality": "Burns the opponent's chart down to the last candle.",
+    "card": "assets/cards/laka.webp"
+  }
+]
