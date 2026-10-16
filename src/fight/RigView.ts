@@ -52,11 +52,15 @@ const rot = (p: V2, c: V2, th: number): V2 => {
 /** A limb target: absolute angles (degrees, 0 = forward, 90 = down, -90 = up) or IK foot offset. */
 type Limb = { up: number; lo: number } | { ik: V2 } | null;
 
+type UL = { up: number; lo: number };
+
 interface Pose {
   px: number; // pelvis offset (rig px)
   py: number;
   torso: number; // degrees, + leans forward
   head: number;
+  /** shoulder turn: + turns the chest into a punch (narrows it), - opens it */
+  twist: number;
   armLead: Limb;
   armRear: Limb;
   legLead: Limb;
@@ -144,7 +148,7 @@ export class RigView implements FighterView {
   private bend: Record<string, number> = {};
   private cur: Pose;
   private lead: { arm: 'L' | 'R'; leg: 'L' | 'R'; rArm: 'L' | 'R'; rLeg: 'L' | 'R' };
-  private bonesT: { c: V2; r: V2; th: number }[] = [];
+  private bonesT: { c: V2; r: V2; th: number; sx?: number }[] = [];
   private renderHook: () => void;
 
   constructor(
@@ -184,6 +188,7 @@ export class RigView implements FighterView {
       rArm: rig.leadArm === 'L' ? 'R' : 'L',
       rLeg: rig.leadLeg === 'L' ? 'R' : 'L',
     };
+    this.computeStance();
     this.cur = this.restPose();
 
     this.shadow = scene.add.image(0, 0, 'shadow').setDepth(depth - 2).setScale(1.3, 1.4);
@@ -290,8 +295,47 @@ export class RigView implements FighterView {
   }
 
   // ------------------------------------------------------------------ poses
+  // Every fighter fights from the same upright, side-on stance, whatever pose their card is drawn in:
+  // torso straightened, legs in a staggered stance with soft knees, fists up in guard.
+  private stance!: { torso: number; py: number; leadIk: V2; rearIk: V2; armLead: UL; armRear: UL };
+
+  private computeStance() {
+    const j = this.j;
+    const L = this.legLen;
+    const restTorso = this.deg(angOf(j.pelvis, j.neck));
+    const torso = Math.max(-45, Math.min(45, -84 - restTorso)); // 6 degrees of forward lean
+    const ground = Math.max(j.lank.y, j.rank.y);
+    // stand up taller, but only as far as the legs can follow without tearing the waist
+    const py = Math.max(-0.2 * L, Math.min(0, ground - 0.9 * L - j.pelvis.y));
+    const leadS = this.lead.leg.toLowerCase();
+    const rearS = this.lead.rLeg.toLowerCase();
+    const leadAnk = j[`${leadS}ank`];
+    const rearAnk = j[`${rearS}ank`];
+    this.stance = {
+      torso,
+      py,
+      // feet stay where the card plants them (most cards already stand in a fighting stance)
+      leadIk: { x: 0, y: ground - leadAnk.y },
+      rearIk: { x: 0, y: ground - rearAnk.y },
+      // lead fist out in front at chin height, rear fist guarding the chest
+      armLead: { up: 18, lo: -58 },
+      armRear: { up: 58, lo: -22 },
+    };
+  }
+
   private restPose(): Pose {
-    return { px: 0, py: 0, torso: 0, head: 0, armLead: null, armRear: null, legLead: { ik: { x: 0, y: 0 } }, legRear: { ik: { x: 0, y: 0 } } };
+    const s = this.stance;
+    return {
+      px: 0,
+      py: s.py,
+      torso: s.torso,
+      head: 0,
+      twist: 0,
+      armLead: { ...s.armLead },
+      armRear: { ...s.armRear },
+      legLead: { ik: { ...s.leadIk } },
+      legRear: { ik: { ...s.rearIk } },
+    };
   }
 
   private get legLen() {
@@ -299,46 +343,59 @@ export class RigView implements FighterView {
     return this.len[`${s}th`] + this.len[`${s}sn`];
   }
 
+  /** IK target for a foot: the stance position plus an offset */
+  private foot(which: 'lead' | 'rear', dx = 0, dy = 0): Limb {
+    const b = which === 'lead' ? this.stance.leadIk : this.stance.rearIk;
+    return { ik: { x: b.x + dx, y: b.y + dy } };
+  }
+
   /** The target pose for the current animation at frame t. */
   private target(): { pose: Pose; rate: number; rootRot: number; rootDy: number } {
     const t = this.t;
     const L = this.legLen;
     const p = this.restPose();
+    const S = this.stance;
     let rate = 0.35;
     let rootRot = 0;
     let rootDy = 0;
-    // a low guard: fists at chest height, never in front of the face (arms draw over the body)
-    const guard = (k = 0.35) => {
-      p.armLead = mixArm(this.restArm('lead'), { up: 25, lo: -45 }, k);
-      p.armRear = mixArm(this.restArm('rear'), { up: 55, lo: -30 }, k);
+    const armL = (a: UL) => (p.armLead = a);
+    const armR = (a: UL) => (p.armRear = a);
+    const curL = () => p.armLead as UL;
+    const curR = () => p.armRear as UL;
+    // how far into / out of a strike: ramps up over `rise` frames, holds until `hold`, eases out over `fall`
+    const strike = (start: number, rise: number, hold: number, fall: number) => {
+      if (t < start) return 0;
+      if (t < start + rise) return ease((t - start) / rise);
+      if (t < hold) return 1;
+      return Math.max(0, 1 - (t - hold) / fall);
     };
     switch (this._anim) {
       case 'idle': {
-        const b = Math.sin(t * 0.09);
-        p.py = b * 4 + 3;
-        p.torso = b * 1.5;
-        // stay close to the card's own pose, with a slight breathing sway
-        p.armLead = mixArm(this.restArm('lead'), { up: -25, lo: -95 }, 0.06 + 0.04 * b);
-        p.armRear = mixArm(this.restArm('rear'), { up: -5, lo: -95 }, 0.04);
+        // fighting-game stance bounce: knees flex, guard bobs
+        const b = Math.sin(t * 0.11);
+        p.py += 5 + b * 5;
+        p.torso += b * 1.5;
+        armL(mixUL(curL(), { up: curL().up + 6, lo: curL().lo + 4 }, 0.5 + 0.5 * b));
+        rate = 0.3;
         break;
       }
       case 'walk': {
         const ph = t * 0.24;
-        p.py = 2 + Math.abs(Math.sin(ph)) * 5;
-        p.torso = 4;
-        p.legLead = { ik: { x: Math.sin(ph) * L * 0.22, y: -Math.max(0, Math.cos(ph)) * L * 0.12 } };
-        p.legRear = { ik: { x: -Math.sin(ph) * L * 0.22, y: -Math.max(0, -Math.cos(ph)) * L * 0.12 } };
-        guard(0.3);
-        if (p.armLead && 'up' in p.armLead) p.armLead.up += Math.sin(ph) * 10;
-        if (p.armRear && 'up' in p.armRear) p.armRear.up -= Math.sin(ph) * 10;
+        p.py += 4 + Math.abs(Math.sin(ph)) * 6;
+        p.torso += 3;
+        p.legLead = this.foot('lead', Math.sin(ph) * L * 0.2, -Math.max(0, Math.cos(ph)) * L * 0.12);
+        p.legRear = this.foot('rear', -Math.sin(ph) * L * 0.2, -Math.max(0, -Math.cos(ph)) * L * 0.12);
+        armL({ up: curL().up + Math.sin(ph) * 8, lo: curL().lo });
+        armR({ up: curR().up - Math.sin(ph) * 8, lo: curR().lo });
         break;
       }
       case 'crouch':
-        p.py = L * 0.3;
-        p.torso = 14;
-        p.legLead = { ik: { x: L * 0.08, y: 0 } };
-        p.legRear = { ik: { x: -L * 0.08, y: 0 } };
-        guard(0.4);
+        p.py += L * 0.32;
+        p.torso += 12;
+        p.legLead = this.foot('lead', L * 0.05);
+        p.legRear = this.foot('rear', -L * 0.05);
+        armL({ up: 30, lo: -45 });
+        armR({ up: 65, lo: -15 });
         rate = 0.45;
         break;
       case 'flip':
@@ -347,77 +404,80 @@ export class RigView implements FighterView {
         const k = Math.min(1, t / 34);
         rootRot = (this._anim === 'flip' ? 1 : -1) * Math.PI * 2 * (k < 1 ? k * k * (3 - 2 * k) : 1);
         this.pivotHip = true;
-        p.py = -L * 0.05;
+        p.py = S.py - L * 0.05;
         p.legLead = { up: -60, lo: 60 };
         p.legRear = { up: -40, lo: 80 };
-        p.armLead = { up: 40, lo: -10 };
-        p.armRear = { up: 60, lo: 10 };
-        p.torso = 20;
+        armL({ up: 40, lo: -10 });
+        armR({ up: 60, lo: 10 });
+        p.torso += 20;
         p.head = 15;
         rate = 0.5;
         break;
       }
       case 'jump':
-        p.py = -L * 0.05;
+        p.py = S.py - L * 0.05;
         p.legLead = { up: -15, lo: 70 };
         p.legRear = { up: 45, lo: 125 };
-        p.armLead = mixArm(this.restArm('lead'), { up: 10, lo: -35 }, 0.5);
-        p.armRear = mixArm(this.restArm('rear'), { up: 45, lo: -15 }, 0.5);
-        p.torso = 6;
+        armL({ up: 5, lo: -50 });
+        armR({ up: 40, lo: -20 });
+        p.torso += 6;
         rate = 0.3;
         break;
       case 'light': {
-        const k = ease(Math.min(t, 5) / 5) * (t < 9 ? 1 : Math.max(0, 1 - (t - 9) / 6));
-        guard();
-        p.armLead = mixArm(p.armLead, { up: -4, lo: -2 }, k);
-        p.torso = 8 * k;
-        p.px = 10 * k;
-        p.py = 3;
-        rate = 0.7;
+        // jab: lead fist snaps straight out, shoulders turn into it
+        const k = strike(0, 4, 8, 6);
+        armL(mixUL(curL(), { up: -4, lo: -2 }, k));
+        p.twist = 0.4 * k;
+        p.torso += 6 * k;
+        p.px += 12 * k;
+        rate = 0.75;
         break;
       }
       case 'heavy': {
-        // wind-up power punch with the lead arm (the rear arm crossing over would cover the face)
-        guard();
+        // power punch: wind up, then drive the whole body through the lead fist
         const wind = t < 7 ? ease(t / 7) : 0;
-        const k = t >= 7 ? ease(Math.min(t - 7, 4) / 4) * (t < 17 ? 1 : Math.max(0, 1 - (t - 17) / 8)) : 0;
-        const pulled = mixUL(this.restArm('lead'), { up: 70, lo: -95 }, wind);
-        p.armLead = t < 7 ? pulled : mixUL({ up: 70, lo: -95 }, { up: -4, lo: -2 }, k);
-        p.torso = -10 * wind + 22 * k;
-        p.px = -8 * wind + 28 * k;
-        p.py = 5;
-        p.legRear = { ik: { x: -L * 0.14 * k, y: 0 } };
+        const k = strike(7, 4, 17, 8);
+        const pulled = { up: 70, lo: -95 };
+        armL(t < 7 ? mixUL(curL(), pulled, wind) : mixUL(pulled, { up: -4, lo: -2 }, k));
+        armR(mixUL(curR(), { up: 70, lo: 10 }, k));
+        p.twist = -0.4 * wind + 1 * k;
+        p.torso += -10 * wind + 20 * k;
+        p.px += -8 * wind + 30 * k;
+        p.legRear = this.foot('rear', -L * 0.12 * k);
         rate = 0.65;
         break;
       }
       case 'kick': {
-        const k = ease(Math.min(t, 6) / 6) * (t < 12 ? 1 : Math.max(0, 1 - (t - 12) / 8));
-        guard(0.3);
-        p.legLead = k > 0.05 ? mixUL({ up: this.deg(this.restAng[`${this.lead.leg.toLowerCase()}th`]), lo: this.deg(this.restAng[`${this.lead.leg.toLowerCase()}sn`]) }, { up: -22, lo: -12 }, k) : { ik: { x: 0, y: 0 } };
-        p.torso = -22 * k;
-        p.py = -L * 0.06 * k;
-        p.px = -8 * k;
+        // lead leg chambers and fires out at body height, torso leans back to counter-balance
+        const k = strike(0, 6, 12, 8);
+        if (k > 0.05) p.legLead = { up: mixA(78, -22, k), lo: mixA(95, -12, k) };
+        p.torso += -22 * k;
+        p.py -= L * 0.05 * k;
+        p.px -= 8 * k;
+        p.twist = -0.3 * k;
+        armL(mixUL(curL(), { up: 40, lo: -20 }, k));
+        armR(mixUL(curR(), { up: 100, lo: 60 }, k));
         rate = 0.6;
         break;
       }
       case 'sweep': {
-        const k = ease(Math.min(t, 7) / 7) * (t < 14 ? 1 : Math.max(0, 1 - (t - 14) / 8));
-        p.py = L * 0.32;
-        p.torso = 22;
-        p.legRear = { ik: { x: -L * 0.15, y: 0 } };
-        p.legLead = k > 0.05 ? { up: mixA(40, 12, k), lo: mixA(100, 8, k) } : { ik: { x: L * 0.1, y: 0 } };
-        p.armLead = { up: 70, lo: 80 };
-        p.armRear = { up: 100, lo: 90 };
+        const k = strike(0, 7, 14, 8);
+        p.py += L * 0.34;
+        p.torso += 22;
+        p.legRear = this.foot('rear', -L * 0.12);
+        p.legLead = k > 0.05 ? { up: mixA(40, 12, k), lo: mixA(100, 8, k) } : this.foot('lead', L * 0.08);
+        armL({ up: 70, lo: 80 });
+        armR({ up: 100, lo: 90 });
         rate = 0.6;
         break;
       }
       case 'uppercut': {
-        const k = ease(Math.min(t, 6) / 6) * (t < 14 ? 1 : Math.max(0, 1 - (t - 14) / 8));
-        guard();
-        p.armLead = mixArm(p.armLead, { up: -70, lo: -82 }, k);
-        p.py = L * 0.15 * (1 - k) - L * 0.1 * k;
-        p.torso = 10 - 16 * k;
-        p.px = 8 * k;
+        const k = strike(0, 6, 14, 8);
+        armL(mixUL(curL(), { up: -70, lo: -82 }, k));
+        p.py += L * 0.15 * (1 - k) - L * 0.1 * k;
+        p.torso += 10 - 16 * k;
+        p.px += 8 * k;
+        p.twist = 0.5 * k;
         rate = 0.6;
         break;
       }
@@ -426,61 +486,64 @@ export class RigView implements FighterView {
         const k = t >= 8 ? ease(Math.min(t - 8, 5) / 5) : 0;
         const lead = mixUL({ up: -125, lo: -150 }, { up: 35, lo: 55 }, k);
         const rear = mixUL({ up: -110, lo: -140 }, { up: 50, lo: 70 }, k);
-        p.armLead = wind < 1 ? mixUL(this.restArm('lead'), lead, wind) : lead;
-        p.armRear = wind < 1 ? mixUL(this.restArm('rear'), rear, wind) : rear;
-        p.torso = -10 * (1 - k) + 24 * k;
-        p.px = 12 * k;
-        p.py = L * 0.08 * k;
+        armL(wind < 1 ? mixUL(curL(), lead, wind) : lead);
+        armR(wind < 1 ? mixUL(curR(), rear, wind) : rear);
+        p.torso += -10 * (1 - k) + 24 * k;
+        p.px += 12 * k;
+        p.py += L * 0.08 * k;
         rate = 0.6;
         break;
       }
       case 'special': {
-        const k = ease(Math.min(t, 6) / 6) * (t < 18 ? 1 : Math.max(0, 1 - (t - 18) / 10));
-        p.armLead = mixArm(this.restArm('lead'), { up: -6, lo: -4 }, k);
-        p.armRear = mixArm(this.restArm('rear'), { up: 4, lo: 0 }, k);
-        p.torso = 14 * k;
-        p.px = 18 * k;
-        p.py = 6;
-        p.legRear = { ik: { x: -L * 0.14 * k, y: 0 } };
+        // two-handed push / energy release
+        const k = strike(0, 6, 18, 10);
+        armL(mixUL(curL(), { up: -6, lo: -4 }, k));
+        armR(mixUL(curR(), { up: 4, lo: 0 }, k));
+        p.torso += 14 * k;
+        p.px += 18 * k;
+        p.twist = 0.6 * k;
+        p.legRear = this.foot('rear', -L * 0.14 * k);
         rate = 0.55;
         break;
       }
       case 'cast': {
         const wind = t < 8 ? ease(t / 8) : 0;
         const k = t >= 8 ? ease(Math.min(t - 8, 6) / 6) : 0;
-        p.armLead = mixArm(mixArm(this.restArm('lead'), { up: 120, lo: 150 }, wind), { up: -12, lo: -18 }, k);
-        p.armRear = mixArm(mixArm(this.restArm('rear'), { up: 140, lo: 160 }, wind), { up: -20, lo: -30 }, k);
-        p.torso = -8 * wind + 10 * k;
-        p.px = 12 * k;
-        p.py = 5;
+        armL(mixUL(mixUL(curL(), { up: 120, lo: 150 }, wind), { up: -12, lo: -18 }, k));
+        armR(mixUL(mixUL(curR(), { up: 140, lo: 160 }, wind), { up: -20, lo: -30 }, k));
+        p.torso += -8 * wind + 10 * k;
+        p.px += 12 * k;
+        p.twist = -0.3 * wind + 0.5 * k;
         rate = 0.5;
         break;
       }
       case 'dash':
-        p.torso = 22;
-        p.px = 10;
-        p.py = L * 0.06;
-        p.armLead = { up: 130, lo: 160 };
-        p.armRear = { up: 150, lo: 170 };
+        p.torso += 20;
+        p.px += 10;
+        p.py += L * 0.06;
+        armL({ up: 130, lo: 160 });
+        armR({ up: 150, lo: 170 });
         p.legLead = { up: -10, lo: 60 };
         p.legRear = { up: 70, lo: 120 };
         rate = 0.5;
         break;
       case 'block':
-        p.armLead = { up: -42, lo: -102 };
-        p.armRear = { up: -25, lo: -96 };
-        p.torso = -8;
-        p.px = -6;
-        p.py = L * 0.05;
+        armL({ up: -42, lo: -102 });
+        armR({ up: -25, lo: -96 });
+        p.torso -= 8;
+        p.px -= 6;
+        p.py += L * 0.06;
+        p.twist = -0.3;
         rate = 0.6;
         break;
       case 'hit': {
         const k = Math.max(0, 1 - t / 16);
-        p.torso = -24 * k;
+        p.torso -= 24 * k;
         p.head = -18 * k;
-        p.px = -14 * k;
-        p.armLead = mixArm(this.restArm('lead'), { up: 150, lo: 165 }, k * 0.8);
-        p.armRear = mixArm(this.restArm('rear'), { up: 160, lo: 175 }, k * 0.8);
+        p.px -= 14 * k;
+        p.twist = -0.4 * k;
+        armL(mixUL(curL(), { up: 150, lo: 165 }, k * 0.8));
+        armR(mixUL(curR(), { up: 160, lo: 175 }, k * 0.8));
         rate = 0.7;
         break;
       }
@@ -488,8 +551,8 @@ export class RigView implements FighterView {
         const k = ease(t / 14);
         rootRot = -1.45 * k;
         rootDy = t > 14 && t < 22 ? -10 * Math.sin(((t - 14) / 8) * Math.PI) : 0;
-        p.armLead = { up: 160, lo: 175 };
-        p.armRear = { up: 170, lo: 178 };
+        armL({ up: 160, lo: 175 });
+        armR({ up: 170, lo: 178 });
         p.legLead = { up: 20, lo: 50 };
         p.legRear = { up: 40, lo: 80 };
         p.head = -10;
@@ -499,47 +562,45 @@ export class RigView implements FighterView {
       case 'getup': {
         const k = ease(t / 16);
         rootRot = -1.45 * (1 - k);
-        p.py = L * 0.15 * (1 - k);
-        guard(0.3 * k);
+        p.py += L * 0.15 * (1 - k);
         rate = 0.4;
         break;
       }
       case 'win':
         rootDy = -Math.abs(Math.sin(t * 0.12)) * 34;
-        p.armLead = { up: -82, lo: -94 };
-        p.armRear = mixArm(this.restArm('rear'), { up: 60, lo: -40 }, 0.6);
-        p.torso = -6;
+        armL({ up: -82, lo: -94 });
+        armR({ up: 60, lo: -40 });
+        p.torso -= 6;
         p.head = -8;
-        p.legLead = Math.sin(t * 0.12) > 0.3 ? { up: 20, lo: 100 } : { ik: { x: 0, y: 0 } };
+        p.legLead = Math.sin(t * 0.12) > 0.3 ? { up: 20, lo: 100 } : p.legLead;
         break;
       case 'dizzy': {
         const w = Math.sin(t * 0.09);
-        p.torso = w * 10;
+        p.torso += w * 10;
         p.head = w * 12;
-        p.px = Math.sin(t * 0.045) * 8;
-        p.py = L * 0.06;
-        p.armLead = { up: 95 + w * 8, lo: 98 };
-        p.armRear = { up: 100 - w * 8, lo: 100 };
+        p.px += Math.sin(t * 0.045) * 8;
+        p.py += L * 0.06;
+        armL({ up: 95 + w * 8, lo: 98 });
+        armR({ up: 100 - w * 8, lo: 100 });
         rate = 0.2;
         break;
       }
       case 'grab': {
         const k = ease(Math.min(t, 6) / 6);
-        p.armLead = mixArm(this.restArm('lead'), { up: 0, lo: -10 }, k);
-        p.armRear = mixArm(this.restArm('rear'), { up: 8, lo: -5 }, k);
-        p.torso = 14 * k;
-        p.px = 16 * k;
-        p.py = 6;
+        armL(mixUL(curL(), { up: 0, lo: -10 }, k));
+        armR(mixUL(curR(), { up: 8, lo: -5 }, k));
+        p.torso += 14 * k;
+        p.px += 16 * k;
+        p.twist = 0.5 * k;
         rate = 0.6;
         break;
       }
       case 'stance':
-        p.py = L * 0.12;
-        p.torso = 8;
-        guard(0.5);
-        if (p.armLead && 'up' in p.armLead) p.armLead.up += Math.sin(t * 0.2) * 3;
-        p.legLead = { ik: { x: L * 0.06, y: 0 } };
-        p.legRear = { ik: { x: -L * 0.06, y: 0 } };
+        p.py += L * 0.12;
+        p.torso += 8;
+        armL({ up: curL().up + Math.sin(t * 0.2) * 3, lo: curL().lo });
+        p.legLead = this.foot('lead', L * 0.06);
+        p.legRear = this.foot('rear', -L * 0.06);
         break;
     }
     return { pose: p, rate, rootRot, rootDy };
@@ -549,10 +610,9 @@ export class RigView implements FighterView {
     return r / D;
   }
 
-  /** the arm's rest angles as a limb target (degrees) */
-  private restArm(which: 'lead' | 'rear'): { up: number; lo: number } {
-    const s = (which === 'lead' ? this.lead.arm : this.lead.rArm).toLowerCase();
-    return { up: this.deg(this.restAng[`${s}up`]), lo: this.deg(this.restAng[`${s}lo`]) };
+  /** the arm's stance angles as a limb target (degrees) */
+  private restArm(which: 'lead' | 'rear'): UL {
+    return { ...(which === 'lead' ? this.stance.armLead : this.stance.armRear) };
   }
 
   // ------------------------------------------------------------------ solve + skin
@@ -570,6 +630,7 @@ export class RigView implements FighterView {
     c.py += (pose.py - c.py) * rate;
     c.torso += (pose.torso - c.torso) * rate;
     c.head += (pose.head - c.head) * rate;
+    c.twist += (pose.twist - c.twist) * rate;
     c.armLead = blendLimb(c.armLead, pose.armLead, rate, this.restArm('lead'));
     c.armRear = blendLimb(c.armRear, pose.armRear, rate, this.restArm('rear'));
     c.legLead = blendLimb(c.legLead, pose.legLead, rate, null);
@@ -608,16 +669,19 @@ export class RigView implements FighterView {
   private solveBones() {
     const j = this.j;
     const c = this.cur;
-    const bt: { c: V2; r: V2; th: number }[] = [];
+    const bt: { c: V2; r: V2; th: number; sx?: number }[] = [];
     const pelvisR = j.pelvis;
     const pelvisC = { x: pelvisR.x + c.px, y: pelvisR.y + c.py };
     const torsoTh = c.torso * D;
     // pelvis (waist) follows the torso a little
+    // shoulder turn: the chest narrows and slides toward the punch, like a body rotating
+    const twSx = 1 - 0.22 * c.twist;
+    const twDx = 10 * c.twist;
     bt[0] = { r: pelvisR, c: pelvisC, th: torsoTh * 0.25 };
-    bt[1] = { r: pelvisR, c: pelvisC, th: torsoTh };
+    bt[1] = { r: pelvisR, c: { x: pelvisC.x + twDx, y: pelvisC.y }, th: torsoTh, sx: twSx };
     const torsoPt = (p: V2) => {
-      const q = rot(p, pelvisR, torsoTh);
-      return { x: q.x + c.px, y: q.y + c.py };
+      const q = rot({ x: pelvisR.x + (p.x - pelvisR.x) * twSx, y: p.y }, pelvisR, torsoTh);
+      return { x: q.x + c.px + twDx, y: q.y + c.py };
     };
     const neckC = torsoPt(j.neck);
     bt[2] = { r: j.neck, c: neckC, th: torsoTh + c.head * D };
@@ -730,7 +794,7 @@ export class RigView implements FighterView {
           const T = bt[b];
           const co = Math.cos(T.th);
           const s = Math.sin(T.th);
-          const dx = vx - T.r.x;
+          const dx = (vx - T.r.x) * (T.sx ?? 1);
           const dy = vy - T.r.y;
           x += (T.c.x + dx * co - dy * s) * w;
           y += (T.c.y + dx * s + dy * co) * w;
@@ -754,11 +818,6 @@ export class RigView implements FighterView {
 // ---------------------------------------------------------------- limb helpers
 function mixA(a: number, b: number, k: number) {
   return lerpAng(a * D, b * D, k) / D;
-}
-
-function mixArm(a: Limb, b: { up: number; lo: number }, k: number): Limb {
-  if (!a || !('up' in a)) return k > 0.5 ? { ...b } : a;
-  return { up: mixA(a.up, b.up, k), lo: mixA(a.lo, b.lo, k) };
 }
 
 function mixUL(a: { up: number; lo: number }, b: { up: number; lo: number }, k: number): { up: number; lo: number } {
