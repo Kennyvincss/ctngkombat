@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
-import { GAME_W } from '../config';
+import { GAME_H, GAME_W, GOLD_HEX, TIP_WALLET } from '../config';
 import type { Difficulty, GameMode } from '../data/types';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
 import { controlDevice, controlsLine } from '../ui/controlHelp';
-import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
+import { bodyText, copyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
 
 export class ModeScene extends Phaser.Scene {
   private menu!: ListMenu;
@@ -25,22 +25,24 @@ export class ModeScene extends Phaser.Scene {
     this.input0 = new MenuInput(this, 0);
     this.diffMenu = null;
 
-    const modes: { label: string; mode: GameMode; hint: string }[] = [
+    const modes: { label: string; mode: GameMode | 'tip'; hint: string }[] = [
       { label: 'VS CPU', mode: 'cpu', hint: 'Fight the computer. Pick your fighter, then your opponent.' },
       { label: 'VS PLAYER 2', mode: 'versus', hint: 'Two players on one keyboard (or two gamepads).' },
       { label: 'PLAY ONLINE', mode: 'online', hint: 'Fight a friend on their own device with a room code.' },
       { label: 'TRAINING', mode: 'training', hint: 'Infinite health and meter, with the move list on screen.' },
+      { label: 'TIP CREATOR', mode: 'tip', hint: 'Enjoying the game? Send the creator a tip in SOL.' },
     ];
-    this.menu = new ListMenu(this, GAME_W / 2, 200, modes.map((m) => m.label), (i) => {
+    this.menu = new ListMenu(this, GAME_W / 2, 176, modes.map((m) => m.label), (i) => {
       const m = modes[i].mode;
-      if (m === 'cpu') this.openDifficulty();
+      if (m === 'tip') this.openTip();
+      else if (m === 'cpu') this.openDifficulty();
       else if (m === 'online') {
         this.menu.enabled = false;
         fadeTo(this, 'Online');
       } else this.go(m, 'normal');
-    }, 72, 54);
+    }, 64, 50);
 
-    this.hint = bodyText(this, GAME_W / 2, 494, '', 26, '#d8cdb0').setOrigin(0.5);
+    this.hint = bodyText(this, GAME_W / 2, 496, '', 26, '#d8cdb0').setOrigin(0.5);
     const controlsText = bodyText(this, GAME_W / 2, 640, '', 22, '#a89f88').setOrigin(0.5).setWordWrapWidth(1180).setAlign('center');
     // follows the device: plugging in a gamepad switches the help to its buttons
     const showControls = () => {
@@ -58,7 +60,6 @@ export class ModeScene extends Phaser.Scene {
         fadeTo(this, 'Controls', { from: 'Mode' });
       });
     }
-    bodyText(this, GAME_W / 2, 680, 'Motion inputs: ↓↘→+P · →↓↘+P · ↓↙←+K       Fatality: ↓↓→ + heavy punch', 20, '#8c8270').setOrigin(0.5);
     muteButton(this);
 
     const back = bodyText(this, 30, 30, '◀ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
@@ -75,8 +76,64 @@ export class ModeScene extends Phaser.Scene {
     this.diffMenu.select(1);
   }
 
+  // ---------------------------------------------------------------- tip the creator
+  private tip: { layer: Phaser.GameObjects.Container; copy: () => void } | null = null;
+
+  private openTip() {
+    this.menu.enabled = false;
+    this.menu.setVisible(false);
+    const c = this.add.container(0, 0).setDepth(50);
+    c.add(this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W + 1600, GAME_H + 800, 0x050303, 1).setInteractive());
+    c.add(goldText(this, GAME_W / 2, 170, 'TIP THE CREATOR', 64));
+    c.add(bodyText(this, GAME_W / 2, 238, 'Enjoying Trenches Kombat? Tips keep new fighters coming.', 26, '#d8cdb0').setOrigin(0.5));
+    c.add(bodyText(this, GAME_W / 2, 300, 'SOLANA WALLET  (SOL or any Solana token)', 24, '#ff9a4a').setOrigin(0.5));
+
+    // the address (a font with lowercase letters: Solana addresses are case-sensitive) and a
+    // small COPY button right next to it
+    const addr = this.add
+      .text(0, 0, TIP_WALLET, { fontFamily: '"Courier New", ui-monospace, Menlo, Consolas, monospace', fontSize: '24px', fontStyle: 'bold', color: '#ffffff' })
+      .setOrigin(0, 0.5);
+    const boxW = addr.width + 40;
+    const btnW = 120;
+    const total = boxW + 12 + btnW;
+    const x0 = GAME_W / 2 - total / 2;
+    const y = 360;
+    c.add(this.add.rectangle(x0, y, boxW, 60, 0x0d0b08, 0.95).setOrigin(0, 0.5).setStrokeStyle(2, 0x6b5a2e));
+    addr.setPosition(x0 + 20, y);
+    c.add(addr);
+    const bx = x0 + boxW + 12 + btnW / 2;
+    const btn = this.add.rectangle(bx, y, btnW, 60, 0x2a1d05, 1).setStrokeStyle(2, GOLD_HEX).setInteractive({ useHandCursor: true });
+    const btnText = goldText(this, bx, y, 'COPY', 28);
+    c.add([btn, btnText]);
+    const status = bodyText(this, GAME_W / 2, 430, '', 24, '#7dff9a').setOrigin(0.5);
+    c.add(status);
+    const copy = () => {
+      void copyText(TIP_WALLET).then((ok) => {
+        sfx.play(ok ? 'confirm' : 'select');
+        btnText.setText(ok ? 'COPIED ✓' : 'COPY');
+        status.setColor(ok ? '#7dff9a' : '#ffb35a');
+        status.setText(ok ? 'Copied! Paste it in your wallet app to send a tip. Thank you!' : "Couldn't copy on this device: the address is shown above.");
+        this.time.delayedCall(2000, () => btnText.active && btnText.setText('COPY'));
+      });
+    };
+    btn.on('pointerup', copy);
+
+    const close = this.add.rectangle(GAME_W / 2, 520, 220, 58, 0x000000, 0.6).setStrokeStyle(2, GOLD_HEX).setInteractive({ useHandCursor: true });
+    c.add([close, goldText(this, GAME_W / 2, 520, 'CLOSE', 30)]);
+    close.on('pointerup', () => this.back());
+    if (!game.isTouch) c.add(bodyText(this, GAME_W / 2, 580, 'Enter / J / gamepad A: copy   ·   Esc / gamepad B: close', 20, '#8c8270').setOrigin(0.5));
+    this.tip = { layer: c, copy };
+  }
+
   private back() {
     sfx.play('back');
+    if (this.tip) {
+      this.tip.layer.destroy();
+      this.tip = null;
+      this.menu.enabled = true;
+      this.menu.setVisible(true);
+      return;
+    }
     if (this.diffMenu) {
       this.diffMenu.destroy();
       this.diffMenu = null;
@@ -97,6 +154,10 @@ export class ModeScene extends Phaser.Scene {
     const p = this.input0.poll();
     if (p.back) {
       this.back();
+      return;
+    }
+    if (this.tip) {
+      if (p.ok) this.tip.copy();
       return;
     }
     if (this.diffMenu) this.diffMenu.handle(p);

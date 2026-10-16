@@ -19,3 +19,6 @@ export const GOLD_HEX = 0xf5c542;
 export const ROUNDS_TO_WIN = 2;
 export const ROUND_TIME = 99;
 export const FATALITY_WINDOW_S = 5;
+
+/** the creator's Solana wallet, shown under TIP CREATOR on the menu */
+export const TIP_WALLET = 'cbWr6BiA2PqfVuQwDHSqTzwKs9zhySnjc5v1wwPvBgh';

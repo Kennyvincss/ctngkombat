@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { GAME_H, GAME_W, GOLD_HEX } from '../config';
 import { sfx } from '../audio/Sfx';
 import { BUILD_ID, net, type NetMsg } from '../net/Net';
-import { bodyText, fadeTo, fitCamera, goldText, ListMenu, menuBackdrop, MenuInput, muteButton } from '../ui/ui';
+import { bodyText, copyText, fadeTo, fitCamera, goldText, ListMenu, menuBackdrop, MenuInput, muteButton } from '../ui/ui';
 
 /**
  * PLAY ONLINE: create a room (get a 5-digit code to send to a friend) or join one by code.
@@ -88,10 +88,7 @@ export class OnlineScene extends Phaser.Scene {
       this.tweens.add({ targets: t, scale: { from: 0.96, to: 1.03 }, yoyo: true, repeat: -1, duration: 900 });
       this.layer!.add(bodyText(this, GAME_W / 2, 400, 'Send this code to your friend. They pick PLAY ONLINE → JOIN ROOM and type it in.', 24, '#ffffff').setOrigin(0.5).setAlign('center').setWordWrapWidth(900));
       this.addButton(GAME_W / 2 - 130, 490, 'COPY CODE', () => {
-        navigator.clipboard?.writeText(code).then(
-          () => this.status.setText('Code copied. Paste it to your friend.'),
-          () => this.status.setText(`Your code is ${code}`),
-        );
+        void copyText(code).then((ok) => this.status.setText(ok ? 'Code copied. Paste it to your friend.' : `Your code is ${code}`));
       });
       this.addButton(GAME_W / 2 + 130, 490, 'CANCEL', () => this.back());
       this.status.setText('Waiting for your opponent to join…');
