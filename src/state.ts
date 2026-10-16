@@ -9,6 +9,8 @@ export const game = {
   /** fighters that have a skeletal rig in assets/rigs/ */
   rigs: [] as string[],
   lastSetup: null as MatchSetup | null,
+  /** the intro plays once per visit (and from WATCH INTRO on the title screen) */
+  introPlayed: false,
   isTouch: false,
 };
 

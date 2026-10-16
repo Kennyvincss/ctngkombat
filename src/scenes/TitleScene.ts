@@ -57,8 +57,20 @@ export class TitleScene extends Phaser.Scene {
       sfx.play('announce');
       sfx.music(true);
       this.cameras.main.flash(200, 255, 200, 120);
-      this.time.delayedCall(250, () => fadeTo(this, 'Mode'));
+      // first time this visit: the entry video, then the mode menu
+      const intro = !game.introPlayed;
+      game.introPlayed = true;
+      this.time.delayedCall(250, () => fadeTo(this, intro ? 'Intro' : 'Mode', intro ? { next: 'Mode' } : undefined));
     };
+    const watch = bodyText(this, GAME_W / 2, 560, '▶  WATCH INTRO', 26, '#bfb59a').setOrigin(0.5).setDepth(10).setInteractive({ useHandCursor: true });
+    watch.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, e: Phaser.Types.Input.EventData) => {
+      e.stopPropagation();
+      if (this.started) return;
+      this.started = true;
+      sfx.unlock();
+      game.introPlayed = true;
+      fadeTo(this, 'Intro', { next: 'Title' });
+    });
     this.input.keyboard?.once('keydown', (e: KeyboardEvent) => {
       if (e.key !== 'm' && e.key !== 'M') go();
       else this.input.keyboard?.once('keydown', go);

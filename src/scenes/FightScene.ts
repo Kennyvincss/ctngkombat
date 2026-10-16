@@ -121,7 +121,8 @@ export class FightScene extends Phaser.Scene implements World {
   create() {
     this.cameras.main.fadeIn(300);
     // only keep this match's pose atlases and rig textures in GPU memory
-    for (const f of game.roster) {
+    // (the intro manages its own: it preloads the next fighters while one is on screen)
+    for (const f of this.setup.showcase ? [] : game.roster) {
       if (f.id === this.setup.p1 || f.id === this.setup.p2) continue;
       for (const key of [`rig-${f.id}`, `sprites-${f.id}`]) if (this.textures.exists(key)) this.textures.remove(key);
     }
@@ -132,7 +133,8 @@ export class FightScene extends Phaser.Scene implements World {
 
     const solo = this.setup.mode !== 'versus';
     const p1Sources: InputSource[] = [new KeyboardSource(this, KEYMAP_P1, solo ? KEYMAP_SOLO_EXTRA : undefined), new GamepadSource(this, 0), this.touch];
-    let p1src: InputSource = new MergedSource(p1Sources);
+    // the intro scripts the featured fighter: no player input
+    let p1src: InputSource = this.setup.showcase ? this.touch : new MergedSource(p1Sources);
     let p2src: InputSource;
     if (this.online) {
       // this device's keyboard / pad / touch drive our fighter; the other comes over the network
@@ -154,8 +156,10 @@ export class FightScene extends Phaser.Scene implements World {
     this.fighters = [f1, f2];
     if (this.cpu) this.cpu.me = f2;
 
-    this.scene.launch('Hud', { fight: this });
-    this.scene.bringToTop('Hud');
+    if (!this.setup.showcase) {
+      this.scene.launch('Hud', { fight: this });
+      this.scene.bringToTop('Hud');
+    }
 
     this.startRound();
     sfx.music(true);
@@ -234,6 +238,14 @@ export class FightScene extends Phaser.Scene implements World {
       a.setState('idle');
       b.setState('idle');
       this.phase = 'fight';
+      if (this.setup.showcase) {
+        a.x = mid - 120;
+        b.x = mid + 50;
+        // the sparring partner is a faded silhouette so the featured fighter stands out
+        b.view.setTint(0x16161e);
+        b.view.setAlpha(0.4);
+        return;
+      }
       this.events.emit('announce', 'TRAINING', 1200);
       return;
     }
@@ -613,9 +625,11 @@ export class FightScene extends Phaser.Scene implements World {
     const vw = cam.width;
     const vh = cam.height;
     const minZoom = Math.max(vw / (PHYS.stageW + 300), vh / (GAME_H + 200));
-    const targetZoom = Math.max(minZoom, Phaser.Math.Clamp(1.06 - (dist - 260) / 1800, 0.94, 1.06));
-    cam.zoom += (targetZoom - cam.zoom) * 0.08;
-    const cx = (a.x + b.x) / 2;
+    const show = this.setup.showcase;
+    const targetZoom = show ? 1.22 : Math.max(minZoom, Phaser.Math.Clamp(1.06 - (dist - 260) / 1800, 0.94, 1.06));
+    cam.zoom += (targetZoom - cam.zoom) * (show ? 0.3 : 0.08);
+    // showcase: the fighter stands right of centre, clear of the name card on the left
+    const cx = show ? a.x - 150 : (a.x + b.x) / 2;
     const topY = Math.min(a.y, b.y);
     const cy = this.groundY - (vh / 2 - 80) / cam.zoom - Math.max(0, this.groundY - 200 - topY) * 0.25;
     const halfW = vw / 2 / cam.zoom;

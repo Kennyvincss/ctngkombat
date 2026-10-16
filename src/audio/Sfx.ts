@@ -326,6 +326,51 @@ export class Sfx {
     }
   }
 
+  private clips = new Map<string, Promise<AudioBuffer | null>>();
+
+  /** fetch and decode a recorded clip (announcer voice) ahead of time; needs unlock() first */
+  loadClip(url: string) {
+    const synth = this.synth;
+    if (!synth || this.clips.has(url)) return;
+    this.clips.set(
+      url,
+      fetch(url)
+        .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+        .then((b) => synth.ctx.decodeAudioData(b))
+        .catch(() => null),
+    );
+  }
+
+  /** play a recorded clip; the music dips underneath it */
+  async clip(url: string, gain = 1.1) {
+    const synth = this.synth;
+    if (!synth || this.muted) return;
+    this.loadClip(url);
+    const buf = await this.clips.get(url);
+    if (!buf) return;
+    const ctx = synth.ctx;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const g = ctx.createGain();
+    g.gain.value = gain;
+    src.connect(g).connect(synth.master);
+    const t = ctx.currentTime;
+    const m = synth.music.gain;
+    m.cancelScheduledValues(t);
+    m.setTargetAtTime(0.1, t, 0.04);
+    m.setTargetAtTime(0.32, t + buf.duration, 0.25);
+    src.start();
+  }
+
+  /** everything the game plays, as a stream (for recording trailers); needs unlock() first */
+  captureStream(): MediaStream | null {
+    const synth = this.synth;
+    if (!synth) return null;
+    const dest = synth.ctx.createMediaStreamDestination();
+    synth.master.connect(dest);
+    return dest.stream;
+  }
+
   music(on: boolean) {
     this.wantMusic = on;
     if (!this.synth) return;
