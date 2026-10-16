@@ -12,7 +12,8 @@ Usage:
   piper-dir:  the unpacked piper_linux_x86_64 release (contains the `piper` binary)
   voice.onnx: en-us-ryan-high.onnx from the piper v0.0.2 release
 
-Writes public/assets/voice/<id>.mp3 for every fighter, plus title.mp3 and enter.mp3.
+Writes public/assets/voice/<id>.mp3 and <id>-wins.mp3 for every fighter, the intro's title.mp3
+and enter.mp3, and the fight announcer (round1-5, final, start, ko, draw, finish, fatality).
 """
 import json
 import subprocess
@@ -76,6 +77,18 @@ SAY = {
 EXTRA = {
     "title": "Trenches... Kombat!",
     "enter": "Enter the trenches.",
+    # fight announcer
+    "round1": "Round one!",
+    "round2": "Round two!",
+    "round3": "Round three!",
+    "round4": "Round four!",
+    "round5": "Round five!",
+    "final": "Final round!",
+    "start": "Start!",
+    "ko": "K. O.!",
+    "draw": "Draw!",
+    "finish": "Finish them!",
+    "fatality": "Fatality!",
 }
 
 # pitch down ~7 semitones, keep it slow and heavy, add a quiet sub-octave layer and a short echo
@@ -113,6 +126,8 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     roster = json.load(open(ROOT / "public" / "fighters.json"))
     lines = {f["id"]: SAY.get(f["id"], f["name"] + "!") for f in roster}
+    # "<name> wins!" for the end of each round
+    lines.update({f"{k}-wins": v.rstrip("!") + " wins!" for k, v in list(lines.items())})
     lines.update(EXTRA)
     for key, text in lines.items():
         if only and key not in only:

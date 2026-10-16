@@ -21,6 +21,11 @@ import { rng } from '../systems/rng';
 
 export type Phase = 'intro' | 'fight' | 'ko' | 'finish' | 'fatality' | 'over' | 'paused';
 
+/** the fight announcer's recorded lines (scripts/make_voices.py) */
+const ANNOUNCER = ['round1', 'round2', 'round3', 'round4', 'round5', 'final', 'start', 'ko', 'draw', 'finish', 'fatality'];
+const voice = (key: string) => `assets/voice/${key}.mp3`;
+const ROUND_WORDS: Record<number, string> = { 1: 'ONE', 2: 'TWO', 3: 'THREE', 4: 'FOUR', 5: 'FIVE' };
+
 const overlap = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
@@ -161,6 +166,10 @@ export class FightScene extends Phaser.Scene implements World {
       this.scene.bringToTop('Hud');
     }
 
+    // the announcer's lines for this match
+    for (const key of ANNOUNCER) sfx.loadClip(voice(key));
+    for (const f of [f1, f2]) sfx.loadClip(voice(`${f.id}-wins`));
+
     this.startRound();
     sfx.music(true);
 
@@ -249,12 +258,13 @@ export class FightScene extends Phaser.Scene implements World {
       this.events.emit('announce', 'TRAINING', 1200);
       return;
     }
-    this.events.emit('announce', this.round === 3 ? 'FINAL ROUND' : `ROUND ${this.round}`, 1100);
-    sfx.play('announce');
-    this.later(78, () => {
+    const final = this.round === 3;
+    this.events.emit('announce', final ? 'FINAL ROUND' : `ROUND ${ROUND_WORDS[this.round] ?? this.round}`, 1100);
+    void sfx.clip(voice(final ? 'final' : `round${this.round}`));
+    this.later(84, () => {
       if (this.phase !== 'intro') return;
-      this.events.emit('announce', 'FIGHT', 700, true);
-      sfx.play('announce');
+      this.events.emit('announce', 'START', 700, true);
+      void sfx.clip(voice('start'));
       this.cameras.main.flash(120, 255, 200, 120);
       for (const f of this.fighters) {
         f.locked = false;
@@ -270,6 +280,7 @@ export class FightScene extends Phaser.Scene implements World {
     if (reason === 'ko') {
       this.events.emit('announce', 'K.O.', 1400, true);
       sfx.play('ko');
+      void sfx.clip(voice('ko'));
       this.cameras.main.flash(200, 255, 255, 255);
       this.slowmo = 70;
     } else {
@@ -279,17 +290,26 @@ export class FightScene extends Phaser.Scene implements World {
     if (winner) winner.wins++;
     const matchOver = !!winner && winner.wins >= ROUNDS_TO_WIN;
     this.later(132, () => {
-      if (matchOver) this.finishThem(winner!);
-      else {
-        if (winner) {
-          winner.setState('win');
-          winner.view.play('win');
-        }
-        this.later(winner ? 72 : 12, () => {
-          this.round++;
-          this.startRound();
-        });
+      // "KARO WINS" / "DRAW"
+      if (winner) {
+        this.events.emit('announce', `${winner.data.name.toUpperCase()} WINS`, 1300);
+        void sfx.clip(voice(`${winner.id}-wins`));
+      } else {
+        this.events.emit('announce', 'DRAW', 1000);
+        void sfx.clip(voice('draw'));
       }
+      if (matchOver) {
+        this.later(96, () => this.finishThem(winner!));
+        return;
+      }
+      if (winner) {
+        winner.setState('win');
+        winner.view.play('win');
+      }
+      this.later(winner ? 110 : 70, () => {
+        this.round++;
+        this.startRound();
+      });
     });
   }
 
@@ -318,6 +338,7 @@ export class FightScene extends Phaser.Scene implements World {
     this.time.delayedCall(FATALITY_WINDOW_S * 1000 + 400, () => stars.destroy());
     this.events.emit('announce', 'FINISH THEM', 1600, true);
     sfx.play('announce');
+    void sfx.clip(voice('finish'));
     this.phase = 'finish';
     this.finishTimer = FATALITY_WINDOW_S * 60;
     this.events.emit('finish', true);
@@ -345,6 +366,7 @@ export class FightScene extends Phaser.Scene implements World {
     this.time.delayedCall(ms, () => {
       this.events.emit('announce', 'FATALITY', 2400, true);
       sfx.play('ko');
+      void sfx.clip(voice('fatality'));
       this.cameras.main.flash(250, 255, 255, 255);
       this.time.delayedCall(2600, () => this.toWin(winner, true));
     });
