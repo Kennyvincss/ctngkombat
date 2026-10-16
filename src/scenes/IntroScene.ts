@@ -9,7 +9,7 @@ import { STAGES } from '../fight/stages';
 import type { FightScene } from './FightScene';
 import { game } from '../state';
 import { bodyText, fitCamera, goldText, screenEdges } from '../ui/ui';
-import type { Button } from '../systems/input';
+import { emptyRaw, type Button } from '../systems/input';
 
 /** the theme song's beat grid (measured: 143.96 BPM, first downbeat 0.296 s into the file) */
 const BAR_MS = (4 * 60000) / 143.957;
@@ -37,7 +37,7 @@ function bestTwo(id: string): (1 | 2 | 3)[] {
  * The entry video: a title card, then every fighter in roster order for ~3.5 s each, performing
  * their two flashiest specials while a deep announcer calls their name, then "ENTER THE
  * TRENCHES". It drives the real fight engine (FightScene in showcase mode) underneath.
- * Skippable at any time (SKIP button, Esc, Enter, Space).
+ * Skippable at any time (SKIP button, Esc, Enter, Space, any gamepad button).
  */
 export class IntroScene extends Phaser.Scene {
   private next = 'Mode';
@@ -80,6 +80,7 @@ export class IntroScene extends Phaser.Scene {
     skip.add([bg, goldText(this, 0, 0, 'SKIP ▶', 30)]);
     bg.on('pointerup', () => this.finish());
     for (const k of ['ESC', 'ENTER', 'SPACE']) this.input.keyboard?.once(`keydown-${k}`, () => this.finish());
+    this.input.gamepad?.once('down', () => this.finish());
     this.counter = bodyText(this, e.left + 30, e.top + 50, '', 22, '#8c8270').setOrigin(0, 0.5).setDepth(50).setName('counter');
 
     // voices: decode them all up front (small files); atlases: a couple of fighters ahead
@@ -247,7 +248,7 @@ export class IntroScene extends Phaser.Scene {
     // the two flashiest specials
     const [first, second] = bestTwo(id);
     const press = (b: Button, frames = 4) => {
-      const r = { left: false, right: false, up: false, down: false, buttons: { lp: false, hp: false, lk: false, hk: false, s1: false, s2: false, s3: false, ex: false, fat: false, block: false, start: false } };
+      const r = emptyRaw();
       r.buttons[b] = true;
       fight.touch.state = r;
       this.at(frames * 17, () => (fight.touch.state = { ...r, buttons: { ...r.buttons, [b]: false } }));

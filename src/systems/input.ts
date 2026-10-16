@@ -5,7 +5,16 @@ import Phaser from 'phaser';
 // (left/right on screen); the Controller converts them to forward/back.
 // ---------------------------------------------------------------------------
 
-export const BUTTONS = ['lp', 'hp', 'lk', 'hk', 's1', 's2', 's3', 'ex', 'fat', 'block', 'start'] as const;
+// The simple buttons players use (keyboard, gamepad and touch alike):
+//   punch, kick       forward or down + the button = the power version
+//   special           the fighter's special: alone = 1st, forward = 2nd, down = 3rd
+//   block             hold to guard (holding back works too)
+//   combo             punch, kick, power punch, then the special if it's ready
+//   finisher          EX special (1 bar); after the deciding round, the fatality
+// The classic buttons (lp..fat) are what the fight engine runs on; the CPU and the intro press
+// them directly, and the Controller turns the simple buttons into them.
+// ok / back only drive menus; start pauses.
+export const BUTTONS = ['lp', 'hp', 'lk', 'hk', 's1', 's2', 's3', 'ex', 'fat', 'block', 'start', 'punch', 'kick', 'special', 'combo', 'finisher', 'ok', 'back'] as const;
 export type Button = (typeof BUTTONS)[number];
 
 export interface RawInput {
@@ -17,13 +26,7 @@ export interface RawInput {
 }
 
 export function emptyRaw(): RawInput {
-  return {
-    left: false,
-    right: false,
-    up: false,
-    down: false,
-    buttons: { lp: false, hp: false, lk: false, hk: false, s1: false, s2: false, s3: false, ex: false, fat: false, block: false, start: false },
-  };
+  return { left: false, right: false, up: false, down: false, buttons: Object.fromEntries(BUTTONS.map((b) => [b, false])) as Record<Button, boolean> };
 }
 
 export interface InputSource {
@@ -35,57 +38,52 @@ export interface InputSource {
 // Keyboard
 // ---------------------------------------------------------------------------
 
-type KeyMap = { left: string[]; right: string[]; up: string[]; down: string[] } & Record<Button, string[]>;
+type KeyMap = { left: string[]; right: string[]; up: string[]; down: string[] } & Partial<Record<Button, string[]>>;
 
+/** Player 1: W A S D to move, and six keys in a block like the touch buttons: U I O / J K L */
 export const KEYMAP_P1: KeyMap = {
   left: ['A'],
   right: ['D'],
   up: ['W'],
   down: ['S'],
-  lp: ['U'],
-  hp: ['I'],
-  lk: ['J'],
-  hk: ['K'],
-  s1: ['O'],
-  s2: ['L'],
-  s3: ['SEMICOLON'],
-  ex: ['P'],
-  fat: [],
-  block: [],
+  punch: ['J'],
+  kick: ['K'],
+  special: ['L'],
+  combo: ['U'],
+  block: ['I'],
+  finisher: ['O'],
   start: ['ENTER'],
+  ok: ['J'],
 };
 
+/** Player 2: arrows, and the same block on the numpad: 4 5 6 / 1 2 3 */
 export const KEYMAP_P2: KeyMap = {
   left: ['LEFT'],
   right: ['RIGHT'],
   up: ['UP'],
   down: ['DOWN'],
-  lp: ['NUMPAD_FOUR'],
-  hp: ['NUMPAD_FIVE'],
-  lk: ['NUMPAD_ONE'],
-  hk: ['NUMPAD_TWO'],
-  s1: ['NUMPAD_SIX'],
-  s2: ['NUMPAD_THREE'],
-  s3: ['NUMPAD_PERIOD'],
-  ex: ['NUMPAD_ZERO'],
-  fat: [],
-  block: [],
+  punch: ['NUMPAD_ONE'],
+  kick: ['NUMPAD_TWO'],
+  special: ['NUMPAD_THREE'],
+  combo: ['NUMPAD_FOUR'],
+  block: ['NUMPAD_FIVE'],
+  finisher: ['NUMPAD_SIX'],
   start: ['NUMPAD_ADD'],
+  ok: ['NUMPAD_ONE'],
 };
 
-/** In 1-player modes P1 can also use the arrow keys and Z/X/C/V, which is friendlier on laptops. */
+/** In 1-player modes P1 can also use the arrow keys with Z X C V (+ Shift to block), friendlier on laptops. */
 export const KEYMAP_SOLO_EXTRA: Partial<KeyMap> = {
   left: ['LEFT'],
   right: ['RIGHT'],
   up: ['UP'],
   down: ['DOWN'],
-  lp: ['Z'],
-  hp: ['X'],
-  lk: ['C'],
-  hk: ['V'],
-  s1: ['Q'],
-  s2: ['E'],
-  s3: ['R'],
+  punch: ['Z'],
+  kick: ['X'],
+  special: ['C'],
+  finisher: ['V'],
+  block: ['SHIFT'],
+  ok: ['Z'],
 };
 
 export class KeyboardSource implements InputSource {
@@ -95,7 +93,7 @@ export class KeyboardSource implements InputSource {
     const kb = scene.input.keyboard!;
     const KC = Phaser.Input.Keyboard.KeyCodes as unknown as Record<string, number>;
     for (const name of Object.keys(map) as (keyof KeyMap)[]) {
-      const names = [...map[name], ...((extra && extra[name]) || [])];
+      const names = [...(map[name] ?? []), ...((extra && extra[name]) || [])];
       this.keys[name] = names.filter((n) => KC[n] !== undefined).map((n) => kb.addKey(KC[n], true, false));
     }
   }
@@ -124,7 +122,11 @@ export class KeyboardSource implements InputSource {
 }
 
 // ---------------------------------------------------------------------------
-// Gamepad (standard mapping). Pad index 0 → P1, 1 → P2.
+// Gamepad (standard mapping: Xbox, PlayStation and most Bluetooth/USB pads). Pad index 0 → P1,
+// 1 → P2.   Xbox / PlayStation:
+//   X / □  PUNCH        A / ✕  KICK        Y / △  SPECIAL     B / ○  BLOCK (hold)
+//   RB / R1 COMBO       RT / R2 FINISHER   LB / L1, LT / L2 also BLOCK
+//   D-pad or left stick move · Start (or Select) pauses · menus: A / ✕ ok, B / ○ back
 // ---------------------------------------------------------------------------
 
 export class GamepadSource implements InputSource {
@@ -142,16 +144,15 @@ export class GamepadSource implements InputSource {
     r.up = pad.up || ay < -0.55;
     r.down = pad.down || ay > 0.55;
     const b = (i: number) => (pad.buttons[i] ? pad.buttons[i].pressed : false);
-    // X=LP Y=HP A=LK B=HK, LB/RB/LT = specials, RT = EX, Start
-    r.buttons.lp = b(2);
-    r.buttons.hp = b(3);
-    r.buttons.lk = b(0);
-    r.buttons.hk = b(1);
-    r.buttons.s1 = b(4);
-    r.buttons.s2 = b(5);
-    r.buttons.s3 = b(6);
-    r.buttons.ex = b(7);
-    r.buttons.start = b(9);
+    r.buttons.punch = b(2);
+    r.buttons.kick = b(0);
+    r.buttons.special = b(3);
+    r.buttons.block = b(1) || b(4) || b(6);
+    r.buttons.combo = b(5);
+    r.buttons.finisher = b(7);
+    r.buttons.start = b(9) || b(8);
+    r.buttons.ok = b(0);
+    r.buttons.back = b(1);
     return r;
   }
 }
@@ -189,7 +190,8 @@ export class ScriptedSource implements InputSource {
 
 // ---------------------------------------------------------------------------
 // Controller: turns raw input into per-frame intent relative to facing, with
-// edge detection, motion inputs (↓↘→, →↓↘, ↓↙←, ↓↓→), dash double-taps and
+// edge detection, the simple buttons, a short input buffer, motion inputs (↓↘→, →↓↘, ↓↙←,
+// ↓↓→), dash double-taps and
 // the status effects that mess with input (reversed controls, input lag).
 // ---------------------------------------------------------------------------
 
@@ -213,6 +215,10 @@ export interface Intent {
 }
 
 const HISTORY = 24;
+/** a press is remembered this many frames, so one made just before the fighter can act still happens */
+const BUFFER = 10;
+const BUFFERED = ['lp', 'hp', 'lk', 'hk'] as const;
+type Buffered = (typeof BUFFERED)[number];
 
 export class Controller {
   private prev = emptyRaw();
@@ -225,6 +231,14 @@ export class Controller {
   lagFrames = 0;
   /** last intent, for Debug Mode to display */
   last: Intent | null = null;
+  /** set by the fighter: can a special be used now? (COMBO only ends in a special when it can) */
+  specialReady: () => boolean = () => true;
+  /** set by the fighter: is it free to start an attack? (COMBO waits for that) */
+  canAct: () => boolean = () => true;
+  private comboAsked = -100;
+  private buffered: Partial<Record<Buffered, number>> = {};
+  private bufSpecial: { n: 1 | 2 | 3; button: Button; ex: boolean; frame: number } | null = null;
+  private comboQueue: { at: number; b: Button }[] = [];
 
   constructor(public source: InputSource) {}
 
@@ -271,7 +285,7 @@ export class Controller {
     }
     this.lastHorz = horz;
 
-    // specials
+    // specials from the classic buttons: motion inputs and the direct special buttons
     let special: 0 | 1 | 2 | 3 = 0;
     let exWanted = false;
     let specialButton: Button | null = null;
@@ -298,8 +312,64 @@ export class Controller {
         }
       }
     }
+    let fatality = pressed.fat || (pressed.hp && this.motion([2, 5, 2, 6], 30, true));
 
-    const fatality = pressed.fat || (pressed.hp && this.motion([2, 5, 2, 6], 30, true));
+    // the simple buttons. The direction picks the version: forward or down = power, and for
+    // the special: alone = 1st, forward = 2nd, down = 3rd
+    const power = fwd || down;
+    const pick: 1 | 2 | 3 = down ? 3 : fwd ? 2 : 1;
+    // COMBO pressed while still busy (finishing a move, landing) starts as soon as it can
+    if (pressed.combo && !this.comboQueue.length) this.comboAsked = this.frame;
+    if (this.frame - this.comboAsked <= 30 && !this.comboQueue.length && this.canAct()) {
+      this.comboAsked = -100;
+      const n = this.frame;
+      // spaced so each press lands in the buffer just before the previous attack ends, even
+      // when nothing connects; on a hit they chain sooner
+      this.comboQueue = [
+        { at: n, b: 'lp' },
+        { at: n + 10, b: 'lk' },
+        { at: n + 24, b: 'hp' },
+        { at: n + 52, b: 's1' },
+      ];
+    }
+    for (const q of this.comboQueue) {
+      if (q.at !== this.frame) continue;
+      if (q.b === 's1') {
+        if (this.specialReady() && !special) {
+          special = 1;
+          specialButton = 'combo';
+        }
+      } else pressed[q.b] = true;
+    }
+    this.comboQueue = this.comboQueue.filter((q) => q.at > this.frame);
+    if (pressed.punch) pressed[power ? 'hp' : 'lp'] = true;
+    if (pressed.kick) pressed[power ? 'hk' : 'lk'] = true;
+    if (pressed.special && !special) {
+      special = pick;
+      specialButton = 'special';
+      exWanted = raw.buttons.ex;
+    }
+    if (pressed.finisher) {
+      // EX special, or the fatality during FINISH THEM
+      fatality = true;
+      special = pick;
+      specialButton = 'finisher';
+      exWanted = true;
+    }
+
+    // input buffer: attacks and specials pressed a moment too early still come out
+    for (const b of BUFFERED) {
+      if (pressed[b]) this.buffered[b] = this.frame;
+      const t = this.buffered[b];
+      if (t !== undefined && this.frame - t <= BUFFER) pressed[b] = true;
+      else delete this.buffered[b];
+    }
+    if (special && specialButton) this.bufSpecial = { n: special, button: specialButton, ex: exWanted, frame: this.frame };
+    else if (this.bufSpecial && this.frame - this.bufSpecial.frame <= BUFFER) {
+      special = this.bufSpecial.n;
+      specialButton = this.bufSpecial.button;
+      exWanted = this.bufSpecial.ex;
+    } else this.bufSpecial = null;
 
     this.prev = cloneRaw(raw);
     const intent: Intent = {
@@ -336,9 +406,16 @@ export class Controller {
     return i < 0;
   }
 
-  /** Clear motion history (after a special fires, so it doesn't re-trigger). */
+  /** Clear motion history and buffered presses (after a special fires, so it doesn't re-trigger). */
   flush() {
     this.dirHistory = [];
+    this.consume();
+  }
+
+  /** forget buffered presses: the fighter acted on them */
+  consume() {
+    this.buffered = {};
+    this.bufSpecial = null;
   }
 }
 

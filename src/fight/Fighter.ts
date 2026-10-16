@@ -95,6 +95,8 @@ export class Fighter {
   ) {
     this.maxHealth = tuning.health;
     this.health = tuning.health;
+    ctrl.specialReady = () => this.specialCD === 0 && this.status.nospecials <= 0;
+    ctrl.canAct = () => !this.locked && (this.state === 'idle' || this.state === 'walk' || this.state === 'crouch' || (this.state === 'land' && this.sf >= 4));
     this.intent = ctrl.read(1);
   }
 
@@ -407,6 +409,7 @@ export class Fighter {
 
   startNormal(key: NormalKey, chain = 0) {
     const spec = NORMALS[key];
+    this.ctrl.consume();
     this.atk = { key, spec, f: 0, hitId: this.world.nextHitId(), connected: null, chain };
     if (this.airborne) {
       this.airAttackUsed = true;
@@ -489,6 +492,8 @@ export class Fighter {
   tryStartSpecial(n: 1 | 2 | 3, intent: Intent): boolean {
     // specials are a spice, not the meal: one every SPECIAL_COOLDOWN frames
     if (this.specialCD > 0) {
+      // say why nothing happened, instead of the button feeling dead
+      this.world.callout(this, `SPECIAL IN ${Math.ceil(this.specialCD / 60)}s`, 0xbfb59a);
       this.ctrl.flush();
       return false;
     }

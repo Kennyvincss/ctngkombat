@@ -24,15 +24,24 @@ npm run preview    # serve dist/ locally
 
 ## Controls
 
-| Action | Player 1 | Player 2 |
-|---|---|---|
-| Move / jump / crouch | `W A S D` (solo: arrows too) | Arrow keys |
-| Light / heavy punch | `U` / `I` (solo: `Z` / `X`) | Numpad `4` / `5` |
-| Light / heavy kick | `J` / `K` (solo: `C` / `V`) | Numpad `1` / `2` |
-| Special 1 / 2 / 3 | `O` / `L` / `;` (solo: `Q` / `E` / `R`) | Numpad `6` / `3` / `.` |
-| EX (spend 1 bar) | `P`, or use a heavy button | Numpad `0` |
-| Pause | `Esc` | |
-| Mute | `M` | |
+Six simple buttons, the same on keyboard, gamepad and touch:
+
+| Action | Keyboard P1 | Keyboard P2 | Gamepad (Xbox / PlayStation) |
+|---|---|---|---|
+| Move / jump / crouch | `W A S D` (solo: arrows too) | Arrow keys | D-pad or left stick |
+| PUNCH | `J` (solo: `Z`) | Numpad `1` | X / □ |
+| KICK | `K` (solo: `X`) | Numpad `2` | A / ✕ |
+| SPECIAL | `L` (solo: `C`) | Numpad `3` | Y / △ |
+| BLOCK (hold) | `I` (solo: `Shift`), or hold back | Numpad `5`, or hold back | B / ○, LB / L1, LT / L2 |
+| COMBO | `U` | Numpad `4` | RB / R1 |
+| FINISHER | `O` (solo: `V`) | Numpad `6` | RT / R2 |
+| Pause | `Esc` | | Start (or Select) |
+
+- **Power moves**: hold forward or down with PUNCH or KICK (forward: power punch / high kick, down: uppercut / sweep).
+- **Specials**: SPECIAL alone = 1st, forward + SPECIAL = 2nd, down + SPECIAL = 3rd. They recharge for 7 seconds (pressing early shows how long is left).
+- **COMBO** plays punch, kick, power punch, then the special if it's ready. **FINISHER** is the EX special (1 bar of meter), and the **fatality** when FINISH THEM appears.
+- **Input buffer**: a press made just before your fighter can act (end of a move, landing, getting up) still comes out.
+- **Gamepads** work everywhere: menus (A / ✕ ok, B / ○ back), the intro (any button skips), fights and the pause menu. On a phone or tablet the touch buttons hide while a controller is in use and come back on the next touch.
 
 **Touch** (phones and tablets, landscape): a movement control on the left and six labelled buttons on the right.
 
@@ -50,12 +59,10 @@ npm run preview    # serve dist/ locally
 
 - **Picking a fighter** asks to confirm ("PLAY AS …?" / "FIGHT AGAINST …?"): CONFIRM or CANCEL by tap, or Enter / Esc.
 - **Specials recharge for 7 seconds** after each use (for the CPU too), so fights are won with punches, kicks and blocks. The HUD shows `SPECIAL READY` or the seconds left. Training mode has no cooldown.
-- **Motion inputs** work for everyone: Special 1 = ↓↘→ + punch, Special 2 = →↓↘ + punch, Special 3 = ↓↙← + kick. Using the heavy button gives the EX version if you have a bar.
 - **Charge moves** (Moon or Rug, Road to Millions, Full Gas, Seven Figure Arc) charge while you hold the button.
-- **Fatality**: when "FINISH THEM" appears you have 5 seconds: ↓ ↓ → + heavy punch (FINISHER on touch).
-- **Basics**: hold back to block, down-back for lows. Double-tap to dash. Light → light → heavy chains, and normals cancel into specials on hit. Crouching heavy punch launches, crouching heavy kick sweeps, jumping heavies are overheads.
+- **Fatality**: when "FINISH THEM" appears you have 5 seconds: press FINISHER.
+- **Basics**: double-tap to dash. Punch → kick → power punch chains, and attacks cancel into specials on hit. The uppercut launches, the sweep knocks down, jumping power attacks are overheads.
 - **Full screen**: the game fills any screen shape. On Android, iPad and desktop the first tap goes full screen (also in the pause menu). Safari on iPhone doesn't allow web pages to go full screen: use Share → Add to Home Screen and open Trenches Kombat from the home screen.
-- Gamepads use the standard mapping: X/Y punches, A/B kicks, LB/RB/LT specials, RT EX, Start pauses.
 
 ## Intro
 

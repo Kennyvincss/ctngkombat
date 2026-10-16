@@ -5,6 +5,7 @@ import { tuningFor } from '../data/tuning';
 import { STAGES } from '../fight/stages';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
+import { controlDevice, specialCommand } from '../ui/controlHelp';
 import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton, fitCamera, showDisconnected } from '../ui/ui';
 import { net } from '../net/Net';
 
@@ -13,7 +14,6 @@ const TILE = 66;
 const GAP = 5;
 const GRID_X = GAME_W / 2 - (COLS * TILE + (COLS - 1) * GAP) / 2 + TILE / 2;
 const GRID_Y = 132;
-const MOTIONS = ['↓↘→ + P', '→↓↘ + P', '↓↙← + K'];
 const P_COLORS = [0xff3b3b, 0x3b9dff];
 
 interface Cursor {
@@ -385,7 +385,8 @@ export class SelectScene extends Phaser.Scene {
     side.name.setText(f.name.toUpperCase());
     const handle = f.handle ?? '';
     side.sub.setText(`${handle}${handle ? '  ·  ' : ''}${f.archetype}`);
-    side.specials.setText(f.specials.map((s, i) => `${s.name.toUpperCase()}  [${MOTIONS[i]}]\n   ${s.description}`).join('\n'));
+    const dev = controlDevice(this);
+    side.specials.setText(f.specials.map((s, i) => `${s.name.toUpperCase()}  [${specialCommand(dev, i)}]\n   ${s.description}`).join('\n'));
     this.tweens.add({ targets: side.card, scaleX: { from: side.card.scaleX * 0.9, to: side.card.scaleX }, duration: 120 });
   }
 

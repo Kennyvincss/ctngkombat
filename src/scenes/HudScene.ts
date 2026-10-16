@@ -4,17 +4,16 @@ import { sfx } from '../audio/Sfx';
 import type { Fighter } from '../fight/Fighter';
 import { METER_BAR, METER_MAX, SPECIAL_COOLDOWN } from '../fight/Fighter';
 import { game, settings, stickDeadzone } from '../state';
+import { btn, controlDevice, specialCommand } from '../ui/controlHelp';
 import { BUTTON_IDS, BUTTON_R, drawButton, drawMove, dpadDirection, resolveSpots, type ButtonId, type ButtonParts, type MoveParts, type Spot } from '../ui/touchControls';
 import { emptyRaw, type Button } from '../systems/input';
-import { bodyText, fitCamera, goFullscreen, goldText, screenEdges, showDisconnected } from '../ui/ui';
+import { MenuInput, bodyText, fitCamera, goFullscreen, goldText, screenEdges, showDisconnected } from '../ui/ui';
 import { net } from '../net/Net';
 import type { FightScene } from './FightScene';
 
 const BAR_W = 480;
 const BAR_H = 26;
 const BAR_Y = 42;
-const MOTIONS = ['↓↘→ + P', '→↓↘ + P', '↓↙← + K'];
-const SHORTCUTS = [['O', 'L', ';'], ['Num 6', 'Num 3', 'Num .']];
 
 type TouchKey = ButtonId;
 
@@ -41,6 +40,9 @@ export class HudScene extends Phaser.Scene {
   private fatalityBtn: Phaser.GameObjects.Container | null = null;
   private finishCountdown: Phaser.GameObjects.Text | null = null;
   private pauseKeys: Phaser.Input.Keyboard.Key[] = [];
+  /** the pause menu's items, for keyboard / gamepad navigation */
+  private pauseMenu: { items: Phaser.GameObjects.Text[]; fns: (() => void)[]; index: number } | null = null;
+  private menuIn!: MenuInput;
   private touchHeld: Partial<Record<TouchKey, boolean>> = {};
   private touchTapped: Partial<Record<TouchKey, boolean>> = {};
   private stick = { id: -1, bx: 0, by: 0, dx: 0, dy: 0 };
@@ -50,7 +52,6 @@ export class HudScene extends Phaser.Scene {
   private touchBtns: Partial<Record<TouchKey, ButtonParts & { s: number }>> = {};
   private specialHint: Phaser.GameObjects.Text | null = null;
   /** scripted presses: fight frame they start on, button */
-  private queue: { at: number; b: Button }[] = [];
   /** a press made by a touch button this frame, held for a few fight frames so it's seen */
   private taps: { until: number; b: Button }[] = [];
   private padPrevStart = false;
@@ -73,7 +74,6 @@ export class HudScene extends Phaser.Scene {
     this.move = null;
     this.touchBtns = {};
     this.specialHint = null;
-    this.queue = [];
     this.taps = [];
     this.waitText = null;
     this.stick = { id: -1, bx: 0, by: 0, dx: 0, dy: 0 };
@@ -122,6 +122,7 @@ export class HudScene extends Phaser.Scene {
     // pause
     const KC = Phaser.Input.Keyboard.KeyCodes;
     this.pauseKeys = [this.input.keyboard!.addKey(KC.ESC), this.input.keyboard!.addKey(KC.BACKSPACE)];
+    this.menuIn = new MenuInput(this, 0);
     if (game.isTouch) {
       // under the timer, away from the controls
       const pb = this.add.rectangle(GAME_W / 2, BAR_Y + 82, 92, 38, 0x000000, 0.55).setStrokeStyle(2, GOLD_HEX, 0.8).setInteractive();
@@ -229,6 +230,8 @@ export class HudScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off('resize', this.layoutTouch, this));
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      // back to touch after a gamepad hid the buttons
+      this.touchLayer?.setVisible(true);
       const mv = this.move;
       if (!mv || this.stick.id >= 0) return;
       const sp = this.moveSpot;
@@ -339,40 +342,21 @@ export class HudScene extends Phaser.Scene {
     r.right = d.x > 0;
     r.up = d.y < 0;
     r.down = d.y > 0;
-    const fwd = d.x * me.facing > 0;
-    const heavy = fwd || r.down;
     // light up the arrow pads being pressed
     this.move?.pads?.forEach((pad, i) => pad.setFillStyle(0xffffff, [d.x < 0, d.x > 0, d.y < 0, d.y > 0][i] ? 0.5 : 0.14));
 
+    // the buttons send the simple inputs; the fighter's Controller does the rest (power
+    // versions, which special, COMBO, FINISHER), same as on keyboard and gamepad.
+    // A tap stays down for 3 frames so even a very quick one is seen.
     const pressed = (k: TouchKey) => !!this.touchTapped[k];
     const blockTap = pressed('block');
     const tap = (b: Button) => this.taps.push({ until: f.frame + 3, b });
-    if (pressed('punch')) tap(heavy ? 'hp' : 'lp');
-    if (pressed('kick')) tap(heavy ? 'hk' : 'lk');
-    if (pressed('special')) tap(`s${this.stickSpecial()}` as Button);
-    if (pressed('finisher')) {
-      const winner = f.fighters.find((x) => x.wins >= ROUNDS_TO_WIN);
-      // the fatality goes through the input like ↓↓→+HP, so online players stay in sync
-      if (f.phase === 'finish' && winner === me) tap('fat');
-      else {
-        tap(`s${this.stickSpecial()}` as Button);
-        tap('ex');
-      }
-    }
-    if (pressed('combo') && !this.queue.length) {
-      const n = f.frame;
-      this.queue = [
-        { at: n, b: 'lp' },
-        { at: n + 8, b: 'lk' },
-        { at: n + 16, b: 'hp' },
-        { at: n + 28, b: 's1' },
-      ];
-    }
+    if (pressed('punch')) tap('punch');
+    if (pressed('kick')) tap('kick');
+    if (pressed('special')) tap('special');
+    if (pressed('finisher')) tap('finisher');
+    if (pressed('combo')) tap('combo');
     this.touchTapped = {};
-
-    // scripted combo presses (the special only if it's ready, so the combo never wastes it)
-    for (const q of this.queue) if (f.frame >= q.at && (q.b !== 's1' || me.specialCD === 0)) tap(q.b);
-    this.queue = this.queue.filter((q) => f.frame < q.at);
     this.taps = this.taps.filter((p) => f.frame < p.until);
     for (const p of this.taps) r.buttons[p.b] = true;
     r.buttons.block = !!this.touchHeld.block || blockTap;
@@ -440,11 +424,20 @@ export class HudScene extends Phaser.Scene {
   }
 
   // ---------------------------------------------------------------- pause + move list
+  /** highlight a pause menu item (keyboard / gamepad / hover) */
+  private selectPause(i: number) {
+    const m = this.pauseMenu;
+    if (!m) return;
+    m.index = (i + m.items.length) % m.items.length;
+    m.items.forEach((t, k) => t.setScale(k === m.index ? 1.1 : 1).setAlpha(k === m.index ? 1 : 0.6));
+  }
+
   private togglePause() {
     const f = this.fight;
     if (this.pauseLayer) {
       this.pauseLayer.destroy();
       this.pauseLayer = null;
+      this.pauseMenu = null;
       f.pause(false);
       return;
     }
@@ -487,17 +480,21 @@ export class HudScene extends Phaser.Scene {
       ['CHARACTER SELECT', () => this.leave('Select')],
       ['QUIT TO TITLE', () => this.leave('Title')],
         ];
+    const menu: { items: Phaser.GameObjects.Text[]; fns: (() => void)[]; index: number } = { items: [], fns: [], index: 0 };
     items.forEach(([label, fn], i) => {
       const t = goldText(this, GAME_W / 2, 236 + i * 60, label, 38).setInteractive({ useHandCursor: true });
       t.on('pointerup', () => {
         sfx.play('confirm');
         fn();
       });
-      t.on('pointerover', () => t.setScale(1.08));
-      t.on('pointerout', () => t.setScale(1));
+      t.on('pointerover', () => this.selectPause(i));
       c.add(t);
+      menu.items.push(t);
+      menu.fns.push(fn);
     });
     this.pauseLayer = c;
+    this.pauseMenu = menu;
+    this.selectPause(0);
   }
 
   /** the controls editor, over the paused fight */
@@ -531,18 +528,18 @@ export class HudScene extends Phaser.Scene {
     const x = 20;
     const y = game.isTouch ? 170 : 130;
     const lines: string[] = [];
+    const dev = controlDevice(this);
     ft.data.specials.forEach((s, i) => {
-      lines.push(`${s.name.toUpperCase()}`);
-      lines.push(game.isTouch ? `   SPECIAL ${['(stick centred)', '+ forward', '+ down'][i]}` : `   ${MOTIONS[i]}   or  [${SHORTCUTS[0][i]}]`);
+      lines.push(`${specialCommand(dev, i)}  —  ${s.name.toUpperCase()}`);
       lines.push(`   ${s.description}`);
     });
     lines.push('');
-    lines.push('Specials recharge for 7 seconds after each use');
-    lines.push(game.isTouch ? 'FINISHER: EX special (1 bar) · COMBO: punch, kick, power punch, special' : 'EX: special with a heavy button or [P] (1 bar)');
-    lines.push('Chains: light → light → heavy · cancel into specials on hit');
-    lines.push('Crouch HP = launcher · crouch HK = sweep · jump heavy = overhead');
-    lines.push('Dash: double-tap · Block: hold back (down-back for lows)');
-    lines.push(`FATALITY: ↓ ↓ → + HP  —  ${ft.data.fatality}`);
+    lines.push(`${btn(dev, 'punch')} · ${btn(dev, 'kick')}: hold forward or down for the power version`);
+    lines.push(`${btn(dev, 'block')}, or hold back: guard (with down: low guard)`);
+    lines.push(`${btn(dev, 'combo')}: punch, kick, power punch, then the special`);
+    lines.push(`${btn(dev, 'finisher')}: EX special (1 bar of meter)`);
+    lines.push(`FATALITY: ${btn(dev, 'finisher')} at FINISH THEM  —  ${ft.data.fatality}`);
+    lines.push('Specials recharge for 7 seconds after each use · double-tap to dash');
     const text = this.add.text(x + 14, y + 44, lines.join('\n'), { fontFamily: FONT_BODY, fontSize: '17px', color: '#e8e2d0', lineSpacing: 2, wordWrap: { width: w - 28 } });
     const bg = this.add.rectangle(x, y, w, text.height + 60, 0x000000, 0.72).setOrigin(0, 0).setStrokeStyle(2, ft.accent);
     const title = goldText(this, x + 14, y + 22, `${ft.data.name.toUpperCase()} · MOVE LIST`, 26).setOrigin(0, 0.5);
@@ -558,11 +555,32 @@ export class HudScene extends Phaser.Scene {
     const f = this.fight;
     if (!f.fighters) return;
     // pause keys / gamepad start
-    if (this.pauseKeys.some((k) => Phaser.Input.Keyboard.JustDown(k))) this.togglePause();
+    let toggled = false;
+    if (this.pauseKeys.some((k) => Phaser.Input.Keyboard.JustDown(k))) {
+      this.togglePause();
+      toggled = true;
+    }
     const pad = this.input.gamepad?.getPad(0);
-    const start = !!pad?.buttons[9]?.pressed;
-    if (start && !this.padPrevStart) this.togglePause();
+    const start = !!pad?.buttons[9]?.pressed || !!pad?.buttons[8]?.pressed;
+    if (start && !this.padPrevStart) {
+      this.togglePause();
+      toggled = true;
+    }
     this.padPrevStart = start;
+    // the pause menu: up / down to choose, A (or Enter, J) to pick, B to resume
+    const mp = this.menuIn.poll();
+    const m = this.pauseMenu;
+    if (m && !toggled) {
+      if (mp.up) this.selectPause(m.index - 1);
+      if (mp.down) this.selectPause(m.index + 1);
+      if (mp.up || mp.down) sfx.play('select');
+      if (mp.ok) {
+        sfx.play('confirm');
+        m.fns[m.index]();
+      } else if (mp.back) this.togglePause();
+    }
+    // a gamepad on a phone or tablet: hide the touch buttons while it's in use
+    if (this.touchLayer && pad?.connected && (pad.buttons.some((b) => b.pressed) || pad.axes.some((a) => Math.abs(a.getValue()) > 0.5))) this.touchLayer.setVisible(false);
 
     if (game.isTouch) this.writeTouch();
     if (this.waitText) {

@@ -3,6 +3,7 @@ import { GAME_W } from '../config';
 import type { Difficulty, GameMode } from '../data/types';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
+import { controlDevice, controlsLine } from '../ui/controlHelp';
 import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
 
 export class ModeScene extends Phaser.Scene {
@@ -40,10 +41,15 @@ export class ModeScene extends Phaser.Scene {
     }, 72, 54);
 
     this.hint = bodyText(this, GAME_W / 2, 494, '', 26, '#d8cdb0').setOrigin(0.5);
-    const controls = game.isTouch
-      ? 'TOUCH: left thumb = move   ·   buttons = attacks and specials'
-      : 'P1: WASD move · U/I punch · J/K kick · O/L/; specials · P = EX        P2: arrows · numpad 4/5 punch · 1/2 kick · 6/3/. specials';
-    bodyText(this, GAME_W / 2, 640, controls, 22, '#a89f88').setOrigin(0.5).setWordWrapWidth(1180).setAlign('center');
+    const controlsText = bodyText(this, GAME_W / 2, 640, '', 22, '#a89f88').setOrigin(0.5).setWordWrapWidth(1180).setAlign('center');
+    // follows the device: plugging in a gamepad switches the help to its buttons
+    const showControls = () => {
+      const dev = controlDevice(this);
+      controlsText.setText(dev === 'keys' ? `P1  ${controlsLine(dev)}\nP2  arrows · numpad 1 PUNCH · 2 KICK · 3 SPECIAL · 5 BLOCK · 4 COMBO · 6 FINISHER` : controlsLine(dev));
+    };
+    showControls();
+    this.input.gamepad?.on('connected', showControls);
+    this.input.gamepad?.on('disconnected', showControls);
     if (game.isTouch) {
       const bg = this.add.rectangle(GAME_W / 2, 562, 360, 52, 0x000000, 0.6).setStrokeStyle(2, 0xf5c542).setInteractive({ useHandCursor: true });
       goldText(this, GAME_W / 2, 562, '⚙  CUSTOMIZE CONTROLS', 30);

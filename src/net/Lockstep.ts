@@ -9,7 +9,8 @@ export const INPUT_DELAY = 3;
 const SUM_EVERY = 120;
 
 const DIRS = ['left', 'right', 'up', 'down'] as const;
-const KEYS = BUTTONS.filter((b) => b !== 'start');
+/** what the fight reads (start / ok / back only drive menus) */
+const KEYS = BUTTONS.filter((b) => b !== 'start' && b !== 'ok' && b !== 'back');
 
 export function packInput(r: RawInput): number {
   let k = 0;

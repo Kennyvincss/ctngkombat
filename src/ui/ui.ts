@@ -227,8 +227,8 @@ export class MenuInput {
       this.holdT[name] = (this.holdT[name] ?? 0) + 1;
       return this.holdT[name] > 22 && this.holdT[name] % 6 === 0;
     };
-    const okNow = r.buttons.lp || r.buttons.start || this.extraOk.some((k) => k.isDown);
-    const backNow = r.buttons.hp || this.extraBack.some((k) => k.isDown);
+    const okNow = r.buttons.ok || r.buttons.start || this.extraOk.some((k) => k.isDown);
+    const backNow = r.buttons.back || this.extraBack.some((k) => k.isDown);
     const out: MenuPress = {
       up: rep('up', r.up, p.up),
       down: rep('down', r.down, p.down),
