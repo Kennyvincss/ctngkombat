@@ -3,9 +3,10 @@ import { FONT_BODY, FONT_DISPLAY, GAME_H, GAME_W, GOLD_HEX, ROUNDS_TO_WIN } from
 import { sfx } from '../audio/Sfx';
 import type { Fighter } from '../fight/Fighter';
 import { METER_BAR, METER_MAX, SPECIAL_COOLDOWN } from '../fight/Fighter';
-import { game, stickDeadzone } from '../state';
+import { game, settings, stickDeadzone } from '../state';
+import { BUTTON_IDS, BUTTON_R, drawButton, drawMove, dpadDirection, resolveSpots, type ButtonId, type ButtonParts, type MoveParts, type Spot } from '../ui/touchControls';
 import { emptyRaw, type Button } from '../systems/input';
-import { bodyText, fitCamera, goFullscreen, goldText, screenEdges, stickSensitivityControl } from '../ui/ui';
+import { bodyText, fitCamera, goFullscreen, goldText, screenEdges } from '../ui/ui';
 import type { FightScene } from './FightScene';
 
 const BAR_W = 480;
@@ -14,14 +15,7 @@ const BAR_Y = 42;
 const MOTIONS = ['↓↘→ + P', '→↓↘ + P', '↓↙← + K'];
 const SHORTCUTS = [['O', 'L', ';'], ['Num 6', 'Num 3', 'Num .']];
 
-type TouchKey = 'punch' | 'kick' | 'block' | 'special' | 'combo' | 'finisher';
-interface TouchButton {
-  c: Phaser.GameObjects.Container;
-  circle: Phaser.GameObjects.Arc;
-  ring: Phaser.GameObjects.Graphics;
-  sub: Phaser.GameObjects.Text;
-  color: number;
-}
+type TouchKey = ButtonId;
 
 interface SideHud {
   hp: Phaser.GameObjects.Rectangle;
@@ -50,9 +44,9 @@ export class HudScene extends Phaser.Scene {
   private touchTapped: Partial<Record<TouchKey, boolean>> = {};
   private stick = { id: -1, bx: 0, by: 0, dx: 0, dy: 0 };
   private touchLayer: Phaser.GameObjects.Container | null = null;
-  private stickBase: Phaser.GameObjects.Arc | null = null;
-  private stickKnob: Phaser.GameObjects.Arc | null = null;
-  private touchBtns: Partial<Record<TouchKey, TouchButton>> = {};
+  private move: MoveParts | null = null;
+  private moveSpot: Spot = { x: 0, y: 0, s: 1 };
+  private touchBtns: Partial<Record<TouchKey, ButtonParts & { s: number }>> = {};
   private specialHint: Phaser.GameObjects.Text | null = null;
   /** scripted presses: fight frame they start on, button */
   private queue: { at: number; b: Button }[] = [];
@@ -74,7 +68,7 @@ export class HudScene extends Phaser.Scene {
     this.touchHeld = {};
     this.touchTapped = {};
     this.touchLayer = null;
-    this.stickBase = this.stickKnob = null;
+    this.move = null;
     this.touchBtns = {};
     this.specialHint = null;
     this.queue = [];
@@ -210,7 +204,8 @@ export class HudScene extends Phaser.Scene {
 
   // ---------------------------------------------------------------- touch controls
   //
-  // Joystick on the left (move, jump, crouch) and six labelled buttons on the right:
+  // Movement (analog stick or arrow pad) and six labelled buttons, placed and sized as the
+  // player set them in CUSTOMIZE CONTROLS (src/ui/touchControls.ts has the defaults):
   //   PUNCH / KICK      forward or down + button = the heavy version (power punch, uppercut, high kick, sweep)
   //   BLOCK             hold to guard (with down: low guard)
   //   SPECIAL           the fighter's special: neutral = 1st, forward = 2nd, down = 3rd (7 s cooldown)
@@ -224,95 +219,104 @@ export class HudScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off('resize', this.layoutTouch, this));
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
-      const e = screenEdges(this);
-      if (p.worldX < e.left + (e.right - e.left) * 0.42 && p.worldY > 140 && this.stick.id < 0) {
+      const mv = this.move;
+      if (!mv || this.stick.id >= 0) return;
+      const sp = this.moveSpot;
+      // a generous zone around the movement control; the analog stick re-centres under the thumb
+      const zone = mv.r * sp.s * (settings.move === 'analog' ? 1.9 : 1.35);
+      if (Math.hypot(p.worldX - sp.x, p.worldY - sp.y) > zone) return;
+      if (settings.move === 'analog') {
         this.stick = { id: p.id, bx: p.worldX, by: p.worldY, dx: 0, dy: 0 };
-        this.stickBase!.setPosition(p.worldX, p.worldY);
-        this.stickKnob!.setPosition(p.worldX, p.worldY);
+        mv.c.setPosition(p.worldX, p.worldY);
+      } else {
+        this.stick = { id: p.id, bx: sp.x, by: sp.y, dx: 0, dy: 0 };
+        this.trackThumb(p);
       }
     });
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
-      if (p.id !== this.stick.id) return;
-      const dx = p.worldX - this.stick.bx;
-      const dy = p.worldY - this.stick.by;
-      const len = Math.hypot(dx, dy);
-      const max = 70;
-      const k = len > max ? max / len : 1;
-      this.stick.dx = dx * k;
-      this.stick.dy = dy * k;
-      this.stickKnob!.setPosition(this.stick.bx + this.stick.dx, this.stick.by + this.stick.dy);
+      if (p.id === this.stick.id) this.trackThumb(p);
     });
     const release = (p: Phaser.Input.Pointer) => {
       if (p.id !== this.stick.id) return;
-      this.stick.id = -1;
-      this.stick.dx = this.stick.dy = 0;
-      this.stickKnob!.setPosition(this.stickBase!.x, this.stickBase!.y);
+      this.stick = { id: -1, bx: 0, by: 0, dx: 0, dy: 0 };
+      this.move?.c.setPosition(this.moveSpot.x, this.moveSpot.y);
+      this.move?.knob?.setPosition(0, 0);
     };
     this.input.on('pointerup', release);
     this.input.on('pointerupoutside', release);
   }
 
-  /** (re)place the touch controls against the real screen edges */
-  private layoutTouch() {
+  /** thumb position relative to the movement control, in unscaled units */
+  private trackThumb(p: Phaser.Input.Pointer) {
+    const sc = this.moveSpot.s;
+    let dx = (p.worldX - this.stick.bx) / sc;
+    let dy = (p.worldY - this.stick.by) / sc;
+    if (settings.move === 'analog') {
+      const len = Math.hypot(dx, dy);
+      const k = len > 70 ? 70 / len : 1;
+      dx *= k;
+      dy *= k;
+      this.move?.knob?.setPosition(dx, dy);
+    }
+    this.stick.dx = dx;
+    this.stick.dy = dy;
+  }
+
+  /** held direction: x -1/0/1 (left/right on screen), y -1/0/1 (up/down) */
+  private readDir(): { x: number; y: number } {
+    if (this.stick.id < 0) return { x: 0, y: 0 };
+    const { dx, dy } = this.stick;
+    if (settings.move === 'arrows') return dpadDirection(dx, dy);
+    const t = stickDeadzone();
+    return { x: dx < -t ? -1 : dx > t ? 1 : 0, y: dy < -t * 1.4 ? -1 : dy > t ? 1 : 0 };
+  }
+
+  /** (re)place the touch controls where the player set them */
+  layoutTouch() {
     this.touchLayer?.destroy();
     this.touchHeld = {};
     this.touchBtns = {};
     this.stick = { id: -1, bx: 0, by: 0, dx: 0, dy: 0 };
-    const e = screenEdges(this);
+    const spots = resolveSpots(this);
+    this.moveSpot = spots.move;
     const layer = this.add.container(0, 0).setDepth(40);
     this.touchLayer = layer;
 
-    const sx = e.left + 180;
-    const sy = e.bottom - 170;
-    this.stickBase = this.add.circle(sx, sy, 80, 0xffffff, 0.08).setStrokeStyle(3, 0xffffff, 0.35);
-    this.stickKnob = this.add.circle(sx, sy, 38, GOLD_HEX, 0.45);
-    const moveLabel = bodyText(this, sx, sy + 104, 'MOVE · JUMP · CROUCH', 16, '#d8cdb0').setOrigin(0.5).setAlpha(0.7);
-    layer.add([this.stickBase, this.stickKnob, moveLabel]);
+    this.move = drawMove(this, spots.move);
+    layer.add(this.move.c);
 
     const ft = this.fight.fighters[0];
-    const R = e.right;
-    const B = e.bottom;
-    const r = 52;
-    const btn = (x: number, y: number, label: string, key: TouchKey, color: number) => {
-      const c = this.add.container(x, y);
-      const circle = this.add.circle(0, 0, r, color, 0.22).setStrokeStyle(3, color, 0.85);
-      const ring = this.add.graphics();
-      const t = this.add.text(0, 0, label, { fontFamily: FONT_DISPLAY, fontSize: label.length > 6 ? '19px' : '22px', color: '#ffffff', stroke: '#000000', strokeThickness: 4 }).setOrigin(0.5);
-      const sub = this.add.text(0, 20, '', { fontFamily: FONT_BODY, fontSize: '14px', color: '#ffffff' }).setOrigin(0.5);
-      c.add([circle, ring, t, sub]);
+    for (const id of BUTTON_IDS) {
+      const spot = spots[id];
+      const parts = drawButton(this, id, spot, ft.accent);
+      const { circle, color } = parts;
       circle.setInteractive();
       const down = () => {
-        this.touchHeld[key] = true;
+        this.touchHeld[id] = true;
         // latched until the next frame reads it, so even a very quick tap counts
-        this.touchTapped[key] = true;
+        this.touchTapped[id] = true;
         circle.setFillStyle(color, 0.65);
       };
       const up = () => {
-        this.touchHeld[key] = false;
+        this.touchHeld[id] = false;
         circle.setFillStyle(color, 0.22);
       };
       circle.on('pointerdown', down);
       circle.on('pointerup', up);
       circle.on('pointerout', up);
-      layer.add(c);
-      this.touchBtns[key] = { c, circle, ring, sub, color };
-    };
-    btn(R - 335, B - 80, 'PUNCH', 'punch', 0xffffff);
-    btn(R - 205, B - 125, 'KICK', 'kick', 0xffffff);
-    btn(R - 78, B - 175, 'BLOCK', 'block', 0x6bb8ff);
-    btn(R - 375, B - 215, 'COMBO', 'combo', 0xff9a4a);
-    btn(R - 245, B - 265, 'SPECIAL', 'special', ft.accent);
-    btn(R - 115, B - 315, 'FINISHER', 'finisher', 0xffd23f);
-    this.specialHint = bodyText(this, R - 245, B - 335, '', 16, '#e8e2d0').setOrigin(0.5).setAlpha(0.85);
+      layer.add(parts.c);
+      this.touchBtns[id] = { ...parts, s: spot.s };
+    }
+    const sp = spots.special;
+    this.specialHint = bodyText(this, sp.x, sp.y - BUTTON_R * sp.s - 20, '', 16, '#e8e2d0').setOrigin(0.5).setAlpha(0.85);
     layer.add(this.specialHint);
   }
 
-  /** which special the stick selects: neutral 1, forward 2, down 3 */
+  /** which special the direction selects: neutral 1, forward 2, down 3 */
   private stickSpecial(): 1 | 2 | 3 {
-    const t = stickDeadzone();
-    const facing = this.fight.fighters[0].facing;
-    if (this.stick.dy > t) return 3;
-    if (this.stick.dx * facing > t) return 2;
+    const d = this.readDir();
+    if (d.y > 0) return 3;
+    if (d.x * this.fight.fighters[0].facing > 0) return 2;
     return 1;
   }
 
@@ -320,13 +324,15 @@ export class HudScene extends Phaser.Scene {
     const f = this.fight;
     const me = f.fighters[0];
     const r = emptyRaw();
-    const t = stickDeadzone();
-    r.left = this.stick.dx < -t;
-    r.right = this.stick.dx > t;
-    r.up = this.stick.dy < -t * 1.4;
-    r.down = this.stick.dy > t;
-    const fwd = this.stick.dx * me.facing > t;
+    const d = this.readDir();
+    r.left = d.x < 0;
+    r.right = d.x > 0;
+    r.up = d.y < 0;
+    r.down = d.y > 0;
+    const fwd = d.x * me.facing > 0;
     const heavy = fwd || r.down;
+    // light up the arrow pads being pressed
+    this.move?.pads?.forEach((pad, i) => pad.setFillStyle(0xffffff, [d.x < 0, d.x > 0, d.y < 0, d.y > 0][i] ? 0.5 : 0.14));
 
     const pressed = (k: TouchKey) => !!this.touchTapped[k];
     const blockTap = pressed('block');
@@ -380,7 +386,7 @@ export class HudScene extends Phaser.Scene {
       const fatal = f.phase === 'finish' && winner === me;
       const ready = fatal || (me.meter >= METER_BAR && me.specialCD === 0);
       fin.c.setAlpha(ready ? 1 : 0.45);
-      fin.c.setScale(fatal ? 1 + 0.08 * Math.sin(f.frame / 4) : 1);
+      fin.c.setScale(fin.s * (fatal ? 1 + 0.08 * Math.sin(f.frame / 4) : 1));
       fin.sub.setText(fatal ? 'FATALITY' : me.meter >= METER_BAR ? 'EX' : '1 BAR');
     }
   }
@@ -440,6 +446,7 @@ export class HudScene extends Phaser.Scene {
     const items: [string, () => void][] = [
       ['RESUME', () => this.togglePause()],
       ['MOVE LIST', () => this.toggleMoveList()],
+      ...(game.isTouch ? ([['CUSTOMIZE CONTROLS', () => this.openControls()]] as [string, () => void][]) : []),
       [this.scale.isFullscreen ? 'EXIT FULL SCREEN' : 'FULL SCREEN', () => {
         if (this.scale.isFullscreen) this.scale.stopFullscreen();
         else goFullscreen(this);
@@ -454,7 +461,7 @@ export class HudScene extends Phaser.Scene {
       ['QUIT TO TITLE', () => this.leave('Title')],
     ];
     items.forEach(([label, fn], i) => {
-      const t = goldText(this, GAME_W / 2, 240 + i * 62, label, 40).setInteractive({ useHandCursor: true });
+      const t = goldText(this, GAME_W / 2, 236 + i * 60, label, 38).setInteractive({ useHandCursor: true });
       t.on('pointerup', () => {
         sfx.play('confirm');
         fn();
@@ -463,8 +470,18 @@ export class HudScene extends Phaser.Scene {
       t.on('pointerout', () => t.setScale(1));
       c.add(t);
     });
-    if (game.isTouch) c.add(stickSensitivityControl(this, GAME_W / 2 + 60, 240 + items.length * 62 + 6));
     this.pauseLayer = c;
+  }
+
+  /** the controls editor, over the paused fight */
+  private openControls() {
+    this.cameras.main.setVisible(false);
+    this.scene.launch('Controls', { from: 'Hud' });
+    const ed = this.scene.get('Controls');
+    ed.events.once('closed', () => {
+      this.cameras.main.setVisible(true);
+      if (this.touchLayer) this.layoutTouch();
+    });
   }
 
   private leave(key: 'Select' | 'Title') {

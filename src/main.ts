@@ -8,6 +8,7 @@ import { VersusScene } from './scenes/VersusScene';
 import { FightScene } from './scenes/FightScene';
 import { HudScene } from './scenes/HudScene';
 import { WinScene } from './scenes/WinScene';
+import { ControlsScene } from './scenes/ControlsScene';
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -29,7 +30,7 @@ const game = new Phaser.Game({
     powerPreference: 'high-performance',
   },
   fps: { target: 60 },
-  scene: [BootScene, TitleScene, ModeScene, SelectScene, VersusScene, FightScene, HudScene, WinScene],
+  scene: [BootScene, TitleScene, ModeScene, SelectScene, VersusScene, FightScene, HudScene, WinScene, ControlsScene],
 });
 
 // handy for debugging in the console

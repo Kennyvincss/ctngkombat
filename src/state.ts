@@ -40,10 +40,48 @@ function loadStick(): number {
   }
 }
 
+const CONTROLS_KEY = 'trenches.controls';
+
+export type MoveMode = 'analog' | 'arrows';
+/** a touch control's saved place: fractions of the screen, and a size multiplier */
+export interface StoredSpot {
+  fx: number;
+  fy: number;
+  s: number;
+}
+
+function loadControls(): { move: MoveMode; layout: Record<string, StoredSpot> } {
+  try {
+    const raw = JSON.parse(localStorage.getItem(CONTROLS_KEY) ?? '{}');
+    const layout: Record<string, StoredSpot> = {};
+    for (const [k, v] of Object.entries(raw.layout ?? {})) {
+      const o = v as StoredSpot;
+      if ([o.fx, o.fy, o.s].every((n) => typeof n === 'number' && isFinite(n))) layout[k] = o;
+    }
+    return { move: raw.move === 'arrows' ? 'arrows' : 'analog', layout };
+  } catch {
+    return { move: 'analog', layout: {} };
+  }
+}
+
+const controls = loadControls();
+
 export const settings = {
   /** touch joystick sensitivity, 1 (needs a big push) to 5 (reacts to a small nudge) */
   stick: loadStick(),
+  /** touch movement: analog stick or arrow buttons */
+  move: controls.move,
+  /** touch controls the player moved or resized (missing = default place) */
+  layout: controls.layout,
 };
+
+export function saveControls() {
+  try {
+    localStorage.setItem(CONTROLS_KEY, JSON.stringify({ move: settings.move, layout: settings.layout }));
+  } catch {
+    /* storage unavailable: setting just won't persist */
+  }
+}
 
 export function setStickSensitivity(level: number) {
   settings.stick = Math.min(STICK_LEVELS, Math.max(1, Math.round(level)));

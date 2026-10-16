@@ -3,7 +3,7 @@ import { GAME_W } from '../config';
 import type { Difficulty, GameMode } from '../data/types';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
-import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera, stickSensitivityControl } from '../ui/ui';
+import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
 
 export class ModeScene extends Phaser.Scene {
   private menu!: ListMenu;
@@ -40,7 +40,14 @@ export class ModeScene extends Phaser.Scene {
       ? 'TOUCH: left thumb = move   ·   buttons = attacks and specials'
       : 'P1: WASD move · U/I punch · J/K kick · O/L/; specials · P = EX        P2: arrows · numpad 4/5 punch · 1/2 kick · 6/3/. specials';
     bodyText(this, GAME_W / 2, 640, controls, 22, '#a89f88').setOrigin(0.5).setWordWrapWidth(1180).setAlign('center');
-    if (game.isTouch) stickSensitivityControl(this, GAME_W / 2 + 60, 560);
+    if (game.isTouch) {
+      const bg = this.add.rectangle(GAME_W / 2, 562, 360, 52, 0x000000, 0.6).setStrokeStyle(2, 0xf5c542).setInteractive({ useHandCursor: true });
+      goldText(this, GAME_W / 2, 562, '⚙  CUSTOMIZE CONTROLS', 30);
+      bg.on('pointerup', () => {
+        sfx.play('confirm');
+        fadeTo(this, 'Controls', { from: 'Mode' });
+      });
+    }
     bodyText(this, GAME_W / 2, 680, 'Motion inputs: ↓↘→+P · →↓↘+P · ↓↙←+K       Fatality: ↓↓→ + heavy punch', 20, '#8c8270').setOrigin(0.5);
     muteButton(this);
 

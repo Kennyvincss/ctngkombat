@@ -43,6 +43,8 @@ export class SelectScene extends Phaser.Scene {
   private leaving = false;
   /** which cursor the mouse/touch and solo keyboard drive */
   private active = 0;
+  /** the open "PLAY AS …?" question */
+  private ask: { p: number; id: string; layer: Phaser.GameObjects.Container; btns: Phaser.GameObjects.Rectangle[]; sel: number } | null = null;
 
   constructor() {
     super('Select');
@@ -53,6 +55,7 @@ export class SelectScene extends Phaser.Scene {
     this.difficulty = data.difficulty ?? game.lastSetup?.difficulty ?? 'normal';
     this.leaving = false;
     this.active = 0;
+    this.ask = null;
     this.cursors = [];
     this.sides = [];
     this.tiles = [];
@@ -173,12 +176,81 @@ export class SelectScene extends Phaser.Scene {
     this.move(p, i);
   }
 
+  /** a pick asks first: "PLAY AS …?" with CONFIRM / CANCEL */
   private confirm(p: number) {
     const c = this.cursors[p];
-    if (c.locked || this.leaving) return;
+    if (c.locked || this.leaving || this.ask) return;
     if (p === 1 && this.mode !== 'versus' && !this.cursors[0].locked) return;
+    const random = c.index >= game.roster.length;
+    const id = random ? Phaser.Utils.Array.GetRandom(game.roster).id : game.roster[c.index].id;
+    sfx.play('select');
+    this.openAsk(p, id, random);
+  }
+
+  private openAsk(p: number, id: string, random: boolean) {
+    const f = game.roster.find((r) => r.id === id) as FighterData;
+    const accent = tuningFor(id).accent;
+    const layer = this.add.container(0, 0).setDepth(50);
+    const dim = this.add.rectangle(GAME_W / 2, 360, GAME_W + 1600, 720 + 800, 0x000000, 0.7).setInteractive();
+    const panel = this.add.rectangle(GAME_W / 2, 360, 640, 400, 0x0a0705, 0.96).setStrokeStyle(4, accent);
+    const card = this.add.image(GAME_W / 2 - 180, 352, `card-${id}`).setDisplaySize(200, 300);
+    const question =
+      this.mode === 'versus'
+        ? `PLAYER ${p + 1}: PLAY AS`
+        : p === 0
+          ? 'PLAY AS'
+          : this.mode === 'training'
+            ? 'TRAIN AGAINST'
+            : 'FIGHT AGAINST';
+    const q = bodyText(this, GAME_W / 2 + 120, 210, (random ? 'RANDOM PICK · ' : '') + question, 24, '#d8cdb0').setOrigin(0.5);
+    const name = goldText(this, GAME_W / 2 + 120, 262, f.name.toUpperCase() + '?', f.name.length > 11 ? 44 : 56);
+    const sub = bodyText(this, GAME_W / 2 + 120, 326, `${f.handle ?? ''}\n${f.archetype}`, 20, '#bfb59a').setOrigin(0.5).setAlign('center');
+    layer.add([dim, panel, card, q, name, sub]);
+    let armed = -1;
+    const btns = (['CONFIRM', 'CANCEL'] as const).map((label, i) => {
+      const x = GAME_W / 2 + 30 + i * 190;
+      const bg = this.add.rectangle(x, 470, 170, 58, i === 0 ? 0x8a5a00 : 0x2a1a10, 1).setStrokeStyle(3, 0xf5c542).setInteractive({ useHandCursor: true });
+      const t = goldText(this, x, 470, label, 32);
+      bg.on('pointerover', () => this.askSelect(i));
+      // act only on a full tap of the button: the tap that opened this box may lift over it
+      bg.on('pointerdown', () => (armed = i));
+      bg.on('pointerup', () => {
+        if (armed === i) i === 0 ? this.askYes() : this.askNo();
+      });
+      layer.add([bg, t]);
+      return bg;
+    });
+    layer.setAlpha(0);
+    this.tweens.add({ targets: layer, alpha: 1, duration: 120 });
+    this.ask = { p, id, layer, btns, sel: 0 };
+    this.askSelect(0);
+  }
+
+  private askSelect(i: number) {
+    if (!this.ask) return;
+    this.ask.sel = i;
+    this.ask.btns.forEach((b, k) => b.setStrokeStyle(k === i ? 5 : 2, k === i ? 0xffffff : 0xf5c542));
+  }
+
+  private askYes() {
+    const a = this.ask;
+    if (!a) return;
+    a.layer.destroy();
+    this.ask = null;
+    this.lockIn(a.p, a.id);
+  }
+
+  private askNo() {
+    if (!this.ask) return;
+    sfx.play('back');
+    this.ask.layer.destroy();
+    this.ask = null;
+  }
+
+  private lockIn(p: number, id: string) {
+    const c = this.cursors[p];
     c.locked = true;
-    c.pick = c.index >= game.roster.length ? Phaser.Utils.Array.GetRandom(game.roster).id : game.roster[c.index].id;
+    c.pick = id;
     sfx.play('confirm');
     const side = this.sides[p];
     this.showFighter(p, c.pick);
@@ -264,6 +336,15 @@ export class SelectScene extends Phaser.Scene {
 
   update(t: number) {
     if (this.leaving) return;
+    if (this.ask) {
+      // the player who picked answers the question (P1's controls in 1-player modes)
+      const src = this.mode === 'versus' ? this.inputs[this.ask.p] : this.inputs[0];
+      const press = src.poll();
+      if (press.left || press.right) this.askSelect(1 - this.ask.sel);
+      if (press.ok) this.ask.sel === 0 ? this.askYes() : this.askNo();
+      else if (press.back) this.askNo();
+      return;
+    }
     for (const p of [0, 1] as const) {
       // in 1P modes, P1's controls drive whichever cursor is active
       const src = this.mode === 'versus' ? this.inputs[p] : p === 0 ? this.inputs[0] : null;

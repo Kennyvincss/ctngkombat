@@ -33,11 +33,13 @@ npm run preview    # serve dist/ locally
 | Pause | `Esc` | |
 | Mute | `M` | |
 
-**Touch** (phones and tablets, landscape): a joystick on the left and six labelled buttons on the right.
+**Touch** (phones and tablets, landscape): a movement control on the left and six labelled buttons on the right.
+
+**CUSTOMIZE CONTROLS** (mode screen, or the pause menu during a fight): drag any control to put it anywhere, tap one and use − / + to resize it (60–160%), choose **ANALOG STICK** or **ARROWS** (four arrow buttons, diagonals work by pressing between two arrows) for movement, and set the stick sensitivity. RESET puts everything back. The layout is saved on the device as fractions of the screen, so it carries over to other screen sizes.
 
 | Button | What it does |
 |---|---|
-| Joystick | Move left and right, push up to jump, down to crouch. Sensitivity (5 levels) is set on the mode screen or in the pause menu and remembered on the device |
+| Stick / arrows | Move left and right, up to jump, down to crouch |
 | PUNCH | Quick punch. With the stick forward: power punch. With the stick down: uppercut |
 | KICK | Quick kick. With the stick forward: high kick. With the stick down: sweep |
 | BLOCK | Hold to guard; hold with the stick down to block low attacks |
@@ -45,6 +47,7 @@ npm run preview    # serve dist/ locally
 | COMBO | Punch → kick → power punch, finished with the special if it's ready |
 | FINISHER | EX special (needs 1 bar of meter). After the deciding round: the fatality |
 
+- **Picking a fighter** asks to confirm ("PLAY AS …?" / "FIGHT AGAINST …?"): CONFIRM or CANCEL by tap, or Enter / Esc.
 - **Specials recharge for 7 seconds** after each use (for the CPU too), so fights are won with punches, kicks and blocks. The HUD shows `SPECIAL READY` or the seconds left. Training mode has no cooldown.
 - **Motion inputs** work for everyone: Special 1 = ↓↘→ + punch, Special 2 = →↓↘ + punch, Special 3 = ↓↙← + kick. Using the heavy button gives the EX version if you have a bar.
 - **Charge moves** (Moon or Rug, Road to Millions, Full Gas, Seven Figure Arc) charge while you hold the button.
