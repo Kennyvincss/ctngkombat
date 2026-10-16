@@ -5,7 +5,7 @@ import { tuningFor } from '../data/tuning';
 import { STAGES } from '../fight/stages';
 import { sfx } from '../audio/Sfx';
 import { fighterById } from '../state';
-import { bodyText, fadeTo, goldText, menuBackdrop } from '../ui/ui';
+import { bodyText, fadeTo, goldText, menuBackdrop, fitCamera } from '../ui/ui';
 
 /** Both cards slide in, "VS" slams down, hold, then fight. */
 export class VersusScene extends Phaser.Scene {
@@ -14,6 +14,7 @@ export class VersusScene extends Phaser.Scene {
   }
 
   create(setup: MatchSetup) {
+    fitCamera(this);
     this.cameras.main.fadeIn(200);
     menuBackdrop(this, 0x1a0503);
     const a = fighterById(setup.p1);
@@ -22,9 +23,9 @@ export class VersusScene extends Phaser.Scene {
     // diagonal accent slabs
     const g = this.add.graphics();
     g.fillStyle(tuningFor(a.id).accent, 0.35);
-    g.fillPoints([new Phaser.Geom.Point(0, 0), new Phaser.Geom.Point(GAME_W / 2 + 80, 0), new Phaser.Geom.Point(GAME_W / 2 - 80, GAME_H), new Phaser.Geom.Point(0, GAME_H)], true);
+    g.fillPoints([new Phaser.Geom.Point(-800, -400), new Phaser.Geom.Point(GAME_W / 2 + 80 + 40, -400), new Phaser.Geom.Point(GAME_W / 2 - 80 - 40, GAME_H + 400), new Phaser.Geom.Point(-800, GAME_H + 400)], true);
     g.fillStyle(tuningFor(b.id).accent, 0.35);
-    g.fillPoints([new Phaser.Geom.Point(GAME_W / 2 + 80, 0), new Phaser.Geom.Point(GAME_W, 0), new Phaser.Geom.Point(GAME_W, GAME_H), new Phaser.Geom.Point(GAME_W / 2 - 80, GAME_H)], true);
+    g.fillPoints([new Phaser.Geom.Point(GAME_W / 2 + 80 + 40, -400), new Phaser.Geom.Point(GAME_W + 800, -400), new Phaser.Geom.Point(GAME_W + 800, GAME_H + 400), new Phaser.Geom.Point(GAME_W / 2 - 80 - 40, GAME_H + 400)], true);
 
     const cardH = 600;
     const cardW = cardH / 1.5;

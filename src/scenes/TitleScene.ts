@@ -3,7 +3,7 @@ import { GAME_H, GAME_SUBTITLE, GAME_TITLE, GAME_W } from '../config';
 import { sfx } from '../audio/Sfx';
 import { tuningFor } from '../data/tuning';
 import { game } from '../state';
-import { bodyText, fadeTo, goldText, menuBackdrop, muteButton } from '../ui/ui';
+import { bodyText, fadeTo, fitCamera, goFullscreen, goldText, homeScreenTip, menuBackdrop, muteButton } from '../ui/ui';
 
 export class TitleScene extends Phaser.Scene {
   private started = false;
@@ -13,6 +13,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   create() {
+    fitCamera(this);
     this.started = false;
     this.cameras.main.fadeIn(400);
     menuBackdrop(this, 0x3d0c04);
@@ -36,7 +37,7 @@ export class TitleScene extends Phaser.Scene {
 
     const shade = this.add.graphics().setDepth(4);
     shade.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0.85, 0.85, 0, 0);
-    shade.fillRect(0, 0, GAME_W, 420);
+    shade.fillRect(-800, -400, GAME_W + 1600, 820);
 
     const logo = goldText(this, GAME_W / 2, 230, GAME_TITLE, 150, { strokeThickness: 14 }).setDepth(10);
     logo.setShadow(0, 0, '#ff6a00', 30, true, true);
@@ -63,6 +64,11 @@ export class TitleScene extends Phaser.Scene {
       else this.input.keyboard?.once('keydown', go);
     });
     this.input.once('pointerdown', go);
+    // phones: the first tap also takes the game full screen (browsers only allow it on a tap)
+    this.input.once('pointerup', () => {
+      if (game.isTouch) goFullscreen(this);
+    });
+    homeScreenTip(this, GAME_W / 2, GAME_H - 54);
     this.input.gamepad?.once('down', go);
   }
 

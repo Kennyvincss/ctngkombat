@@ -28,7 +28,7 @@ export interface FighterView {
   readonly height: number;
 }
 
-export const FIGHTER_HEIGHT = 330;
+export const FIGHTER_HEIGHT = 280;
 
 const ease = (t: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
 const pulse = (t: number, len: number) => Math.sin(Math.min(1, t / len) * Math.PI);

@@ -3,7 +3,7 @@ import { GAME_W } from '../config';
 import type { Difficulty, GameMode } from '../data/types';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
-import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton } from '../ui/ui';
+import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
 
 export class ModeScene extends Phaser.Scene {
   private menu!: ListMenu;
@@ -17,6 +17,7 @@ export class ModeScene extends Phaser.Scene {
   }
 
   create() {
+    fitCamera(this);
     this.cameras.main.fadeIn(250);
     menuBackdrop(this, 0x2a0a04);
     goldText(this, GAME_W / 2, 80, 'CHOOSE YOUR BATTLE', 64);

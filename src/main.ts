@@ -16,7 +16,8 @@ const game = new Phaser.Game({
   height: GAME_H,
   backgroundColor: '#000000',
   scale: {
-    mode: Phaser.Scale.FIT,
+    // fill the whole screen: 1280×720 is always visible, wider/taller screens see more around it
+    mode: Phaser.Scale.EXPAND,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   input: {

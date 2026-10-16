@@ -44,6 +44,8 @@ interface Buff {
 
 export const METER_MAX = 300;
 export const METER_BAR = 100;
+/** frames between two specials (7 seconds) */
+export const SPECIAL_COOLDOWN = 7 * 60;
 
 const NEUTRAL = new Set<FState>(['idle', 'walk', 'crouch', 'land']);
 
@@ -65,6 +67,8 @@ export class Fighter {
   action: Action | null = null;
   invuln: 'none' | 'full' | 'projectile' | 'strike' = 'none';
   invulnT = 0;
+  /** frames until the next special is allowed */
+  specialCD = 0;
   buffs: Buff[] = [];
   status: Record<StatusKind, number> = { reverse: 0, lag: 0, nospecials: 0, purge: 0, drain: 0, mark: 0, freeze: 0 };
   comboHits = 0;
@@ -203,6 +207,7 @@ export class Fighter {
   /** Per-frame tick of timers that run even in hitstop-free frames. */
   private tickTimers() {
     if (this.invulnT > 0 && --this.invulnT === 0) this.invuln = 'none';
+    if (this.specialCD > 0) this.specialCD--;
     let changed = false;
     for (const b of this.buffs) {
       b.frames--;
@@ -321,6 +326,14 @@ export class Fighter {
     const n = this.normalPressed(intent);
     if (n) {
       this.startNormal(n);
+      return;
+    }
+    if (intent.held.block && !intent.up) {
+      // block button: stand (or crouch) in guard instead of walking back
+      const st = intent.down ? 'crouch' : 'idle';
+      if (this.state !== st) this.setState(st);
+      this.vx = 0;
+      this.view.play(intent.down ? 'crouch' : 'block');
       return;
     }
     if (intent.up && this.grounded) {
@@ -474,6 +487,11 @@ export class Fighter {
   }
 
   tryStartSpecial(n: 1 | 2 | 3, intent: Intent): boolean {
+    // specials are a spice, not the meal: one every SPECIAL_COOLDOWN frames
+    if (this.specialCD > 0) {
+      this.ctrl.flush();
+      return false;
+    }
     if (this.status.nospecials > 0) {
       this.world.callout(this, 'ERROR: SPECIALS DISABLED', 0xff4444);
       this.ctrl.flush();
@@ -483,6 +501,7 @@ export class Fighter {
     const act = startSpecial(this, spec, n, intent);
     if (!act) return false;
     this.ctrl.flush();
+    if (!this.world.training) this.specialCD = SPECIAL_COOLDOWN;
     this.atk = null;
     this.action = act;
     this.setState('special');
@@ -824,6 +843,7 @@ export class Fighter {
     this.action = null;
     this.invuln = 'none';
     this.invulnT = 0;
+    this.specialCD = 0;
     this.clearBuffs();
     this.clearStatus();
     this.endCombo();

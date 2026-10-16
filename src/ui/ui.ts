@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { FONT_BODY, FONT_DISPLAY, GOLD, GAME_W } from '../config';
+import { FONT_BODY, FONT_DISPLAY, GOLD, GAME_H, GAME_W } from '../config';
 import { sfx } from '../audio/Sfx';
 import { emptyRaw, GamepadSource, KeyboardSource, KEYMAP_P1, KEYMAP_P2, KEYMAP_SOLO_EXTRA, MergedSource, type InputSource, type RawInput } from '../systems/input';
 
@@ -26,6 +26,25 @@ export function bodyText(scene: Phaser.Scene, x: number, y: number, text: string
   return scene.add.text(x, y, text, { fontFamily: FONT_BODY, fontSize: `${size}px`, color, stroke: '#000', strokeThickness: 3, ...opts });
 }
 
+/**
+ * The game is designed at 1280×720 but the canvas expands to fill the screen (wide phones,
+ * tablets). Keep the design area centred on screen, also after rotations and browser-bar resizes.
+ */
+export function fitCamera(scene: Phaser.Scene) {
+  const cam = scene.cameras.main;
+  const apply = () => cam.setScroll(-(scene.scale.width - GAME_W) / 2, -(scene.scale.height - GAME_H) / 2);
+  apply();
+  scene.scale.on('resize', apply);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.scale.off('resize', apply));
+}
+
+/** Screen edges in design coordinates (left/right can go past 0 and GAME_W on wide screens). */
+export function screenEdges(scene: Phaser.Scene) {
+  const dx = (scene.scale.width - GAME_W) / 2;
+  const dy = (scene.scale.height - GAME_H) / 2;
+  return { left: -dx, right: GAME_W + dx, top: -dy, bottom: GAME_H + dy };
+}
+
 /** Dark arena backdrop with drifting embers, shared by menu screens. */
 export function menuBackdrop(scene: Phaser.Scene, tint = 0x3a0d05) {
   const g = scene.add.graphics();
@@ -38,11 +57,13 @@ export function menuBackdrop(scene: Phaser.Scene, tint = 0x3a0d05) {
       i,
     );
     g.fillStyle(Phaser.Display.Color.GetColor(c.r, c.g, c.b), 1);
-    g.fillRect(0, (720 / steps) * i, GAME_W, 720 / steps + 1);
+    // wider and taller than the 1280×720 design area: wide phones show past its edges
+    const y = i === 0 ? -400 : (720 / steps) * i;
+    g.fillRect(-800, y, GAME_W + 1600, i === steps - 1 ? 1200 : 720 / steps + 1 + (i === 0 ? 400 : 0));
   }
   scene.add
     .particles(0, 0, 'ember', {
-      x: { min: 0, max: GAME_W },
+      x: { min: -400, max: GAME_W + 400 },
       y: 740,
       lifespan: 6000,
       speedY: { min: -90, max: -30 },
@@ -55,6 +76,36 @@ export function menuBackdrop(scene: Phaser.Scene, tint = 0x3a0d05) {
     })
     .setDepth(1);
   return g;
+}
+
+/** Running as an installed home-screen app (no browser bars). */
+export function isStandalone(): boolean {
+  const nav = navigator as Navigator & { standalone?: boolean };
+  return !!nav.standalone || matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches;
+}
+
+/**
+ * Go full screen and lock landscape where the browser allows it (Android, iPad, desktop).
+ * Must run inside a pointerup/keydown handler. Returns false where web pages can't go full
+ * screen (Safari on iPhone: there the way is Add to Home Screen).
+ */
+export function goFullscreen(scene: Phaser.Scene): boolean {
+  const sm = scene.scale;
+  if (sm.isFullscreen || isStandalone()) return true;
+  if (!sm.fullscreen.available) return false;
+  sm.startFullscreen();
+  const o = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> };
+  o?.lock?.('landscape').catch(() => {});
+  return true;
+}
+
+/** One-time note on iPhone: Safari can't go full screen, a home-screen app can. */
+export function homeScreenTip(scene: Phaser.Scene, x: number, y: number) {
+  const ios = /iPhone|iPod/.test(navigator.userAgent);
+  if (!ios || isStandalone()) return null;
+  return bodyText(scene, x, y, 'FULL SCREEN ON IPHONE:  Share  →  Add to Home Screen, then open Trenches Kombat from your home screen', 17, '#ffd23f')
+    .setOrigin(0.5)
+    .setDepth(10);
 }
 
 /** Small speaker toggle in the top-right corner. */

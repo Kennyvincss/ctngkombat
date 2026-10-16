@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { fitCamera } from '../ui/ui';
 import { GAME_H, GAME_W, GOLD_HEX } from '../config';
 import type { FighterData } from '../data/types';
 import type { SpriteSet } from '../fight/FighterView';
@@ -51,6 +52,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   async create() {
+    fitCamera(this);
     game.isTouch = detectTouch();
     // wait for the Google Fonts (canvas text needs them loaded), but never block forever
     try {

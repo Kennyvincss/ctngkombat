@@ -23,20 +23,34 @@ npm run preview    # serve dist/ locally
 
 ## Controls
 
-| Action | Player 1 | Player 2 | Touch |
-|---|---|---|---|
-| Move / jump / crouch | `W A S D` (solo: arrows too) | Arrow keys | Left-thumb stick |
-| Light / heavy punch | `U` / `I` (solo: `Z` / `X`) | Numpad `4` / `5` | LP / HP |
-| Light / heavy kick | `J` / `K` (solo: `C` / `V`) | Numpad `1` / `2` | LK / HK |
-| Special 1 / 2 / 3 | `O` / `L` / `;` (solo: `Q` / `E` / `R`) | Numpad `6` / `3` / `.` | SP1 / SP2 / SP3 |
-| EX (spend 1 bar) | `P`, or use a heavy button | Numpad `0` | EX |
-| Pause | `Esc` | | `II` |
-| Mute | `M` | | Sound toggle |
+| Action | Player 1 | Player 2 |
+|---|---|---|
+| Move / jump / crouch | `W A S D` (solo: arrows too) | Arrow keys |
+| Light / heavy punch | `U` / `I` (solo: `Z` / `X`) | Numpad `4` / `5` |
+| Light / heavy kick | `J` / `K` (solo: `C` / `V`) | Numpad `1` / `2` |
+| Special 1 / 2 / 3 | `O` / `L` / `;` (solo: `Q` / `E` / `R`) | Numpad `6` / `3` / `.` |
+| EX (spend 1 bar) | `P`, or use a heavy button | Numpad `0` |
+| Pause | `Esc` | |
+| Mute | `M` | |
 
+**Touch** (phones and tablets, landscape): a joystick on the left and six labelled buttons on the right.
+
+| Button | What it does |
+|---|---|
+| Joystick | Move left and right, push up to jump, down to crouch |
+| PUNCH | Quick punch. With the stick forward: power punch. With the stick down: uppercut |
+| KICK | Quick kick. With the stick forward: high kick. With the stick down: sweep |
+| BLOCK | Hold to guard; hold with the stick down to block low attacks |
+| SPECIAL | The fighter's special. Stick centred = 1st, forward = 2nd, down = 3rd. The label above shows which one |
+| COMBO | Punch → kick → power punch, finished with the special if it's ready |
+| FINISHER | EX special (needs 1 bar of meter). After the deciding round: the fatality |
+
+- **Specials recharge for 7 seconds** after each use (for the CPU too), so fights are won with punches, kicks and blocks. The HUD shows `SPECIAL READY` or the seconds left. Training mode has no cooldown.
 - **Motion inputs** work for everyone: Special 1 = ↓↘→ + punch, Special 2 = →↓↘ + punch, Special 3 = ↓↙← + kick. Using the heavy button gives the EX version if you have a bar.
 - **Charge moves** (Moon or Rug, Road to Millions, Full Gas, Seven Figure Arc) charge while you hold the button.
-- **Fatality**: when "FINISH THEM" appears you have 5 seconds: ↓ ↓ → + heavy punch (or the FATALITY button on touch).
+- **Fatality**: when "FINISH THEM" appears you have 5 seconds: ↓ ↓ → + heavy punch (FINISHER on touch).
 - **Basics**: hold back to block, down-back for lows. Double-tap to dash. Light → light → heavy chains, and normals cancel into specials on hit. Crouching heavy punch launches, crouching heavy kick sweeps, jumping heavies are overheads.
+- **Full screen**: the game fills any screen shape. On Android, iPad and desktop the first tap goes full screen (also in the pause menu). Safari on iPhone doesn't allow web pages to go full screen: use Share → Add to Home Screen and open Trenches Kombat from the home screen.
 - Gamepads use the standard mapping: X/Y punches, A/B kicks, LB/RB/LT specials, RT EX, Start pauses.
 
 ## How it's put together

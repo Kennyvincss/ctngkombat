@@ -5,7 +5,7 @@ import { tuningFor } from '../data/tuning';
 import { STAGES } from '../fight/stages';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
-import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton } from '../ui/ui';
+import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
 
 const COLS = 8;
 const TILE = 78;
@@ -63,6 +63,7 @@ export class SelectScene extends Phaser.Scene {
   }
 
   create() {
+    fitCamera(this);
     this.cameras.main.fadeIn(250);
     menuBackdrop(this, 0x240804);
     this.title = goldText(this, GAME_W / 2, 50, 'SELECT YOUR FIGHTER', 54);

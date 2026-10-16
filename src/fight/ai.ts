@@ -241,7 +241,7 @@ export class CpuBrain implements InputSource {
 
   private pickSpecial(tags: NonNullable<SpecialSpec['ai']>[], dist: number): 1 | 2 | 3 | 0 {
     const me = this.me;
-    if (me.status.nospecials > 0) return 0;
+    if (me.status.nospecials > 0 || me.specialCD > 0) return 0;
     const options: (1 | 2 | 3)[] = [];
     me.moves.forEach((m, i) => {
       const tag = m.ai ?? 'any';

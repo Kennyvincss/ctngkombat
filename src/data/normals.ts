@@ -87,11 +87,20 @@ export const NORMALS: Record<NormalKey, AttackSpec> = {
   'jump.hk': { damage: 75, startup: 7, active: 6, recovery: 6, hitstun: 20, blockstun: 14, pushback: 8, type: 'overhead', box: { x: 10, y: -130, w: 140, h: 110 }, anim: 'kick', heavy: true },
 };
 
+/**
+ * Fighters were drawn 330 px tall and are now 280 px; the boxes above were tuned at the old
+ * size, so they are scaled by the same factor here to keep reach and heights in proportion.
+ */
+export const SIZE = 280 / 330;
+for (const n of Object.values(NORMALS)) {
+  n.box = { x: Math.round(n.box.x * SIZE), y: Math.round(n.box.y * SIZE), w: Math.round(n.box.w * SIZE), h: Math.round(n.box.h * SIZE) };
+}
+
 export const BODY = {
-  halfW: 42,
-  standH: 290,
-  crouchH: 180,
-  airH: 240,
+  halfW: 36,
+  standH: 246,
+  crouchH: 153,
+  airH: 204,
 };
 
 export const PHYS = {

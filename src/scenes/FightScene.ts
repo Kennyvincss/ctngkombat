@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { FATALITY_WINDOW_S, GAME_H, GAME_W, ROUND_TIME, ROUNDS_TO_WIN, STEP_MS } from '../config';
+import { FATALITY_WINDOW_S, GAME_H, ROUND_TIME, ROUNDS_TO_WIN, STEP_MS } from '../config';
 import { MOVES } from '../data/moves';
 import { PHYS } from '../data/normals';
 import { tuningFor, CPU_SETTINGS } from '../data/tuning';
@@ -528,15 +528,20 @@ export class FightScene extends Phaser.Scene implements World {
     const cam = this.cameras.main;
     const [a, b] = this.fighters;
     const dist = Math.abs(a.x - b.x);
-    const targetZoom = Phaser.Math.Clamp(1.16 - (dist - 260) / 1800, 1.0, 1.16);
+    // the canvas fills the screen, so the view can be wider (phones) or taller (tablets) than 16:9;
+    // never zoom out past the stage's edges
+    const vw = cam.width;
+    const vh = cam.height;
+    const minZoom = Math.max(vw / (PHYS.stageW + 300), vh / (GAME_H + 200));
+    const targetZoom = Math.max(minZoom, Phaser.Math.Clamp(1.06 - (dist - 260) / 1800, 0.94, 1.06));
     cam.zoom += (targetZoom - cam.zoom) * 0.08;
     const cx = (a.x + b.x) / 2;
     const topY = Math.min(a.y, b.y);
-    const cy = this.groundY - (GAME_H / 2 - 80) / cam.zoom - Math.max(0, this.groundY - 200 - topY) * 0.25;
-    const halfW = GAME_W / 2 / cam.zoom;
+    const cy = this.groundY - (vh / 2 - 80) / cam.zoom - Math.max(0, this.groundY - 200 - topY) * 0.25;
+    const halfW = vw / 2 / cam.zoom;
     const x = Phaser.Math.Clamp(cx, -150 + halfW, PHYS.stageW + 150 - halfW);
-    const sx = x - GAME_W / 2;
-    const sy = cy - GAME_H / 2;
+    const sx = x - vw / 2;
+    const sy = cy - vh / 2;
     cam.scrollX += (sx - cam.scrollX) * 0.18;
     cam.scrollY += (sy - cam.scrollY) * 0.18;
   }

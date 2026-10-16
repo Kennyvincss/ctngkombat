@@ -5,7 +5,7 @@ import { tuningFor } from '../data/tuning';
 import { STAGES } from '../fight/stages';
 import { sfx } from '../audio/Sfx';
 import { fighterById, game } from '../state';
-import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton } from '../ui/ui';
+import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
 
 interface WinData {
   setup: MatchSetup;
@@ -24,6 +24,7 @@ export class WinScene extends Phaser.Scene {
   }
 
   create(data: WinData) {
+    fitCamera(this);
     this.cameras.main.fadeIn(400);
     const f = fighterById(data.winner);
     const t = tuningFor(f.id);

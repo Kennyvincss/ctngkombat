@@ -5,7 +5,7 @@ import Phaser from 'phaser';
 // (left/right on screen); the Controller converts them to forward/back.
 // ---------------------------------------------------------------------------
 
-export const BUTTONS = ['lp', 'hp', 'lk', 'hk', 's1', 's2', 's3', 'ex', 'fat', 'start'] as const;
+export const BUTTONS = ['lp', 'hp', 'lk', 'hk', 's1', 's2', 's3', 'ex', 'fat', 'block', 'start'] as const;
 export type Button = (typeof BUTTONS)[number];
 
 export interface RawInput {
@@ -22,7 +22,7 @@ export function emptyRaw(): RawInput {
     right: false,
     up: false,
     down: false,
-    buttons: { lp: false, hp: false, lk: false, hk: false, s1: false, s2: false, s3: false, ex: false, fat: false, start: false },
+    buttons: { lp: false, hp: false, lk: false, hk: false, s1: false, s2: false, s3: false, ex: false, fat: false, block: false, start: false },
   };
 }
 
@@ -51,6 +51,7 @@ export const KEYMAP_P1: KeyMap = {
   s3: ['SEMICOLON'],
   ex: ['P'],
   fat: [],
+  block: [],
   start: ['ENTER'],
 };
 
@@ -68,6 +69,7 @@ export const KEYMAP_P2: KeyMap = {
   s3: ['NUMPAD_PERIOD'],
   ex: ['NUMPAD_ZERO'],
   fat: [],
+  block: [],
   start: ['NUMPAD_ADD'],
 };
 
@@ -231,10 +233,16 @@ export class Controller {
     raw = this.lagQueue[0];
     if (this.reversed) raw = { ...raw, left: raw.right, right: raw.left };
 
-    const fwd = facing > 0 ? raw.right && !raw.left : raw.left && !raw.right;
-    const back = facing > 0 ? raw.left && !raw.right : raw.right && !raw.left;
+    let fwd = facing > 0 ? raw.right && !raw.left : raw.left && !raw.right;
+    let back = facing > 0 ? raw.left && !raw.right : raw.right && !raw.left;
     const up = raw.up && !raw.down;
     const down = raw.down && !raw.up;
+    // the block button (touch) holds guard: same as holding back, without tapping out dashes
+    const stickH = fwd ? 1 : back ? -1 : 0;
+    if (raw.buttons.block) {
+      fwd = false;
+      back = true;
+    }
     const h = fwd ? 1 : back ? -1 : 0;
     const v = up ? 1 : down ? -1 : 0;
     const dir = 5 + h + v * 3;
@@ -248,7 +256,7 @@ export class Controller {
 
     // dash: neutral → fwd → neutral → fwd within 14 frames
     let dash: 0 | 1 | -1 = 0;
-    const horz = h === 1 && v === 0 ? 6 : h === -1 && v === 0 ? 4 : 5;
+    const horz = stickH === 1 && v === 0 ? 6 : stickH === -1 && v === 0 ? 4 : 5;
     if (horz !== this.lastHorz && horz !== 5) {
       const key = horz === 6 ? 'f' : 'b';
       if (this.frame - this.lastTap[key] <= 14) {
