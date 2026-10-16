@@ -557,6 +557,212 @@ const SCRIPTS: Record<string, Script> = {
     k.pixelate(2300, [0x9b30ff, 0xc77dff, 0x000000]);
     k.winPose(2500);
   },
+  // ---------------------------------------------------------------- batch 2
+  skroot: (k) => {
+    k.banner('DONUTS', 0xff8a1f, 0);
+    k.at(200, () => {
+      for (let i = 0; i < 16; i++) {
+        k.at(i * 90, () => {
+          const a = (i / 16) * Math.PI * 4;
+          k.c.fx.fling('smoke', k.lx + Math.cos(a) * 160, k.ly - 60, k.lx + Math.cos(a) * 220, k.ly - 140, 700, { scale: 1.6 });
+        });
+      }
+    });
+    k.winnerTo(k.lx + 180, 300, 300);
+    k.winnerTo(k.lx - 180, 700, 300);
+    k.winnerTo(k.lx + 180, 1100, 300);
+    k.fadeLoser(1500, 700);
+    k.stamp('GG', 0xffffff, 2400, 120, k.ly - 40);
+    k.winPose(2900);
+  },
+  otaobayom: (k) => {
+    k.banner('BY ROYAL DECREE', 0xff2b3d, 0);
+    k.rain('crown', 200, 8, 80, 220, 0.8);
+    k.at(900, () => {
+      const scroll = k.s.add.rectangle(k.lx, k.ly - 150, 20, 320, 0xf5deb3).setStrokeStyle(4, 0xb8860b).setDepth(92);
+      k.s.tweens.add({ targets: scroll, width: 300, duration: 500, ease: 'Back.easeOut' });
+      k.s.tweens.add({ targets: scroll, width: 20, delay: 1500, duration: 400, onComplete: () => scroll.destroy() });
+    });
+    k.stamp('BANISHED', 0xff2b3d, 1500);
+    k.shrink(2000, 400);
+    k.winPose(2700);
+  },
+  gafar: (k) => {
+    k.scroll(['git checkout -b hard-fork', 'deploying...', 'chain A: ok', 'chain B: ok', 'opponent: forked', 'consensus: lost'], '#2bff7a', 0, 1800);
+    k.tintLoser(0x2bff7a, 600);
+    k.at(1900, () => {
+      const L = k.L;
+      for (const dir of [-1, 1]) {
+        const g = k.s.add.image(L.x, L.y, L.texture.key, L.frame.name).setOrigin(L.originX, L.originY).setScale(L.scaleX, L.scaleY).setFlipX(L.flipX).setTint(0x2bff7a).setAlpha(0.8).setDepth(L.depth);
+        k.s.tweens.add({ targets: g, x: L.x + dir * 500, alpha: 0, duration: 1200, onComplete: () => g.destroy() });
+      }
+      L.setVisible(false);
+      k.c.sfx.play('ko');
+    });
+    k.banner('HARD FORK', 0x2bff7a, 2000);
+    k.winPose(2900);
+  },
+  nipherme: (k) => {
+    k.at(0, () => {
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        const leaf = k.s.add.image(k.lx, k.ly - 150, 'leaf').setDepth(92).setScale(0).setAngle((a * 180) / Math.PI).setTint(0xff6fa8);
+        k.s.tweens.add({ targets: leaf, x: k.lx + Math.cos(a) * 90, y: k.ly - 150 + Math.sin(a) * 120, scale: 3, duration: 700, ease: 'Back.easeOut' });
+        k.s.tweens.add({ targets: leaf, x: k.lx, y: k.ly - 150, scale: 4, delay: 1300, duration: 400 });
+        k.s.tweens.add({ targets: leaf, alpha: 0, delay: 2500, duration: 400, onComplete: () => leaf.destroy() });
+      }
+    });
+    k.banner('NIPPED IN THE BUD', 0xff2d78, 300);
+    k.fadeLoser(1400, 300);
+    k.confetti(2300);
+    k.winPose(2600);
+  },
+  limitlessdami: (k) => {
+    k.banner('TO INFINITY', 0x2f6bff, 0);
+    k.at(400, () => {
+      k.c.fx.shockwave(k.lx, k.ly - 40, 0x2f6bff, 2);
+      k.s.tweens.add({ targets: k.L, y: k.L.y - 1600, scaleX: k.L.scaleX * 0.2, scaleY: k.L.scaleY * 0.2, duration: 1600, ease: 'Quad.easeIn' });
+      k.c.sfx.play('hitHeavy');
+    });
+    k.at(2100, () => {
+      const st = k.s.add.image(k.lx, k.ly - 600, 'star').setDepth(95).setScale(0.3).setTint(0xffffff);
+      k.s.tweens.add({ targets: st, scale: 0.6, alpha: 0.4, yoyo: true, repeat: 4, duration: 180, onComplete: () => st.destroy() });
+    });
+    k.popups(['∞', 'no ceiling', 'still going', 'bye'], 0x2f6bff, 800, 4, 250);
+    k.winPose(2600);
+  },
+  zyloinsol: (k) => {
+    k.freeze(0);
+    k.banner('NETWORK HALT', 0xa24bff, 200);
+    k.at(700, () => {
+      const bar = k.s.add.rectangle(k.lx - 200, k.ly - 380, 0, 22, 0x14f195).setOrigin(0, 0.5).setDepth(96);
+      const box = k.s.add.rectangle(k.lx, k.ly - 380, 404, 28).setStrokeStyle(3, 0xffffff).setDepth(96);
+      const t = k.s.add.text(k.lx, k.ly - 420, 'Restarting validators...', { fontFamily: FONT_BODY, fontSize: '24px', color: '#fff' }).setOrigin(0.5).setDepth(96);
+      k.s.tweens.add({ targets: bar, width: 396, duration: 900, ease: 'Expo.easeOut' });
+      k.s.tweens.add({ targets: bar, width: 380, duration: 400, yoyo: true, repeat: 2, delay: 900 });
+      k.s.time.delayedCall(2700, () => [bar, box, t].forEach((o) => o.destroy()));
+    });
+    k.pixelate(2600, [0x9945ff, 0x14f195, 0x000000]);
+    k.winPose(2800);
+  },
+  hundred: (k) => {
+    k.at(0, () => {
+      const t = k.s.add.text(k.lx, k.ly - 420, '1x', { fontFamily: FONT_DISPLAY, fontSize: '72px', color: '#ffc22e', stroke: '#000', strokeThickness: 8 }).setOrigin(0.5).setDepth(96);
+      const counter = { n: 1 };
+      k.s.tweens.add({ targets: counter, n: 100, duration: 2000, ease: 'Cubic.easeIn', onUpdate: () => t.setText(`${Math.floor(counter.n)}x`) });
+      k.s.time.delayedCall(2800, () => t.destroy());
+    });
+    for (let i = 0; i < 14; i++) k.at(i * 140, () => {
+      k.c.fx.spark(k.lx + (Math.random() - 0.5) * 80, k.ly - 120 - Math.random() * 140, 0xffc22e, true);
+      k.c.sfx.play('hit');
+    });
+    k.at(2100, () => {
+      for (let i = 0; i < 26; i++) k.c.fx.fling('solcoin', k.lx, k.ly - 150, k.lx + (Math.random() - 0.5) * 600, k.ly - 300 - Math.random() * 300, 700, { spin: 1 });
+      k.L.setVisible(false);
+      k.c.sfx.play('ko');
+    });
+    k.winPose(2600);
+  },
+  flipper: (k) => {
+    k.banner('HEADS OR TAILS?', 0x3b6bff, 0);
+    k.at(400, () => {
+      k.s.tweens.add({ targets: k.L, y: k.L.y - 300, duration: 450, yoyo: true, ease: 'Quad.easeOut' });
+      k.s.tweens.add({ targets: k.L, scaleX: 0, duration: 120, yoyo: true, repeat: 3 });
+      k.c.sfx.play('whoosh');
+    });
+    k.at(1400, () => k.s.tweens.add({ targets: k.L, angle: { from: -12, to: 12 }, duration: 140, yoyo: true, repeat: 3 }));
+    k.stamp('FLIPPED', 0x3b6bff, 2100);
+    k.shrink(2300, 400);
+    k.winPose(2800);
+  },
+  '0xtochi': (k) => {
+    k.banner('RESEARCH COMPLETE', 0xff8ad8, 0);
+    k.rain('paper', 200, 36, 45, 120, 1.4);
+    k.dropOn('paper', 1800, 5);
+    k.popups(['page 1/1000', 'tokenomics', 'appendix C', 'DYOR'], 0xff8ad8, 400, 4, 300);
+    k.winPose(2700);
+  },
+  headboy: (k) => {
+    k.banner('DETENTION', 0x2be0c0, 0);
+    k.at(300, () => {
+      k.s.tweens.add({ targets: k.L, x: k.lx + (k.L.x < k.Wn.x ? -320 : 320), duration: 700, ease: 'Quad.easeInOut' });
+      k.c.sfx.play('whoosh');
+    });
+    k.at(1100, () => {
+      const hat = k.s.add.triangle(k.L.x, k.L.y - k.L.displayHeight - 40, 0, 90, 35, 0, 70, 90, 0xf5f5f5).setStrokeStyle(3, 0x222222).setDepth(93);
+      const d = k.s.add.text(hat.x, hat.y + 18, 'D', { fontFamily: FONT_DISPLAY, fontSize: '30px', color: '#c0392b' }).setOrigin(0.5).setDepth(94);
+      k.s.time.delayedCall(2200, () => {
+        hat.destroy();
+        d.destroy();
+      });
+    });
+    k.popups(['RING RING', 'SIT DOWN', 'NO TALKING', 'FACE THE WALL'], 0x2be0c0, 1300, 4, 250);
+    k.tintLoser(0x888888, 1500);
+    k.winPose(2600);
+  },
+  digitek: (k) => {
+    k.banner('LIQUIDATION CASCADE', 0xea3943, 0);
+    k.chart(100, false);
+    k.at(700, () => {
+      const c = k.s.add.image(k.lx, k.ly - 700, 'candleR').setDepth(92).setScale(3, 5);
+      k.s.tweens.add({ targets: c, y: k.ly + 300, duration: 1200, ease: 'Quad.easeIn', onComplete: () => c.destroy() });
+      k.s.tweens.add({ targets: k.L, y: k.L.y + 500, delay: 700, duration: 700, ease: 'Quad.easeIn' });
+    });
+    k.popups(['-10%', '-30%', '-70%', 'MARGIN CALL'], 0xea3943, 900, 4, 250);
+    k.shake(1400, 500, 0.02);
+    k.winPose(2700);
+  },
+  '100x-arc': (k) => {
+    k.banner('BUZZER BEATER', 0xf07a1a, 0);
+    k.at(300, () => {
+      const hoop = k.s.add.ellipse(k.lx, k.ly - 520, 180, 40).setStrokeStyle(8, 0xff5a1f).setDepth(93);
+      const board = k.s.add.rectangle(k.lx, k.ly - 600, 260, 150, 0xffffff, 0.85).setStrokeStyle(4, 0x222222).setDepth(92);
+      k.s.time.delayedCall(2600, () => {
+        hoop.destroy();
+        board.destroy();
+      });
+    });
+    k.at(800, () => {
+      k.s.tweens.add({ targets: k.L, y: k.L.y - 520, duration: 500, ease: 'Quad.easeOut' });
+      k.s.tweens.add({ targets: k.L, y: k.L.y + 200, alpha: 0, delay: 600, duration: 400, ease: 'Quad.easeIn' });
+      k.c.sfx.play('whoosh');
+    });
+    k.at(1800, () => k.c.sfx.play('announce'));
+    k.banner('100 - 0', 0xffffff, 1900, k.ly - 300, 80);
+    k.winPose(2700);
+  },
+  mystayor: (k) => {
+    k.banner('VANISHING ACT', 0x6fa8ff, 0);
+    k.at(400, () => {
+      const cloth = k.s.add.rectangle(k.lx, k.ly - 160, 260, 360, 0x7a1f2b).setStrokeStyle(4, 0xffd23f).setDepth(93).setScale(1, 0);
+      k.s.tweens.add({ targets: cloth, scaleY: 1, duration: 300 });
+      k.s.time.delayedCall(1400, () => {
+        k.L.setVisible(false);
+        k.s.tweens.add({ targets: cloth, y: cloth.y - 600, alpha: 0, duration: 500, onComplete: () => cloth.destroy() });
+        const duck = k.s.add.text(k.lx, k.ly - 20, '🦆', { fontSize: '64px' }).setOrigin(0.5, 1).setDepth(93);
+        k.s.time.delayedCall(1600, () => duck.destroy());
+        k.c.sfx.play('coin');
+      });
+    });
+    k.spin('ring', 300, 1400, 2);
+    k.winPose(2600);
+  },
+  evansofweb3: (k) => {
+    k.banner('SPACES ENDED', 0xd94bff, 0);
+    k.at(300, () => {
+      const mic = k.s.add.image(k.lx, k.ly - 380, 'mic').setDepth(94).setScale(2);
+      const x = k.s.add.text(k.lx, k.ly - 380, '✕', { fontFamily: FONT_DISPLAY, fontSize: '110px', color: '#ff3b3b' }).setOrigin(0.5).setDepth(95).setScale(0);
+      k.s.tweens.add({ targets: x, scale: 1, delay: 500, duration: 200, ease: 'Back.easeOut' });
+      k.s.time.delayedCall(2300, () => {
+        mic.destroy();
+        x.destroy();
+      });
+    });
+    k.popups(['muted', 'left the Space', 'speaker removed', 'gm?'], 0xd94bff, 900, 4, 250);
+    k.rain('avatar', 900, 12, 70, 240);
+    k.fadeLoser(1800, 800);
+    k.winPose(2800);
+  },
 };
 
 const DEFAULT: Script = (k) => {

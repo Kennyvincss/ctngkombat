@@ -1,6 +1,6 @@
 # Trenches Kombat
 
-A 2D anime-style fighting game in the spirit of Mortal Kombat, starring 31 fighters from the Crypto Twitter trenches. Pick a fighter, fight the CPU or a friend, then **FINISH THEM**.
+A 2D anime-style fighting game in the spirit of Mortal Kombat, starring 45 fighters from the Crypto Twitter trenches. Pick a fighter, fight the CPU or a friend, then **FINISH THEM**.
 
 Built with TypeScript, Vite and Phaser 3. It runs in a desktop browser (keyboard or gamepad) and on phones (touch controls, landscape). The full design brief is in [`SPEC.md`](SPEC.md).
 
@@ -74,13 +74,13 @@ src/
   data/
     tuning.ts                 per-fighter health, speed, damage, accent colour, win quote; CPU difficulty
     normals.ts                frame data for punches and kicks, physics constants
-    moves.ts                  all 93 specials, each configured from the mechanic catalog
+    moves.ts                  all 135 specials, each configured from the mechanic catalog
     moveTypes.ts              the mechanic catalog's data shapes
   fight/
     Fighter.ts                state machine, movement, blocking, hit reactions, juggles, buffs, status effects
     mechanics.ts              the 14 shared special mechanics (projectile, drop, rush, teleport, grab, counter, ...)
     entities.ts               projectiles, falling objects, clones, traps, waves, screen hazards
-    fatalities.ts             31 cartoon fatalities (popups, confetti, stamps; no gore)
+    fatalities.ts             45 cartoon fatalities (popups, confetti, stamps; no gore)
     ai.ts                     CPU opponent (3 difficulties, archetype-aware)
     FighterView.ts            FighterView interface, PuppetView (Phase A) and SpriteView (Phase B)
     art.ts                    code-drawn effect art (SOL coins, wallets, Cybertruck, garri, candles, ...)

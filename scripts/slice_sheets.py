@@ -6,13 +6,14 @@ Output: public/assets/sprites/<id>.webp + <id>.json (one texture atlas per fight
 frame per pose, pivot at the feet) and manifest.json listing the poses.
 
 Usage:
-  python3 scripts/slice_sheets.py debug <outdir>      # labelled previews for checking the split
-  python3 scripts/slice_sheets.py build               # write the atlases
+  python3 scripts/slice_sheets.py debug <outdir> [id ...]   # labelled previews for checking the split
+  python3 scripts/slice_sheets.py build [id ...]            # write the atlases (all, or just these)
 
 Per-sheet fixes live in scripts/sheet_fixes.json:
-  {"<id>": {"drop": [[row, index], ...], "skip": ["dizzy", ...]}}
+  {"<id>": {"drop": [[row, index], ...], "skip": ["dizzy", ...], "scale": 0.85}}
   drop: figures to ignore (duplicates), index is left-to-right within the row
   skip: poses that came out wrong; the game falls back to the animated cut-out
+  scale: draw this fighter smaller/larger than the common idle height
 """
 import json
 import os
@@ -84,9 +85,7 @@ def figures(rgb, fixes):
         med = np.median(np.sort(areas)[-5:])
         big, frag = [], []
         for i in range(n):
-            y, x = objs[i]
-            solid = areas[i] / ((y.stop - y.start) * (x.stop - x.start))
-            if areas[i] >= med * 0.3 and solid > 0.28:
+            if areas[i] >= med * 0.3:
                 big.append(i)
             elif areas[i] >= med * 0.004:
                 # a piece of something whose body lives in another row (a swoosh tip): drop it
@@ -116,6 +115,27 @@ def figures(rgb, fixes):
             k = min(ids, key=dist)
             if dist(k) ** 0.5 < 0.06 * w:
                 band[lab == i + 1] = k
+        # figures the sheet says to ignore (an extra pose the generator added)
+        drop = {d[1] for d in fixes.get('drop', []) if d[0] == ri}
+        if drop:
+            order = sorted(ids, key=lambda k: bbox(k)[0])
+            for j, k in enumerate(order):
+                if j in drop:
+                    band[band == k] = 0
+                    ids.remove(k)
+        # too many: a big effect (energy blast, swoosh) got counted; merge the smallest into its neighbour
+        while len(ids) > 5:
+            k = min(ids, key=lambda k: int((band == k).sum()))
+            bk = bbox(k)
+
+            def gap(j):
+                b = bbox(j)
+                dx = max(b[0] - bk[2], bk[0] - b[2], 0)
+                dy = max(b[1] - bk[3], bk[1] - b[3], 0)
+                return dx * dx + dy * dy
+            near = min((j for j in ids if j != k), key=gap)
+            band[band == k] = near
+            ids.remove(k)
         # figures touching side by side: cut the widest at its thinnest column
         for _ in range(3):
             if len(ids) >= 5:
@@ -131,11 +151,8 @@ def figures(rgb, fixes):
             sub[sub == k] = nid
             ids.append(nid)
         ids.sort(key=lambda k: bbox(k)[0])
-        drop = {d[1] for d in fixes.get('drop', []) if d[0] == ri}
         row = []
-        for j, k in enumerate(ids):
-            if j in drop:
-                continue
+        for k in ids:
             x0, by0, x1, by1 = bbox(k)
             row.append(dict(id=k, box=[x0, by0 + y0, x1, by1 + y0]))
         rows.append(row)
@@ -170,11 +187,15 @@ def body_x(sub, pose):
     return float(np.argmax(col))
 
 
-def debug(outdir):
+def sheet_files(only):
+    return [fn for fn in sorted(os.listdir(SHEETS)) if not only or fn.rsplit('.', 1)[0] in only]
+
+
+def debug(outdir, only=()):
     from PIL import ImageDraw
     os.makedirs(outdir, exist_ok=True)
     fixes = load_fixes()
-    for fn in sorted(os.listdir(SHEETS)):
+    for fn in sheet_files(only):
         fid = fn.rsplit('.', 1)[0]
         rgb = np.array(Image.open(os.path.join(SHEETS, fn)).convert('RGB'))
         mask, lab, rows = figures(rgb, fixes.get(fid, {}))
@@ -211,11 +232,13 @@ def pack(images, width=2048, pad=2):
     return atlas, pos
 
 
-def build():
+def build(only=()):
     fixes = load_fixes()
-    manifest = {}
+    mp = os.path.join(OUT, 'manifest.json')
+    # rebuilding some fighters keeps the others' entries
+    manifest = json.load(open(mp)) if only and os.path.exists(mp) else {}
     os.makedirs(OUT, exist_ok=True)
-    for fn in sorted(os.listdir(SHEETS)):
+    for fn in sheet_files(only):
         fid = fn.rsplit('.', 1)[0]
         fx = fixes.get(fid, {})
         rgb = np.array(Image.open(os.path.join(SHEETS, fn)).convert('RGB'))
@@ -227,7 +250,8 @@ def build():
         for ri, r in enumerate(rows):
             for k, c in enumerate(r):
                 cuts[POSES[ri][k]] = cut(rgb, mask, fl, c)
-        s = IDLE_PX / cuts['idle'][1].shape[0]
+        # optional per-sheet size tweak (e.g. tall hair or wings make a fighter look oversized)
+        s = IDLE_PX * fx.get('scale', 1) / cuts['idle'][1].shape[0]
         images, anchors = {}, {}
         for pose, (rgba, sub) in cuts.items():
             if pose in fx.get('skip', []):
@@ -257,6 +281,6 @@ def build():
 
 if __name__ == '__main__':
     if sys.argv[1] == 'debug':
-        debug(sys.argv[2])
+        debug(sys.argv[2], sys.argv[3:])
     else:
-        build()
+        build(sys.argv[2:])

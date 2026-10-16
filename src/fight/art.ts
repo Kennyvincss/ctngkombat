@@ -603,6 +603,125 @@ const ART: Record<string, [number, number, Draw]> = {
     c.lineWidth = 3;
     c.stroke();
   }],
+  // ---- batch 2 fighters
+  basketball: [52, 52, (c) => {
+    c.fillStyle = '#f07a1a';
+    c.beginPath();
+    c.arc(26, 26, 24, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = '#3a1a00';
+    c.lineWidth = 2.5;
+    c.beginPath();
+    c.arc(26, 26, 24, 0, Math.PI * 2);
+    c.moveTo(2, 26);
+    c.lineTo(50, 26);
+    c.moveTo(26, 2);
+    c.lineTo(26, 50);
+    c.stroke();
+    c.beginPath();
+    c.arc(4, 26, 18, -Math.PI / 2.4, Math.PI / 2.4);
+    c.stroke();
+    c.beginPath();
+    c.arc(48, 26, 18, Math.PI - Math.PI / 2.4, Math.PI + Math.PI / 2.4);
+    c.stroke();
+  }],
+  eth: [44, 68, (c) => {
+    const pts: [number, number][][] = [
+      [[22, 0], [42, 34], [22, 44]],
+      [[22, 0], [2, 34], [22, 44]],
+      [[22, 48], [42, 38], [22, 68]],
+      [[22, 48], [2, 38], [22, 68]],
+    ];
+    const fills = ['#8fa8ff', '#c9d4ff', '#6f86ff', '#a9b9ff'];
+    pts.forEach((tri, i) => {
+      c.fillStyle = fills[i];
+      c.beginPath();
+      c.moveTo(tri[0][0], tri[0][1]);
+      c.lineTo(tri[1][0], tri[1][1]);
+      c.lineTo(tri[2][0], tri[2][1]);
+      c.closePath();
+      c.fill();
+    });
+  }],
+  rocket: [40, 90, (c) => {
+    c.fillStyle = '#e8e8f0';
+    c.beginPath();
+    c.moveTo(20, 0);
+    c.quadraticCurveTo(36, 22, 32, 64);
+    c.lineTo(8, 64);
+    c.quadraticCurveTo(4, 22, 20, 0);
+    c.fill();
+    c.fillStyle = '#ff3b3b';
+    c.beginPath();
+    c.moveTo(8, 50);
+    c.lineTo(0, 70);
+    c.lineTo(10, 64);
+    c.moveTo(32, 50);
+    c.lineTo(40, 70);
+    c.lineTo(30, 64);
+    c.fill();
+    c.fillStyle = '#3bb0ff';
+    c.beginPath();
+    c.arc(20, 28, 6, 0, Math.PI * 2);
+    c.fill();
+    const g = c.createLinearGradient(0, 64, 0, 90);
+    g.addColorStop(0, '#ffe066');
+    g.addColorStop(1, 'rgba(255,80,0,0)');
+    c.fillStyle = g;
+    c.beginPath();
+    c.moveTo(10, 64);
+    c.lineTo(30, 64);
+    c.lineTo(20, 90);
+    c.fill();
+  }],
+  smoke: [96, 72, (c) => {
+    for (const [x, y, r] of [[30, 44, 24], [52, 32, 28], [70, 46, 22], [46, 52, 20]]) {
+      const g = c.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(230,230,230,0.9)');
+      g.addColorStop(1, 'rgba(160,160,160,0)');
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(x, y, r, 0, Math.PI * 2);
+      c.fill();
+    }
+  }],
+  drum: [70, 40, (c) => {
+    c.strokeStyle = '#ffd36b';
+    c.lineWidth = 5;
+    for (const r of [10, 22, 34]) {
+      c.beginPath();
+      c.arc(4, 36, r, -Math.PI / 2.2, 0);
+      c.stroke();
+    }
+  }],
+  avatar: [48, 48, (c) => {
+    c.fillStyle = '#ffffff';
+    c.beginPath();
+    c.arc(24, 24, 22, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = '#3b82f6';
+    c.beginPath();
+    c.arc(24, 24, 19, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = '#fff';
+    c.beginPath();
+    c.arc(24, 19, 7, 0, Math.PI * 2);
+    c.fill();
+    c.beginPath();
+    c.arc(24, 38, 12, Math.PI, 0);
+    c.fill();
+  }],
+  paper: [56, 72, (c) => {
+    c.fillStyle = '#fbfbf2';
+    rr(c, 2, 2, 52, 68, 3);
+    c.fill();
+    c.strokeStyle = '#999';
+    c.lineWidth = 1.5;
+    c.stroke();
+    c.fillStyle = '#9aa';
+    for (let y = 14; y < 64; y += 7) c.fillRect(9, y, 38 - ((y * 7) % 13), 2);
+    text(c, 'WP', 28, 12, 10, '#333');
+  }],
 };
 
 export function generateArt(scene: Phaser.Scene) {

@@ -170,4 +170,75 @@ export const MOVES: Record<string, FighterMoves> = {
     { mech: 'projectile', art: 'shadoworb', startup: 12, recovery: 20, damage: 50, speed: 11, status: { kind: 'mark', frames: 300 }, ai: 'far' },
     { mech: 'super', cost: 300, damage: 350, ai: 'any' },
   ],
+  // ---------------------------------------------------------------- batch 2
+  skroot: [
+    { mech: 'rush', startup: 6, speed: 14, frames: 16, recovery: 14, damage: 80, type: 'low', anim: 'sweep', knockdown: true, trail: 'smoke', shout: 'SKRRT SKRRT', ai: 'mid' },
+    { mech: 'projectile', art: 'smoke', startup: 14, recovery: 20, damage: 75, speed: 6, hits: 3, hitEvery: 9, scale: 1.3, radius: 40, life: 150, color: 0xd8d8d8, ai: 'far' },
+    { mech: 'grab', startup: 4, range: 130, recovery: 26, damage: 165, run: { speed: 12, frames: 26, invuln: false }, banner: 'PULLED UP', ai: 'mid' },
+  ],
+  otaobayom: [
+    { mech: 'strike', startup: 20, active: 6, recovery: 24, damage: 155, type: 'overhead', box: { x: 0, y: -290, w: 170, h: 290 }, anim: 'overhead', knockdown: true, armor: true, art: 'crown', ai: 'close' },
+    { mech: 'projectile', art: 'drum', startup: 14, recovery: 20, damage: 70, speed: 9, low: true, y: 30, ground: true, radius: 34, ai: 'far' },
+    { mech: 'buff', startup: 8, recovery: 8, buffs: [{ kind: 'armor', amount: 3, frames: 360 }], art: 'crown', ai: 'buff' },
+  ],
+  gafar: [
+    { mech: 'trap', startup: 12, recovery: 16, distance: 280, life: 420, damage: 90, stun: 45, art: 'code', ai: 'far' },
+    { mech: 'status', startup: 14, recovery: 22, status: 'drain', frames: 0, delivery: 'wave', damage: 20, art: 'flame', ai: 'far' },
+    { mech: 'projectile', art: 'rocket', startup: 14, recovery: 22, damage: 90, speed: 8, vy: -13, gravity: 0.45, life: 200, spin: 0.05, knockdown: true, ai: 'far' },
+  ],
+  nipherme: [
+    { mech: 'counter', startup: 3, window: 26, recovery: 24, damage: 70, effect: 'freeze', freeze: 75, popup: "DAVE'S READ", popupColor: 0xff2d78, ai: 'defense' },
+    { mech: 'string', startup: 5, hits: 4, interval: 6, damage: 20, advance: 5, recovery: 18, ender: 'knockdown', enderDamage: 55, ai: 'close' },
+    { mech: 'status', startup: 14, recovery: 22, status: 'lag', frames: 240, delivery: 'wave', damage: 15, art: 'leaf', ai: 'far' },
+  ],
+  limitlessdami: [
+    { mech: 'strike', startup: 5, active: 6, recovery: 22, damage: 105, type: 'mid', box: { x: -10, y: -380, w: 150, h: 360 }, anim: 'uppercut', launcher: true, art: 'lightning', ai: 'antiair' },
+    { mech: 'string', startup: 5, hits: 6, interval: 8, damage: 15, advance: 5, recovery: 18, ender: 'knockdown', enderDamage: 50, speedup: true, ai: 'close' },
+    { mech: 'buff', startup: 8, recovery: 8, buffs: [{ kind: 'speed', amount: 20, frames: 420 }, { kind: 'regen', amount: 90, frames: 180 }], ai: 'buff' },
+  ],
+  zyloinsol: [
+    { mech: 'rush', startup: 3, speed: 22, frames: 12, recovery: 12, damage: 65, pass: true, afterimage: true, invuln: 'projectile', shout: '400ms', ai: 'mid' },
+    { mech: 'projectile', art: 'bolt', startup: 12, recovery: 20, damage: 80, speed: 15, hits: 2, hitEvery: 6, scale: 2, radius: 26, color: 0x9945ff, ai: 'far' },
+    { mech: 'teleport', startup: 8, vanish: 12, dest: 'above', recovery: 14, attack: { damage: 95, type: 'overhead', box: { x: -40, y: -220, w: 180, h: 220 }, active: 14, anim: 'overhead', knockdown: true }, ai: 'mid' },
+  ],
+  hundred: [
+    { mech: 'strike', startup: 12, active: 5, recovery: 22, damage: 140, type: 'mid', box: { x: 30, y: -250, w: 230, h: 100 }, anim: 'heavy', charge: 60, unblockableCharged: true, knockdown: true, lunge: 5, art: 'dollar', ai: 'close' },
+    { mech: 'string', startup: 5, hits: 8, interval: 5, damage: 12, advance: 4, recovery: 20, ender: 'heavy', enderDamage: 45, ai: 'close' },
+    { mech: 'drop', art: 'rocket', startup: 18, recovery: 24, damage: 120, count: 1, interval: 0, spread: 0, scale: 1.6, knockdown: true, fallSpeed: 26, warn: 26, radius: 70, ai: 'far' },
+  ],
+  flipper: [
+    { mech: 'strike', startup: 12, active: 6, recovery: 20, damage: 100, type: 'overhead', box: { x: 0, y: -300, w: 170, h: 300 }, anim: 'overhead', hop: 10, knockdown: true, lunge: 5, ai: 'mid' },
+    { mech: 'status', startup: 12, recovery: 20, status: 'reverse', frames: 240, delivery: 'projectile', damage: 20, art: 'solcoin', speed: 11, ai: 'far' },
+    { mech: 'projectile', art: 'eth', startup: 12, recovery: 20, damage: 75, speed: 11, bounceWall: 2, spin: 0.3, life: 240, ai: 'far' },
+  ],
+  '0xtochi': [
+    { mech: 'buff', startup: 8, recovery: 8, buffs: [{ kind: 'readinput', amount: 1, frames: 300 }], art: 'lens', ai: 'defense' },
+    { mech: 'projectile', art: 'flame', startup: 12, recovery: 18, damage: 80, speed: 10, spin: 0.25, ai: 'far' },
+    { mech: 'trap', startup: 12, recovery: 16, distance: 240, life: 420, damage: 85, stun: 45, art: 'paper', ai: 'far' },
+  ],
+  headboy: [
+    { mech: 'status', startup: 12, recovery: 22, status: 'freeze', frames: 50, delivery: 'wave', damage: 30, art: 'ring', ai: 'mid' },
+    { mech: 'grab', startup: 6, range: 150, recovery: 28, damage: 190, banner: 'DETENTION', art: 'book', ai: 'close' },
+    { mech: 'buff', startup: 8, recovery: 8, buffs: [{ kind: 'damage', amount: 25, frames: 420 }], art: 'crown', ai: 'buff' },
+  ],
+  digitek: [
+    { mech: 'trap', startup: 12, recovery: 16, distance: 260, life: 420, damage: 90, stun: 40, art: 'candleG', ai: 'far' },
+    { mech: 'string', startup: 5, hits: 4, interval: 6, damage: 20, advance: 3, recovery: 18, ender: 'highlow', enderDamage: 55, art: 'candleR', ai: 'close' },
+    { mech: 'rush', startup: 8, speed: 16, frames: 18, recovery: 18, damage: 100, charge: 50, launcher: true, afterimage: true, trail: 'candleG', ai: 'mid' },
+  ],
+  '100x-arc': [
+    { mech: 'projectile', art: 'basketball', startup: 14, recovery: 20, damage: 85, speed: 7, vy: -17, gravity: 0.55, bounceFloor: 1, spin: 0.2, life: 220, ai: 'far' },
+    { mech: 'rush', startup: 4, speed: 17, frames: 15, recovery: 14, damage: 75, knockdown: true, afterimage: true, ai: 'mid' },
+    { mech: 'strike', startup: 6, active: 6, recovery: 22, damage: 100, type: 'mid', box: { x: -10, y: -380, w: 150, h: 360 }, anim: 'uppercut', launcher: true, art: 'basketball', ai: 'antiair' },
+  ],
+  mystayor: [
+    { mech: 'decoy', startup: 4, distance: 220, recovery: 10, decoyLife: 80, decoyDamage: 60, invuln: 14, ai: 'defense' },
+    { mech: 'counter', startup: 3, window: 24, recovery: 24, damage: 90, effect: 'launch', popup: 'FORESEEN', popupColor: 0x6fa8ff, ai: 'defense' },
+    { mech: 'projectile', art: 'callorb', startup: 16, recovery: 24, damage: 85, speed: 4.5, hits: 3, hitEvery: 10, track: 0.8, life: 240, scale: 1.1, radius: 30, color: 0x6fa8ff, ai: 'far' },
+  ],
+  evansofweb3: [
+    { mech: 'grab', startup: 4, range: 130, recovery: 26, damage: 170, heal: 40, run: { speed: 11, frames: 26, invuln: false }, banner: 'ONBOARDED', art: 'heart', ai: 'mid' },
+    { mech: 'drop', art: 'avatar', startup: 16, recovery: 22, damage: 24, count: 5, interval: 6, spread: 280, scale: 1.1, ai: 'far' },
+    { mech: 'buff', startup: 8, recovery: 8, buffs: [{ kind: 'speed', amount: 15, frames: 420 }, { kind: 'damage', amount: 15, frames: 420 }], art: 'candleG', ai: 'buff' },
+  ],
 };

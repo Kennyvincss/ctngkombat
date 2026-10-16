@@ -38,6 +38,21 @@ const T: Record<string, Row> = {
   'crypto-baddie': ['rushdown', 960, 4.4, 1.0, false, 0x7dff4d, 'Sold the top. That was you.'],
   arlecchino: ['zoner', 940, 3.6, 0.95, false, 0xc4182f, 'Segmentation fault: opponent not found.'],
   laka: ['rushdown', 950, 4.5, 1.05, false, 0x9b30ff, 'The last candle burns for me.'],
+  // batch 2
+  skroot: ['rushdown', 980, 4.4, 1.0, false, 0xff8a1f, 'Skrrt. You blinked.'],
+  otaobayom: ['powerhouse', 1100, 3.3, 1.15, false, 0xff2b3d, 'Kneel. The palace has spoken.'],
+  gafar: ['zoner', 960, 3.6, 0.95, true, 0x2bff7a, 'Shipped. Deployed. Done.'],
+  nipherme: ['defensive', 1040, 3.7, 1.0, false, 0xff2d78, 'I saw that coming two candles ago.'],
+  limitlessdami: ['rushdown', 980, 4.4, 1.05, true, 0x2f6bff, 'Limits are for other people.'],
+  zyloinsol: ['trickster', 920, 4.6, 0.95, false, 0xa24bff, 'Faster than your confirmation.'],
+  hundred: ['powerhouse', 1080, 3.4, 1.15, false, 0xffc22e, 'I only play for the 100x.'],
+  flipper: ['trickster', 920, 4.5, 0.95, false, 0x3b6bff, 'In, out, profit. Flipped.'],
+  '0xtochi': ['zoner', 950, 3.8, 0.95, false, 0xff8ad8, "DYOR. I did. You didn't."],
+  headboy: ['balanced', 1020, 3.8, 1.05, false, 0x2be0c0, 'Line up. Class is in session.'],
+  digitek: ['balanced', 1000, 4.0, 1.0, false, 0x4fffd0, 'Textbook breakout. You were the resistance.'],
+  '100x-arc': ['zoner', 960, 3.8, 1.0, false, 0xc9d6ff, 'Nothing but net.'],
+  mystayor: ['trickster', 940, 4.2, 0.95, false, 0x6fa8ff, "The future was written. You just couldn't read it."],
+  evansofweb3: ['balanced', 1000, 4.0, 1.0, false, 0xd94bff, 'Welcome to Web3. Now get out.'],
 };
 
 export function tuningFor(id: string): FighterTuning {

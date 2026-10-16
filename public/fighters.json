@@ -746,5 +746,355 @@
     ],
     "fatality": "Burns the opponent's chart down to the last candle.",
     "card": "assets/cards/laka.webp"
+  },
+  {
+    "id": "skroot",
+    "order": 32,
+    "name": "Skroot",
+    "handle": "@skrootimburg",
+    "cardNameplate": "SKROOT",
+    "archetype": "Scrappy brawler / Pressure",
+    "playstyle": "Hits fast, slides in low and never gives you room to breathe.",
+    "specials": [
+      {
+        "name": "Skrrt Skrrt",
+        "description": "A low drift slide that sweeps the opponent off their feet."
+      },
+      {
+        "name": "Burnout",
+        "description": "Spins on the spot and throws a cloud of tyre smoke forward."
+      },
+      {
+        "name": "Pull Up",
+        "description": "Runs in and grabs, ending with a shoulder throw."
+      }
+    ],
+    "fatality": "Donuts: does donuts around the opponent until they vanish in tyre smoke, leaving skid marks that spell \"GG\".",
+    "card": "assets/cards/skroot.webp"
+  },
+  {
+    "id": "otaobayom",
+    "order": 33,
+    "name": "Otaobayom",
+    "handle": "@Otaobayom",
+    "cardNameplate": "OTAOBAYOM",
+    "archetype": "Royal powerhouse",
+    "playstyle": "Slow, regal and very hard to move. Every hit lands like a royal decree.",
+    "specials": [
+      {
+        "name": "Oba's Decree",
+        "description": "A heavy armoured overhead that can't be stopped once it starts."
+      },
+      {
+        "name": "Talking Drum",
+        "description": "Beats a drum that sends a shockwave along the floor."
+      },
+      {
+        "name": "Palace Guard",
+        "description": "Royal armour that absorbs the next few hits."
+      }
+    ],
+    "fatality": "Royal Decree: a giant golden scroll unrolls reading \"BANISHED\" and rolls the opponent up inside it.",
+    "card": "assets/cards/otaobayom.webp"
+  },
+  {
+    "id": "gafar",
+    "order": 34,
+    "name": "Gafar",
+    "handle": "@gafarWeb3",
+    "cardNameplate": "GAFAR",
+    "archetype": "Builder / Zoner",
+    "playstyle": "Sets things up across the screen and makes you walk into them.",
+    "specials": [
+      {
+        "name": "Smart Contract",
+        "description": "Places a glowing contract on the floor that snaps shut on anyone who steps on it."
+      },
+      {
+        "name": "Gas War",
+        "description": "A wave that drains the opponent's super meter."
+      },
+      {
+        "name": "Mainnet Launch",
+        "description": "Fires a rocket that arcs across the stage."
+      }
+    ],
+    "fatality": "Hard Fork: splits the opponent into two glowing chains that wander off in opposite directions.",
+    "card": "assets/cards/gafar.webp"
+  },
+  {
+    "id": "nipherme",
+    "order": 35,
+    "name": "Nipherme",
+    "handle": "@NiphermeDave",
+    "cardNameplate": "NIPHERME",
+    "archetype": "Counter specialist / Calm",
+    "playstyle": "Waits, reads and punishes. Patient fighters love him.",
+    "specials": [
+      {
+        "name": "Dave's Read",
+        "description": "A counter stance that freezes the attacker in place."
+      },
+      {
+        "name": "Nip It",
+        "description": "A quick chain of jabs that ends in a knockdown."
+      },
+      {
+        "name": "Calm Market",
+        "description": "A soothing wave that lags the opponent's controls for a few seconds."
+      }
+    ],
+    "fatality": "Nipped in the Bud: a giant flower grows around the opponent, closes and blooms into confetti.",
+    "card": "assets/cards/nipherme.webp"
+  },
+  {
+    "id": "limitlessdami",
+    "order": 36,
+    "name": "Limitlessdami",
+    "handle": "@LIMITLESSDAMI",
+    "cardNameplate": "LIMITLESSDAMI",
+    "archetype": "Unlimited rushdown",
+    "playstyle": "Gets faster the longer the fight goes. No ceiling, no brakes.",
+    "specials": [
+      {
+        "name": "No Ceiling",
+        "description": "A rising uppercut that launches the opponent sky-high."
+      },
+      {
+        "name": "Limitless Rush",
+        "description": "A flurry of hits that speeds up as it goes."
+      },
+      {
+        "name": "Infinite Stamina",
+        "description": "A boost to speed with health regeneration."
+      }
+    ],
+    "fatality": "To Infinity: launches the opponent straight up past the clouds and the moon until they become a tiny star.",
+    "card": "assets/cards/limitlessdami.webp"
+  },
+  {
+    "id": "zyloinsol",
+    "order": 37,
+    "name": "Zyloinsol",
+    "handle": "@zyloinsol",
+    "cardNameplate": "ZYLOINSOL",
+    "archetype": "Solana speedster / Trickster",
+    "playstyle": "Moves at block speed and hits from angles you can't follow.",
+    "specials": [
+      {
+        "name": "400ms Block",
+        "description": "A lightning-fast dash that passes straight through the opponent."
+      },
+      {
+        "name": "Sol Surge",
+        "description": "Fires a purple and green energy beam."
+      },
+      {
+        "name": "Priority Fee",
+        "description": "Teleports above the opponent and comes crashing down."
+      }
+    ],
+    "fatality": "Network Halt: everything freezes while a \"Restarting validators...\" bar loads forever.",
+    "card": "assets/cards/zyloinsol.webp"
+  },
+  {
+    "id": "hundred",
+    "order": 38,
+    "name": "Hundred",
+    "handle": "@hund_0x",
+    "cardNameplate": "HUNDRED",
+    "archetype": "100x hunter / Heavy hitter",
+    "playstyle": "Slow to start, but one clean hit changes the whole round.",
+    "specials": [
+      {
+        "name": "100x Punch",
+        "description": "A chargeable straight punch. Fully charged, it can't be blocked."
+      },
+      {
+        "name": "Hundred Hands",
+        "description": "A long string of rapid punches."
+      },
+      {
+        "name": "Moonshot",
+        "description": "Calls down a rocket from the sky onto the opponent."
+      }
+    ],
+    "fatality": "Hundredfold: a hit counter ticks up to 100, then the opponent pops into a shower of coins.",
+    "card": "assets/cards/hundred.webp"
+  },
+  {
+    "id": "flipper",
+    "order": 39,
+    "name": "Flipper",
+    "handle": "@Flipper_Ethh",
+    "cardNameplate": "FLIPPER",
+    "archetype": "Flip trader / Acrobat",
+    "playstyle": "In and out fast, flipping over you and flipping the script.",
+    "specials": [
+      {
+        "name": "Quick Flip",
+        "description": "A front flip that ends in an axe kick from above."
+      },
+      {
+        "name": "Flip the Script",
+        "description": "A spinning coin that reverses the opponent's controls for a few seconds."
+      },
+      {
+        "name": "ETH Spin",
+        "description": "Throws a spinning ETH diamond that bounces off the walls."
+      }
+    ],
+    "fatality": "Flipped: flips the opponent like a coin. They land on their edge, wobble and vanish.",
+    "card": "assets/cards/flipper.webp"
+  },
+  {
+    "id": "0xtochi",
+    "order": 40,
+    "name": "0xTochi",
+    "handle": "@0xTochi",
+    "cardNameplate": "0XTOCHI",
+    "archetype": "Strategist / Zoner",
+    "playstyle": "Does the research before the fight. Knows your next move.",
+    "specials": [
+      {
+        "name": "Alpha Leak",
+        "description": "For a few seconds, sees the opponent's next input and blocks automatically."
+      },
+      {
+        "name": "Torch",
+        "description": "Throws a flaming torch that burns through the air."
+      },
+      {
+        "name": "Due Diligence",
+        "description": "Places a trap that stuns whoever triggers it."
+      }
+    ],
+    "fatality": "Research Complete: buries the opponent under a falling stack of thousand-page whitepapers.",
+    "card": "assets/cards/0xtochi.webp"
+  },
+  {
+    "id": "headboy",
+    "order": 41,
+    "name": "Headboy",
+    "handle": "@NDIDI_GRAM",
+    "cardNameplate": "HEADBOY",
+    "archetype": "Leader / Disciplined all-rounder",
+    "playstyle": "Strict, solid fundamentals, no wasted movement.",
+    "specials": [
+      {
+        "name": "Assembly Call",
+        "description": "Blows a whistle. The shockwave freezes the opponent for a moment."
+      },
+      {
+        "name": "Prefect's Report",
+        "description": "A command grab that ends with \"DETENTION\" stamped on screen."
+      },
+      {
+        "name": "Head of House",
+        "description": "Raises his damage for a few seconds."
+      }
+    ],
+    "fatality": "Detention: sends the opponent to stand in the corner in a dunce hat while the school bell rings.",
+    "card": "assets/cards/headboy.webp"
+  },
+  {
+    "id": "digitek",
+    "order": 42,
+    "name": "Digitek",
+    "handle": "@DigiTektrades",
+    "cardNameplate": "DIGITEK",
+    "archetype": "Chart technician / Mix-up",
+    "playstyle": "Reads levels and mixes high and low until you guess wrong.",
+    "specials": [
+      {
+        "name": "Support & Resistance",
+        "description": "Draws a glowing chart line on the floor that trips the opponent if they cross it."
+      },
+      {
+        "name": "Fib Retracement",
+        "description": "A combo string that ends high or low at random."
+      },
+      {
+        "name": "Breakout",
+        "description": "A charging rush that launches the opponent on hit."
+      }
+    ],
+    "fatality": "Liquidation Cascade: a red candle keeps falling, dragging the opponent through the floor of the chart.",
+    "card": "assets/cards/digitek.webp"
+  },
+  {
+    "id": "100x-arc",
+    "order": 43,
+    "name": "100x'arc",
+    "handle": "@nba01p",
+    "cardNameplate": "100X'ARC",
+    "archetype": "Sharpshooter / Zoner",
+    "playstyle": "Pure arc and range. Keeps you at distance and drains you with shots.",
+    "specials": [
+      {
+        "name": "Three-Pointer",
+        "description": "Shoots a basketball in a high arc that drops onto the opponent."
+      },
+      {
+        "name": "Fast Break",
+        "description": "A quick dash forward that ends in a shoulder check."
+      },
+      {
+        "name": "Alley-Oop",
+        "description": "A launcher uppercut that sends the opponent into the air for a follow-up."
+      }
+    ],
+    "fatality": "Buzzer Beater: dunks the opponent through a giant hoop as the buzzer sounds and the scoreboard reads 100-0.",
+    "card": "assets/cards/100x-arc.webp"
+  },
+  {
+    "id": "mystayor",
+    "order": 44,
+    "name": "Mystayor",
+    "handle": "@mystayor",
+    "cardNameplate": "MYSTAYOR",
+    "archetype": "Mystic / Mind games",
+    "playstyle": "Fades in and out and plays with your head.",
+    "specials": [
+      {
+        "name": "Mist Step",
+        "description": "Leaves a mist copy behind and slips away. The copy bursts if touched."
+      },
+      {
+        "name": "Fortune Read",
+        "description": "A counter stance that predicts the attack and throws the attacker into the air."
+      },
+      {
+        "name": "Mystic Orb",
+        "description": "A slow orb that follows the opponent around the stage."
+      }
+    ],
+    "fatality": "Vanishing Act: covers the opponent with a cloth. When it is pulled away, only a tiny rubber duck remains.",
+    "card": "assets/cards/mystayor.webp"
+  },
+  {
+    "id": "evansofweb3",
+    "order": 45,
+    "name": "Evansofweb3",
+    "handle": "@EvansOfWeb3",
+    "cardNameplate": "EVANSOFWEB3",
+    "archetype": "Evangelist / All-rounder",
+    "playstyle": "Brings the whole community into the fight.",
+    "specials": [
+      {
+        "name": "Onboarding",
+        "description": "Runs in and pulls the opponent into a big welcome hug-throw."
+      },
+      {
+        "name": "Community Call",
+        "description": "A crowd of small avatar icons rains down on the opponent."
+      },
+      {
+        "name": "Bull Run Blessing",
+        "description": "Boosts speed and damage for a few seconds."
+      }
+    ],
+    "fatality": "Spaces Ended: the opponent gets muted, their mic crosses out, and they fade away as the Space ends.",
+    "card": "assets/cards/evansofweb3.webp"
   }
 ]

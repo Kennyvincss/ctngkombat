@@ -7,9 +7,9 @@ import { sfx } from '../audio/Sfx';
 import { game } from '../state';
 import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
 
-const COLS = 8;
-const TILE = 78;
-const GAP = 6;
+const COLS = 10;
+const TILE = 66;
+const GAP = 5;
 const GRID_X = GAME_W / 2 - (COLS * TILE + (COLS - 1) * GAP) / 2 + TILE / 2;
 const GRID_Y = 132;
 const MOTIONS = ['↓↘→ + P', '→↓↘ + P', '↓↙← + K'];
@@ -87,7 +87,7 @@ export class SelectScene extends Phaser.Scene {
         const strip = this.add.rectangle(0, TILE / 2 - 3, TILE - 4, 4, tuningFor(f.id).accent);
         c.add(strip);
       } else {
-        c.add(goldText(this, 0, 0, '?', 52));
+        c.add(goldText(this, 0, 0, '?', 46));
       }
       bg.setInteractive({ useHandCursor: true });
       bg.on('pointerover', () => {
@@ -122,7 +122,7 @@ export class SelectScene extends Phaser.Scene {
         .setPadding(4, 0, 4, 0)
         .setOrigin(0.5)
         .setDepth(6);
-      this.cursors.push({ index: p === 0 ? 0 : Math.min(7, this.count - 1), locked: false, pick: null, frame, tag });
+      this.cursors.push({ index: p === 0 ? 0 : Math.min(COLS - 1, this.count - 1), locked: false, pick: null, frame, tag });
     }
     // In 1-player modes the second cursor appears after P1 locks in.
     if (this.mode !== 'versus') this.setCursorVisible(1, false);
