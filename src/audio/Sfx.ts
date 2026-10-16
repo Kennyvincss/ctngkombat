@@ -362,6 +362,42 @@ export class Sfx {
     src.start();
   }
 
+  private track: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+
+  /**
+   * Play a recorded music track on the music bus instead of the synthesized loop (the intro's
+   * soundtrack). Resolves once it's playing, or false if audio is off or the file failed.
+   */
+  async playTrack(url: string, gain = 2.2): Promise<boolean> {
+    const synth = this.synth;
+    if (!synth) return false;
+    this.loadClip(url);
+    const buf = await this.clips.get(url);
+    if (!buf) return false;
+    this.stopTrack(0);
+    synth.stopMusic();
+    const src = synth.ctx.createBufferSource();
+    src.buffer = buf;
+    const g = synth.ctx.createGain();
+    g.gain.value = gain;
+    src.connect(g).connect(synth.music);
+    src.start();
+    this.track = { src, gain: g };
+    return true;
+  }
+
+  /** fade the track out; the synthesized music comes back if it was on */
+  stopTrack(fadeMs = 400) {
+    const synth = this.synth;
+    const tr = this.track;
+    this.track = null;
+    if (!synth || !tr) return;
+    const t = synth.ctx.currentTime;
+    tr.gain.gain.setTargetAtTime(0, t, Math.max(0.001, fadeMs / 4000));
+    tr.src.stop(t + fadeMs / 1000 + 0.05);
+    if (this.wantMusic) synth.startMusic();
+  }
+
   /** everything the game plays, as a stream (for recording trailers); needs unlock() first */
   captureStream(): MediaStream | null {
     const synth = this.synth;

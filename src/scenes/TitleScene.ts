@@ -17,6 +17,8 @@ export class TitleScene extends Phaser.Scene {
     this.started = false;
     this.cameras.main.fadeIn(400);
     menuBackdrop(this, 0x3d0c04);
+    // start downloading the intro's soundtrack now so it's ready when the player taps
+    if (!game.introPlayed) void fetch('assets/music/intro.mp3').catch(() => {});
 
     // slow parallax parade of fighter cut-outs
     const ids = Phaser.Utils.Array.Shuffle(game.roster.map((f) => f.id));

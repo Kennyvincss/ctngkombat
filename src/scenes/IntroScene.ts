@@ -11,8 +11,12 @@ import { game } from '../state';
 import { bodyText, fitCamera, goldText, screenEdges } from '../ui/ui';
 import type { Button } from '../systems/input';
 
-/** how long each fighter is on screen */
+/** how long each fighter is on screen (2 bars of the soundtrack) */
 const SEGMENT_MS = 3500;
+/** the title card before the first fighter */
+const TITLE_MS = 3000;
+/** the soundtrack, composed to this timeline by scripts/make_intro_music.py */
+const MUSIC = 'assets/music/intro.mp3';
 /** fighters whose pose atlases are loaded ahead of time */
 const PRELOAD_AHEAD = 2;
 
@@ -41,6 +45,8 @@ export class IntroScene extends Phaser.Scene {
   private overlay: Phaser.GameObjects.Container | null = null;
   private counter!: Phaser.GameObjects.Text;
   private timers: Phaser.Time.TimerEvent[] = [];
+  /** when the soundtrack started (performance.now) */
+  private t0 = 0;
 
   constructor() {
     super('Intro');
@@ -70,13 +76,21 @@ export class IntroScene extends Phaser.Scene {
 
     // voices: decode them all up front (small files); atlases: a couple of fighters ahead
     sfx.unlock();
-    sfx.music(true);
     for (const f of game.roster) sfx.loadClip(`assets/voice/${f.id}.mp3`);
     sfx.loadClip('assets/voice/title.mp3');
     sfx.loadClip('assets/voice/enter.mp3');
     this.preload(0);
 
-    this.titleCard();
+    // the soundtrack sets the clock: every fighter lands on its downbeat (wait up to 3 s for it)
+    let started = false;
+    const begin = () => {
+      if (started || this.done) return;
+      started = true;
+      this.t0 = performance.now();
+      this.titleCard();
+    };
+    void sfx.playTrack(MUSIC).then(begin);
+    this.time.delayedCall(3000, begin);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       for (const t of this.timers) t.remove();
       this.scene.stop('Fight');
@@ -85,6 +99,11 @@ export class IntroScene extends Phaser.Scene {
 
   private at(ms: number, fn: () => void) {
     this.timers.push(this.time.delayedCall(ms, fn));
+  }
+
+  /** run fn at a fixed point of the soundtrack (ms after it started), even if loading ran late */
+  private atClock(ms: number, fn: () => void) {
+    this.at(Math.max(0, this.t0 + ms - performance.now()), fn);
   }
 
   /** queue pose atlases for the next fighters, and free ones already shown */
@@ -118,14 +137,11 @@ export class IntroScene extends Phaser.Scene {
     c.add([logo, sub]);
     this.at(300, () => {
       this.tweens.add({ targets: logo, scale: 1, alpha: 1, duration: 260, ease: 'Quad.easeIn' });
-      this.at(260, () => {
-        this.cameras.main.shake(300, 0.012);
-        sfx.play('hitHeavy');
-      });
+      this.at(260, () => this.cameras.main.shake(300, 0.012));
       void sfx.clip('assets/voice/title.mp3', 1.2);
     });
     this.at(1100, () => this.tweens.add({ targets: sub, alpha: 1, duration: 400 }));
-    this.at(3000, () => {
+    this.atClock(TITLE_MS, () => {
       this.tweens.add({ targets: c, alpha: 0, duration: 300, onComplete: () => c.destroy() });
       this.nextFighter();
     });
@@ -187,7 +203,6 @@ export class IntroScene extends Phaser.Scene {
     const t = tuningFor(id);
     this.counter.setText(`${String(this.index + 1).padStart(2, '0')} / ${game.roster.length}`);
     this.cameras.main.flash(140, 255, 255, 255);
-    sfx.play('whoosh');
     this.at(120, () => void sfx.clip(`assets/voice/${id}.mp3`));
 
     // name card, lower left
@@ -216,7 +231,7 @@ export class IntroScene extends Phaser.Scene {
     };
     this.at(350, () => press(`s${first}` as Button));
     if (second) this.at(1850, () => press(`s${second}` as Button));
-    this.at(SEGMENT_MS, () => this.nextFighter());
+    this.atClock(TITLE_MS + SEGMENT_MS * (this.index + 1), () => this.nextFighter());
   }
 
   private finish() {
@@ -228,6 +243,7 @@ export class IntroScene extends Phaser.Scene {
       /* fine */
     }
     for (const t of this.timers) t.remove();
+    sfx.stopTrack(500);
     this.cameras.main.fadeOut(300);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       this.scene.stop('Fight');
