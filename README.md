@@ -47,8 +47,10 @@ public/
   assets/cards/<id>.webp      downscaled fighter cards (select, VS and win screens)
   assets/thumbs/<id>.webp     select-grid thumbnails
   assets/fighters/<id>.png    background-removed cut-outs used in fights (Phase A puppets)
-  assets/sprites/manifest.json  Phase B sprite sheets (empty for now)
+  assets/sprites/<id>.webp    Phase B pose atlas per fighter (20 hand-drawn poses) + <id>.json frame data
+  assets/sprites/manifest.json  which fighters have pose atlases
 source/cards/                 the original 1024×1536 card art
+source/sheets/<id>.jpg        the 20-pose sheets the atlases are cut from (prompt: docs/POSE_PROMPTS.md)
 scripts/                      asset pipeline (cut-outs, thumbnails, previews)
 src/
   config.ts                   title, resolution, round rules
@@ -96,13 +98,27 @@ Each card's frame is cropped, the nameplate is cut off (the legs fade out there 
 
 ### Phase B: real sprites
 
-Combat code only talks to the `FighterView` interface. To give a fighter real poses, add images to `public/assets/sprites/<id>/<pose>.png` and list them in `public/assets/sprites/manifest.json`:
+Every fighter has 20 hand-drawn poses (idle, walk, crouch, jump, block, light, heavy, kick, sweep,
+uppercut, overhead, special, cast, dash, grab, hit, dizzy, knockdown, getup, win). They come from
+one generated sheet per fighter, made with the prompt in `docs/POSE_PROMPTS.md` and kept in
+`source/sheets/<id>.jpg`.
 
-```json
-{ "laka": ["idle", "walk", "crouch", "jump", "light", "heavy", "special", "block", "hit", "knockdown", "win"] }
+`scripts/slice_sheets.py` cuts each sheet into its 20 figures, removes the white background, scales
+every pose so the idle pose is the same height for everyone, works out where the feet are under the
+body and packs the poses into one atlas per fighter (`public/assets/sprites/<id>.webp` + `.json`):
+
+```bash
+python3 scripts/slice_sheets.py debug /tmp/check   # labelled previews: check every sheet split into 5 x 4
+python3 scripts/slice_sheets.py build              # write the atlases and manifest.json
 ```
 
-Poses that exist replace the cut-out for that animation; anything missing falls back to the Phase A puppet.
+If a sheet has an extra figure or a bad pose, list it in `scripts/sheet_fixes.json`
+(`drop` ignores a figure by row and position, `skip` leaves a pose out so the game borrows another).
+To redo one fighter, replace their sheet and run `build` again.
+
+Combat code only talks to the `FighterView` interface, so the renderer is swappable. `SpriteView`
+(poses) is used when a fighter has an atlas, then `RigView` (skeletal rig of the card), then
+`PuppetView` (the card cut-out).
 
 ## Decisions on the spec's open questions
 

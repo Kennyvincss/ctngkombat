@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_H, GAME_W, GOLD_HEX } from '../config';
 import type { FighterData } from '../data/types';
+import type { SpriteSet } from '../fight/FighterView';
 import { generateArt } from '../fight/art';
 import { generateStages } from '../fight/stages';
 import { detectTouch, game } from '../state';
@@ -34,13 +35,10 @@ export class BootScene extends Phaser.Scene {
         this.load.image(`fighter-${f.id}`, `assets/fighters/${f.id}.webp`);
       }
     });
-    // Phase B sprites (optional): assets/sprites/manifest.json = { "<id>": ["idle", "walk", ...] }
+    // Phase B pose atlases (loaded per match by the fight scene)
     this.load.json('sprites', 'assets/sprites/manifest.json');
-    this.load.on('filecomplete-json-sprites', (_k: string, _t: string, data: Record<string, string[]>) => {
-      game.sprites = data ?? {};
-      for (const [id, poses] of Object.entries(game.sprites)) {
-        for (const pose of poses) this.load.image(`sprite-${id}-${pose}`, `assets/sprites/${id}/${pose}.png`);
-      }
+    this.load.on('filecomplete-json-sprites', (_k: string, _t: string, data: Record<string, SpriteSet>) => {
+      game.sprites = data && typeof data === 'object' ? data : {};
     });
     // skeletal rigs available (loaded per match by the fight scene)
     this.load.json('rigs', 'assets/rigs/index.json');

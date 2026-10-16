@@ -1,10 +1,11 @@
+import type { SpriteSet } from './fight/FighterView';
 import type { FighterData, MatchSetup } from './data/types';
 
 /** Game-wide state shared between scenes. */
 export const game = {
   roster: [] as FighterData[],
-  /** Phase B sprite poses per fighter, from assets/sprites/manifest.json (optional) */
-  sprites: {} as Record<string, string[]>,
+  /** Phase B pose atlases per fighter, from assets/sprites/manifest.json (optional) */
+  sprites: {} as Record<string, SpriteSet>,
   /** fighters that have a skeletal rig in assets/rigs/ */
   rigs: [] as string[],
   lastSetup: null as MatchSetup | null,

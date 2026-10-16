@@ -78,9 +78,13 @@ export class FightScene extends Phaser.Scene implements World {
     this.cpu = null;
   }
 
-  /** load the skeletal rigs for the two fighters in this match */
+  /** load the pose atlases (or skeletal rigs) for the two fighters in this match */
   preload() {
     for (const id of new Set([this.setup.p1, this.setup.p2])) {
+      if (game.sprites[id]) {
+        if (!this.textures.exists(`sprites-${id}`)) this.load.atlas(`sprites-${id}`, `assets/sprites/${id}.webp`, `assets/sprites/${id}.json`);
+        continue;
+      }
       if (!game.rigs.includes(id)) continue;
       if (!this.cache.json.exists(`rig-${id}`)) this.load.json(`rig-${id}`, `assets/rigs/${id}.json`);
       if (!this.textures.exists(`rig-${id}`)) this.load.image(`rig-${id}`, `assets/rigs/${id}.webp`);
@@ -89,9 +93,10 @@ export class FightScene extends Phaser.Scene implements World {
 
   create() {
     this.cameras.main.fadeIn(300);
-    // only keep the rig textures for this match in GPU memory
-    for (const id of game.rigs) {
-      if (id !== this.setup.p1 && id !== this.setup.p2 && this.textures.exists(`rig-${id}`)) this.textures.remove(`rig-${id}`);
+    // only keep this match's pose atlases and rig textures in GPU memory
+    for (const f of game.roster) {
+      if (f.id === this.setup.p1 || f.id === this.setup.p2) continue;
+      for (const key of [`rig-${f.id}`, `sprites-${f.id}`]) if (this.textures.exists(key)) this.textures.remove(key);
     }
     this.cameras.main.setBounds(-150, -100, PHYS.stageW + 300, GAME_H + 200);
     GROUND_SHADOW_Y.value = this.groundY;
@@ -134,10 +139,10 @@ export class FightScene extends Phaser.Scene implements World {
   private makeFighter(id: string, side: 0 | 1, src: InputSource) {
     const data = fighterById(id);
     const tuning = tuningFor(id);
-    const poses = game.sprites[id];
+    const sprites = game.sprites[id];
     const rig = this.cache.json.get(`rig-${id}`) as RigData | undefined;
     let view: FighterView;
-    if (poses?.length) view = new SpriteView(this, id, new Set(poses), `fighter-${id}`, tuning.artFacesRight, tuning.accent, 20 + side);
+    if (sprites && this.textures.exists(`sprites-${id}`)) view = new SpriteView(this, `sprites-${id}`, sprites, tuning.accent, 20 + side);
     else if (rig && this.textures.exists(`rig-${id}`)) view = new RigView(this, id, rig, tuning.accent, 20 + side, tuning.artFacesRight);
     else view = new PuppetView(this, `fighter-${id}`, tuning.artFacesRight, tuning.accent, 20 + side);
     const moves = MOVES[id];
