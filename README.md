@@ -43,7 +43,7 @@ Six simple buttons, the same on keyboard, gamepad and touch:
 - **Input buffer**: a press made just before your fighter can act (end of a move, landing, getting up) still comes out.
 - **Gamepads** work everywhere: menus (A / ✕ ok, B / ○ back), the intro (any button skips), fights and the pause menu. On a phone or tablet the touch buttons hide while a controller is in use and come back on the next touch.
 
-**Touch** (phones and tablets, landscape): a movement control on the left and six labelled buttons on the right.
+**Touch** (phones and tablets, landscape): a big movement stick on the left and six large labelled buttons clustered on the right (the default layout; every control can be moved and resized).
 
 **CUSTOMIZE CONTROLS** (mode screen, or the pause menu during a fight): drag any control to put it anywhere, tap one and use − / + to resize it (60–160%), choose **ANALOG STICK** or **ARROWS** (four arrow buttons, diagonals work by pressing between two arrows) for movement, and set the stick sensitivity. RESET puts everything back. The layout is saved on the device as fractions of the screen, so it carries over to other screen sizes.
 

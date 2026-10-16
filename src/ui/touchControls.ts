@@ -41,14 +41,15 @@ export function defaultSpots(scene: Phaser.Scene): Record<ControlId, Spot> {
   const e = screenEdges(scene);
   const R = e.right;
   const B = e.bottom;
+  // big thumb-sized buttons in a cluster on the right (the layout the game's owner plays with)
   return {
-    move: { x: e.left + 180, y: B - 170, s: 1 },
-    punch: { x: R - 335, y: B - 80, s: 1 },
-    kick: { x: R - 205, y: B - 125, s: 1 },
-    block: { x: R - 78, y: B - 175, s: 1 },
-    combo: { x: R - 375, y: B - 215, s: 1 },
-    special: { x: R - 245, y: B - 265, s: 1 },
-    finisher: { x: R - 115, y: B - 315, s: 1 },
+    move: { x: e.left + 203, y: B - 186, s: 1.5 },
+    punch: { x: R - 407, y: B - 73, s: 1.6 },
+    kick: { x: R - 306, y: B - 230, s: 1.4 },
+    block: { x: R - 140, y: B - 122, s: 1.3 },
+    combo: { x: R - 537, y: B - 207, s: 1.6 },
+    special: { x: R - 437, y: B - 389, s: 1.6 },
+    finisher: { x: R - 133, y: B - 355, s: 1.4 },
   };
 }
 
