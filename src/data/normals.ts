@@ -88,28 +88,28 @@ export const NORMALS: Record<NormalKey, AttackSpec> = {
 };
 
 /**
- * Fighters were drawn 330 px tall and are now 280 px; the boxes above were tuned at the old
+ * Fighters were drawn 330 px tall and are now 305 px; the boxes above were tuned at the old
  * size, so they are scaled by the same factor here to keep reach and heights in proportion.
  */
-export const SIZE = 280 / 330;
+export const SIZE = 305 / 330;
 for (const n of Object.values(NORMALS)) {
   n.box = { x: Math.round(n.box.x * SIZE), y: Math.round(n.box.y * SIZE), w: Math.round(n.box.w * SIZE), h: Math.round(n.box.h * SIZE) };
 }
 
 export const BODY = {
-  halfW: 36,
-  standH: 246,
-  crouchH: 153,
-  airH: 204,
+  halfW: 39,
+  standH: 268,
+  crouchH: 166,
+  airH: 222,
 };
 
 export const PHYS = {
   gravity: 0.95,
   jumpVy: -23.5, // apex ≈ 290 px, about one body height
-  jumpVx: 5.2,
-  dashSpeed: 13,
+  jumpVx: 6.8,
+  dashSpeed: 17,
   dashFrames: 14,
-  backdashSpeed: 12,
+  backdashSpeed: 15.5,
   backdashFrames: 14,
   friction: 0.8,
   stageW: 1600,

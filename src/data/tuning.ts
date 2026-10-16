@@ -62,9 +62,12 @@ const T: Record<string, Row> = {
   xeverade: ['balanced', 1000, 4.0, 1.05, false, 0x39ff6a, 'Perfect entry. Perfect exit.'],
 };
 
+/** everyone moves this much faster than the walk speeds in the table (relative speeds stay) */
+const WALK_SCALE = 1.3;
+
 export function tuningFor(id: string): FighterTuning {
   const r = T[id] ?? ['balanced', 1000, 3.8, 1, true, 0xf5c542, 'Victory.'];
-  return { cls: r[0], health: r[1], walk: r[2], damage: r[3], artFacesRight: r[4], accent: r[5], quote: r[6] };
+  return { cls: r[0], health: r[1], walk: r[2] * WALK_SCALE, damage: r[3], artFacesRight: r[4], accent: r[5], quote: r[6] };
 }
 
 export const CPU_SETTINGS = {

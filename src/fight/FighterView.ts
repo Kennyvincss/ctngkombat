@@ -28,7 +28,7 @@ export interface FighterView {
   readonly height: number;
 }
 
-export const FIGHTER_HEIGHT = 280;
+export const FIGHTER_HEIGHT = 305;
 
 const ease = (t: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
 const pulse = (t: number, len: number) => Math.sin(Math.min(1, t / len) * Math.PI);
@@ -448,9 +448,9 @@ export class SpriteView implements FighterView {
         sx = 1 - 0.006 * Math.sin(t * 0.09);
         break;
       case 'walk':
-        // two-step cycle: stride pose and guard pose
-        this.show(Math.floor(t / 9) % 2 === 0 ? 'walk' : 'idle');
-        dy = -Math.abs(Math.sin(t * (Math.PI / 9))) * 5;
+        // two-step cycle: stride pose and guard pose (quick steps to match the walk speed)
+        this.show(Math.floor(t / 7) % 2 === 0 ? 'walk' : 'idle');
+        dy = -Math.abs(Math.sin(t * (Math.PI / 7))) * 5;
         break;
       case 'crouch':
       case 'stance':
