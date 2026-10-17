@@ -525,6 +525,8 @@ export class Fighter {
   }
 
   heal(n: number) {
+    // a knocked-out fighter stays down (a regen buff ticking on would stand them back up)
+    if (this.health <= 0) return;
     this.health = Math.min(this.maxHealth, this.health + n);
   }
 

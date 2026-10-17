@@ -62,6 +62,22 @@ const ART: Record<string, [number, number, Draw]> = {
     star(c, 32, 32, 8, 31, 6);
     c.fill();
   }],
+  soapbubble: [56, 56, (c) => {
+    // a see-through bubble: a pale rim, a soft fill and a highlight
+    const g = c.createRadialGradient(22, 20, 2, 28, 28, 27);
+    g.addColorStop(0, 'rgba(255,255,255,0.55)');
+    g.addColorStop(0.5, 'rgba(160,230,255,0.12)');
+    g.addColorStop(0.9, 'rgba(200,170,255,0.35)');
+    g.addColorStop(1, 'rgba(255,255,255,0.8)');
+    c.fillStyle = g;
+    c.beginPath();
+    c.arc(28, 28, 26, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.9)';
+    c.beginPath();
+    c.ellipse(19, 17, 6, 3.5, -0.6, 0, Math.PI * 2);
+    c.fill();
+  }],
   ring: [128, 128, (c) => {
     c.strokeStyle = '#fff';
     c.lineWidth = 6;
