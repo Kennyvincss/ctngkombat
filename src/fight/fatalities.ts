@@ -601,6 +601,13 @@ const SCRIPTS: Record<string, Script> = {
     k.fadeLoser(1900, 600);
     k.winPose(2600);
   },
+  eezzy: (k) => {
+    k.freeze(200);
+    k.banner('DIRECTORS CUT', 0x4fb8ff, 300);
+    k.rain('ice', 500, 18, 60, 220);
+    k.scroll(['THE END', 'starring: Eezzy', 'special thanks: you, for losing'], '#4fb8ff', 1100, 1800);
+    k.winPose(3000);
+  },
 };
 
 const DEFAULT: Script = (k) => {

@@ -53,6 +53,7 @@ const T: Record<string, Row> = {
   sanity100x: ['trickster', 920, 4.4, 0.95, false, 0xff6fa8, "I'm late. You're done."],
   deecayz: ['rushdown', 940, 4.5, 1.0, false, 0xffd21f, "Zap. Bye."],
   'solana-dave': ['balanced', 1020, 4.0, 1.05, false, 0x14f195, "Low fees. High wins."],
+  eezzy: ['zoner', 1000, 3.7, 1.0, false, 0x4fb8ff, "Eezzy game. Eezzy win."],
 };
 
 /** everyone moves this much faster than the walk speeds in the table (relative speeds stay) */

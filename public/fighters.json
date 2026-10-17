@@ -10,7 +10,7 @@
     "specials": [
       {
         "name": "Trillion Flex",
-        "description": "Flashy dash that leaves a holographic $TRILLION trail and confuses the opponent."
+        "description": "Flashy dash that leaves a holographic $TK trail and confuses the opponent."
       },
       {
         "name": "Giveaway Rain",
@@ -1122,5 +1122,30 @@
     ],
     "fatality": "Network Congestion: Spams so many transactions the opponent never confirms again.",
     "card": "assets/cards/solana-dave.webp"
+  },
+  {
+    "id": "eezzy",
+    "order": 46,
+    "name": "Eezzy",
+    "handle": "@NotEezzy",
+    "cardNameplate": "EEZZY",
+    "archetype": "Ice Penguin / Zoner",
+    "playstyle": "A chubby penguin in 3D glasses and a puffer vest. Watches the fight like a movie, then freezes the ending.",
+    "specials": [
+      {
+        "name": "Ice Beam",
+        "description": "Fires a blast of ice from both flippers that freezes on hit."
+      },
+      {
+        "name": "Belly Slide",
+        "description": "Slides along the ice belly-first under attacks and trips the opponent."
+      },
+      {
+        "name": "Keyboard Smash",
+        "description": "Brings the keyboard down from overhead with armour."
+      }
+    ],
+    "fatality": "Directors Cut: Pauses the fight with the remote, freezes the opponent solid and rolls the credits.",
+    "card": "assets/cards/eezzy.webp"
   }
 ]

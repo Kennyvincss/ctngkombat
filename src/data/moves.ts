@@ -7,7 +7,7 @@ import type { FighterMoves } from './moveTypes';
 
 export const MOVES: Record<string, FighterMoves> = {
   'promise-sol': [
-    { mech: 'rush', startup: 6, speed: 17, frames: 16, recovery: 14, damage: 85, pass: true, afterimage: true, trail: 'dollar', shout: '$TRILLION FLEX', ai: 'mid' },
+    { mech: 'rush', startup: 6, speed: 17, frames: 16, recovery: 14, damage: 85, pass: true, afterimage: true, trail: 'dollar', shout: '$TK FLEX', ai: 'mid' },
     { mech: 'projectile', art: 'solcoin', startup: 12, recovery: 18, damage: 18, speed: 12, shots: 5, interval: 5, spreadY: 90, spin: 0.3, scale: 0.9, ai: 'far' },
     { mech: 'decoy', startup: 3, distance: 230, recovery: 8, decoyLife: 70, decoyDamage: 60, invuln: 14, ai: 'defense' },
   ],
@@ -231,5 +231,10 @@ export const MOVES: Record<string, FighterMoves> = {
     { mech: 'projectile', art: 'callorb', startup: 8, recovery: 16, damage: 65, speed: 16, color: 0x9945ff, ai: 'far' },
     { mech: 'mobility', kind: 'hop', startup: 6, recovery: 14, invuln: 10, damage: 85, ai: 'mid' },
     { mech: 'buff', startup: 8, recovery: 8, heal: 60, buffs: [{ kind: 'armor', amount: 2, frames: 280 }], art: 'solcoin', ai: 'buff' },
+  ],
+  eezzy: [
+    { mech: 'projectile', art: 'ice', startup: 12, recovery: 18, damage: 65, speed: 11, status: { kind: 'freeze', frames: 45 }, ai: 'far' },
+    { mech: 'rush', startup: 5, speed: 17, frames: 18, recovery: 16, damage: 85, type: 'low', anim: 'dash', invuln: 'projectile', knockdown: true, ai: 'mid' },
+    { mech: 'strike', startup: 13, active: 5, recovery: 22, damage: 115, type: 'overhead', box: { x: 0, y: -300, w: 170, h: 300 }, anim: 'overhead', armor: true, knockdown: true, lunge: 3, ai: 'close' },
   ],
 };

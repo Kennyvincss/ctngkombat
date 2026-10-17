@@ -218,7 +218,7 @@ function neonMid(c: Ctx, w: number, _h: number) {
   }
   c.font = '28px Anton, Impact, sans-serif';
   c.fillStyle = '#16c784';
-  c.fillText('$TRENCH  +420.69%', bx + 20, by + 245);
+  c.fillText('$TK  +420.69%', bx + 20, by + 245);
   // neon sign
   c.font = '54px Anton, Impact, sans-serif';
   c.shadowColor = '#ff2fd2';
@@ -430,7 +430,7 @@ export function buildStage(scene: Phaser.Scene, id: string): { update: (frame: n
       })
       .setDepth(-4);
     const ticker = scene.add
-      .text(0, G + 60, '  $SOL ▲ 4.2%   $TRENCH ▲ 420%   $RUG ▼ 99%   $GARRI ▲ 69%   $WAGMI ▲ 12%   $NGMI ▼ 33%  ', {
+      .text(0, G + 60, '  $TK ▲ 420%   $TK ▲ 69%   $TK ▲ 4.2%   $TK ▲ 1000%   $TK ▲ 12%   $TK ▲ 100x  ', {
         fontFamily: 'Anton, Impact, sans-serif',
         fontSize: '22px',
         color: '#2be0ff',

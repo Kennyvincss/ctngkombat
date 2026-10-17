@@ -542,7 +542,7 @@ const ART: Record<string, [number, number, Draw]> = {
     c.fillStyle = '#999';
     for (let i = 0; i < 6; i++) c.fillRect(20, 60 + i * 16, 140 - (i % 2) * 40, 4);
     text(c, 'GAS FEE', 90, 170, 26, '#b3261e');
-    text(c, '9,999 SOL', 90, 200, 22, '#b3261e');
+    text(c, '9,999 $TK', 90, 200, 22, '#b3261e');
   }],
   dollar: [40, 40, (c) => text(c, '$', 20, 22, 36, '#7fff7f', '#0a3d0a')],
   zero: [60, 60, (c) => text(c, '$0', 30, 32, 42, '#ffd400', '#3d2a00')],

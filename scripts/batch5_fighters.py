@@ -287,6 +287,13 @@ F = [
    ('Validator', 'Validates his own block: armour and heals.', "{ mech: 'buff', startup: 8, recovery: 8, heal: 60, buffs: [{ kind: 'armor', amount: 2, frames: 280 }], art: 'solcoin', ai: 'buff' }")],
   ('Network Congestion', 'Spams so many transactions the opponent never confirms again.',
    ["k.banner('NETWORK CONGESTION', 0x14f195, 200);", "k.rain('solcoin', 300, 30, 40, 260);", "k.popups(['tx failed', 'retrying', 'dropped', 'slot skipped'], 0x9945ff, 600, 10, 110);", "k.fadeLoser(1900, 600);", "k.winPose(2600);"]), 'Solana Dave!'),
+ ('eezzy', 'Eezzy', '@NotEezzy', 'zoner', 1000, 3.7, 1.0, 0x4fb8ff, 'Ice Penguin / Zoner',
+  'A chubby penguin in 3D glasses and a puffer vest. Watches the fight like a movie, then freezes the ending.', 'Eezzy game. Eezzy win.',
+  [('Ice Beam', 'Fires a blast of ice from both flippers that freezes on hit.', "{ mech: 'projectile', art: 'ice', startup: 12, recovery: 18, damage: 65, speed: 11, status: { kind: 'freeze', frames: 45 }, ai: 'far' }"),
+   ('Belly Slide', 'Slides along the ice belly-first under attacks and trips the opponent.', "{ mech: 'rush', startup: 5, speed: 17, frames: 18, recovery: 16, damage: 85, type: 'low', anim: 'dash', invuln: 'projectile', knockdown: true, ai: 'mid' }"),
+   ('Keyboard Smash', 'Brings the keyboard down from overhead with armour.', "{ mech: 'strike', startup: 13, active: 5, recovery: 22, damage: 115, type: 'overhead', box: { x: 0, y: -300, w: 170, h: 300 }, anim: 'overhead', armor: true, knockdown: true, lunge: 3, ai: 'close' }")],
+  ('Directors Cut', 'Pauses the fight with the remote, freezes the opponent solid and rolls the credits.',
+   ["k.freeze(200);", "k.banner('DIRECTORS CUT', 0x4fb8ff, 300);", "k.rain('ice', 500, 18, 60, 220);", "k.scroll(['THE END', 'starring: Eezzy', 'special thanks: you, for losing'], '#4fb8ff', 1100, 1800);", "k.winPose(3000);"]), 'Easy!'),
 ]
 
 
@@ -296,7 +303,7 @@ def ts(c):
 
 def main():
     ids = [f[0] for f in F]
-    assert len(ids) == 39 and len(set(ids)) == 39
+    assert len(ids) == len(set(ids))
     # fighters.json
     fj = ROOT / 'public' / 'fighters.json'
     roster = [f for f in json.loads(fj.read_text()) if f['id'] not in ids]
