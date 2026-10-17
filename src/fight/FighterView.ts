@@ -21,6 +21,8 @@ export interface FighterView {
   setShield(on: boolean): void;
   /** a faded copy left behind (dash trails, clones, decoys) */
   ghost(alpha?: number, tint?: number, lifeMs?: number): Phaser.GameObjects.Image;
+  /** hold one drawing regardless of the animation (the entrance pose before START); null releases it */
+  hold?(pose: string | null): void;
   /** called once per logic frame */
   tick(): void;
   destroy(): void;
@@ -305,6 +307,24 @@ export interface SpriteSet {
 const BORROW: Partial<Record<AnimKey, AnimKey>> = { flip: 'jump', flipBack: 'jump', stance: 'crouch' };
 
 /**
+ * Extra drawings from the 40-pose sheets, picked from context (in the air, crouched, moving
+ * back...) so combat code keeps its 23 animations. Each list is tried in order; a fighter
+ * without a pose falls through to the next, ending at the plain animation.
+ */
+const VARIANTS: Partial<Record<AnimKey, { air?: string[]; low?: string[]; alt?: string[] }>> = {
+  light: { air: ['airpunch'], low: ['crouchpunch'] },
+  heavy: { air: ['airpunch'], low: ['crouchpunch'], alt: ['elbow'] },
+  kick: { air: ['airkick'], alt: ['backkick', 'knee'] },
+  overhead: { air: ['airkick'] },
+  hit: { air: ['blown'], alt: ['gut'] },
+  block: { low: ['crouchblock'] },
+  stance: { alt: ['charge'] },
+  grab: { alt: ['toss'] },
+  special: { alt: ['throw'] },
+  cast: { alt: ['slam'] },
+};
+
+/**
  * Phase B: hand-drawn poses. Each fighter has one texture atlas (assets/sprites/<id>.webp)
  * with a frame per pose; frames carry their own pivot (the feet under the body), so
  * swapping poses keeps the fighter planted. A little code motion goes on top: breathing,
@@ -325,6 +345,15 @@ export class SpriteView implements FighterView {
   private glowFx: Phaser.FX.Glow | null = null;
   private readonly scale: number;
   readonly height = FIGHTER_HEIGHT;
+  /** last frame's position, to tell rising from falling and stepping back from forward */
+  private lastX = 0;
+  private lastY = 0;
+  /** frames since the feet touched down (landing pose) */
+  private landT = 99;
+  /** the animation before an attack started (a crouching attack keeps the crouch) */
+  private prevAnim: AnimKey = 'idle';
+  /** alternates between a move's two drawings, so repeats don't look identical */
+  private flip = 0;
 
   constructor(
     private scene: Phaser.Scene,
@@ -349,11 +378,36 @@ export class SpriteView implements FighterView {
     return this.set.poses.includes(pose);
   }
 
-  private show(pose: string) {
-    if (!this.has(pose)) pose = 'idle';
+  /** a drawing held over the animation (see FighterView.hold) */
+  private held: string | null = null;
+
+  hold(pose: string | null) {
+    this.held = pose && this.has(pose) ? pose : null;
+    if (this.held) this.show(this.held);
+    else this.show(...this.poseFor(this._anim));
+  }
+
+  private show(...poses: string[]) {
+    if (this.held) poses = [this.held];
+    const pose = poses.find((p) => this.has(p)) ?? 'idle';
     if (pose === this.pose) return;
     this.pose = pose;
     this.display.setFrame(pose);
+  }
+
+  private get airborne() {
+    return this.y < GROUND_SHADOW_Y.value - 8;
+  }
+
+  /** the drawing for an animation as it starts, from the context it starts in */
+  private poseFor(anim: AnimKey): string[] {
+    const base = BORROW[anim] ?? anim;
+    const v = VARIANTS[anim];
+    if (!v) return [base];
+    if (v.air && this.airborne) return [...v.air, base];
+    if (v.low && (this.prevAnim === 'crouch' || this.prevAnim === 'stance')) return [...v.low, base];
+    if (v.alt && this.flip++ % 2 === 1) return [...v.alt, base];
+    return [base];
   }
 
   setPosition(x: number, y: number) {
@@ -367,9 +421,10 @@ export class SpriteView implements FighterView {
 
   play(anim: AnimKey, opts?: { restart?: boolean }) {
     if (anim === this._anim && !opts?.restart) return;
+    if (anim !== this._anim) this.prevAnim = this._anim;
     this._anim = anim;
     this.t = 0;
-    this.show(BORROW[anim] ?? anim);
+    this.show(...this.poseFor(anim));
   }
 
   flash(color = 0xffffff, frames = 5) {
@@ -436,6 +491,12 @@ export class SpriteView implements FighterView {
   tick() {
     const t = ++this.t;
     if (this.flashT > 0 && --this.flashT === 0) this.applyTint();
+    const vx = this.x - this.lastX;
+    const vy = this.y - this.lastY;
+    if (this.airborne) this.landT = 0;
+    else if (this.landT < 99) this.landT++;
+    this.lastX = this.x;
+    this.lastY = this.y;
 
     let sx = 1;
     let sy = 1;
@@ -446,11 +507,22 @@ export class SpriteView implements FighterView {
       case 'idle':
         sy = 1 + 0.012 * Math.sin(t * 0.09);
         sx = 1 - 0.006 * Math.sin(t * 0.09);
+        // touch-down crouch, then breathe between the two stances
+        if (this.landT < 7) this.show('land', 'crouch');
+        else this.show(Math.floor(t / 38) % 2 === 1 ? 'idle2' : 'idle', 'idle');
         break;
-      case 'walk':
-        // two-step cycle: stride pose and guard pose (quick steps to match the walk speed)
-        this.show(Math.floor(t / 7) % 2 === 0 ? 'walk' : 'idle');
+      case 'walk': {
+        // stepping back leans away; forward is a four-beat stride (left, guard, right, guard)
+        const back = vx * this.facing < -0.5;
+        const beat = Math.floor(t / 7) % 4;
+        if (back) this.show(beat % 2 === 0 ? 'walkback' : 'idle', beat % 2 === 0 ? 'walk' : 'idle');
+        else this.show(beat === 0 ? 'walk' : beat === 2 ? 'walk2' : 'idle', beat === 2 ? 'walk' : 'idle');
         dy = -Math.abs(Math.sin(t * (Math.PI / 7))) * 5;
+        break;
+      }
+      case 'jump':
+        // rising stretched out, then tucked over the top and on the way down
+        this.show(vy < -6 ? 'jumpup' : 'jump', 'jump');
         break;
       case 'crouch':
       case 'stance':
@@ -483,6 +555,9 @@ export class SpriteView implements FighterView {
         break;
       case 'knockdown':
         dy = t > 14 && t < 22 ? -8 * Math.sin(((t - 14) / 8) * Math.PI) : 0;
+        // thrown back through the air first, then flat on the floor
+        if (t === 1 && this.airborne) this.show('blown', 'knockdown');
+        else if (!this.airborne && this.pose === 'blown') this.show('knockdown');
         break;
       case 'win':
         dy = -Math.abs(Math.sin(t * 0.1)) * 10;

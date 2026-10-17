@@ -75,8 +75,10 @@ def detect(rgb):
         best, bd = None, 1e9
         for k in cores:
             a0, b0, a1, b1 = boxes[k]
+            # inside the figure's own height only: a sheet's text labels sit just above a head
+            # (the row above's caption) or under the feet, and must not come along
             pad = core_h * 0.12
-            if a0 - pad <= cx <= a1 + pad and b0 - pad <= cy <= b1 + pad * 0.3:
+            if a0 - pad <= cx <= a1 + pad and b0 <= cy <= b1:
                 d = abs(cx - (a0 + a1) / 2)
                 if d < bd:
                     best, bd = k, d
@@ -102,7 +104,26 @@ def detect(rgb):
         cur.append(c)
     rows.append(cur)
     ordered = [c for r in rows for c in sorted(r, key=lambda c: c['box'][0])]
+    # two figures touching top to bottom (a kick from one row resting on a head in the next):
+    # cut at the thinnest line; the lower half gets a new number at the end so the others keep theirs
+    for c in list(ordered):
+        x0, y0, x1, y1 = c['box']
+        if y1 - y0 < core_h * 1.55:
+            continue
+        rows_px = (out[y0:y1, x0:x1] == c['id']).sum(1)
+        lo, hi = int((y1 - y0) * 0.35), int((y1 - y0) * 0.65)
+        yc = y0 + lo + int(np.argmin(rows_px[lo:hi]))
+        nid = int(out.max()) + 1
+        part = out[yc:y1, x0:x1]
+        part[part == c['id']] = nid
+        c['box'] = _box(out, c['id'])
+        ordered.append(dict(id=nid, box=_box(out, nid)))
     return mask, out, ordered
+
+
+def _box(lab, k):
+    yy, xx = np.nonzero(lab == k)
+    return [int(xx.min()), int(yy.min()), int(xx.max()) + 1, int(yy.max()) + 1]
 
 
 def cut(rgb, lab, c):

@@ -147,5 +147,980 @@
     ],
     "fatality": "Vanishing Act: covers the opponent with a cloth. When it is pulled away, only a tiny rubber duck remains.",
     "card": "assets/cards/mystayor.webp"
+  },
+  {
+    "id": "cupsey",
+    "order": 7,
+    "name": "Cupsey",
+    "handle": "@Cupseyy",
+    "cardNameplate": "CUPSEY",
+    "archetype": "Soldier / Rushdown",
+    "playstyle": "A tiny sponge soldier who salutes, charges and never stops pressing.",
+    "specials": [
+      {
+        "name": "Trench Charge",
+        "description": "Salutes, then charges helmet-first through the opponent."
+      },
+      {
+        "name": "Bubble Barrage",
+        "description": "Blows a burst of bubbles that float toward the opponent."
+      },
+      {
+        "name": "Air Strike",
+        "description": "Calls in a strike: grenades rain down from above."
+      }
+    ],
+    "fatality": "Operation Absorb: Soaks the opponent up like a sponge, wrings them out and salutes.",
+    "card": "assets/cards/cupsey.webp"
+  },
+  {
+    "id": "cented",
+    "order": 8,
+    "name": "Cented",
+    "handle": "@flipski77",
+    "cardNameplate": "CENTED",
+    "archetype": "Ice & Fire / All-rounder",
+    "playstyle": "Half frost, half flame. Freezes you on one side and burns you on the other.",
+    "specials": [
+      {
+        "name": "Frost Side",
+        "description": "Fires a shard of ice that freezes the opponent on hit."
+      },
+      {
+        "name": "Flame Side",
+        "description": "A burning uppercut that launches."
+      },
+      {
+        "name": "Split Stance",
+        "description": "Ice armour on, fire fists ready: armour and extra damage."
+      }
+    ],
+    "fatality": "Freezer Burn: Freezes the opponent solid, then shatters them with a wall of fire.",
+    "card": "assets/cards/cented.webp"
+  },
+  {
+    "id": "tekkers",
+    "order": 9,
+    "name": "Tekkers",
+    "handle": "@Tekkerrss",
+    "cardNameplate": "TEKKERS",
+    "archetype": "Street Brawler / Rushdown",
+    "playstyle": "Brass knuckles, loose tie, zero patience. Gets in your face and stays there.",
+    "specials": [
+      {
+        "name": "Knuckle Rush",
+        "description": "A flurry of brass-knuckle punches that ends in a heavy hook."
+      },
+      {
+        "name": "Back Alley Toss",
+        "description": "Grabs the opponent and slams them into the alley wall."
+      },
+      {
+        "name": "Heat Check",
+        "description": "A flaming dash punch that bounces off the wall."
+      }
+    ],
+    "fatality": "Street Rules: A knuckle combo too fast to see, then a slow-motion final punch.",
+    "card": "assets/cards/tekkers.webp"
+  },
+  {
+    "id": "dior",
+    "order": 10,
+    "name": "Dior",
+    "handle": "@Dior100x",
+    "cardNameplate": "DIOR",
+    "archetype": "Shadow Striker / Speed",
+    "playstyle": "A grinning shadow in black and white. Too fast, too sharp, already behind you.",
+    "specials": [
+      {
+        "name": "Speed Line",
+        "description": "Dashes through the opponent leaving manga speed lines."
+      },
+      {
+        "name": "Ink Step",
+        "description": "Vanishes and reappears behind the opponent with a strike."
+      },
+      {
+        "name": "Final Panel",
+        "description": "A counter that freezes the opponent mid-frame."
+      }
+    ],
+    "fatality": "Black and White: The screen turns to manga ink; the opponent fades into the last panel.",
+    "card": "assets/cards/dior.webp"
+  },
+  {
+    "id": "poorgoat",
+    "order": 11,
+    "name": "Poorgoat",
+    "handle": "@PoorGoat_",
+    "cardNameplate": "POORGOAT",
+    "archetype": "Monster Goat / Grappler",
+    "playstyle": "A stitched-up Halloween goat that hits like a truck and laughs about being broke.",
+    "specials": [
+      {
+        "name": "Headbutt",
+        "description": "Lowers the horns and rams forward with armour."
+      },
+      {
+        "name": "Graveyard Grab",
+        "description": "Grabs and slams the opponent like a sack."
+      },
+      {
+        "name": "Pumpkin Toss",
+        "description": "Throws a bouncing jack-o-lantern."
+      }
+    ],
+    "fatality": "Wallet Check: Turns the opponent's pockets out: nothing but moths and cobwebs.",
+    "card": "assets/cards/poorgoat.webp"
+  },
+  {
+    "id": "otta",
+    "order": 12,
+    "name": "Otta",
+    "handle": "@ottabag",
+    "cardNameplate": "OTTA",
+    "archetype": "Eerie / Zoner",
+    "playstyle": "Stares without blinking. Fills the screen with ink and waits for you to walk into it.",
+    "specials": [
+      {
+        "name": "Ink Orb",
+        "description": "A slow homing orb of dark ink."
+      },
+      {
+        "name": "Stare Down",
+        "description": "A wave of dread that reverses the opponent’s controls."
+      },
+      {
+        "name": "Ink Trap",
+        "description": "Leaves a puddle of ink that grabs whoever steps in it."
+      }
+    ],
+    "fatality": "Unblinking: Stares until the opponent dissolves into ink.",
+    "card": "assets/cards/otta.webp"
+  },
+  {
+    "id": "unipcs",
+    "order": 13,
+    "name": "Unipcs",
+    "handle": "@theunipcs",
+    "cardNameplate": "UNIPCS",
+    "archetype": "Robot / Zoner",
+    "playstyle": "A cheerful yellow robot that fires lasers, deploys drones and never runs out of battery.",
+    "specials": [
+      {
+        "name": "Laser Beam",
+        "description": "Fires a fast electric bolt."
+      },
+      {
+        "name": "Drone Drop",
+        "description": "Drones drop chips on the opponent from above."
+      },
+      {
+        "name": "Reboot",
+        "description": "Restarts its systems: heals and gains armour."
+      }
+    ],
+    "fatality": "System Shutdown: Beeps, scans the opponent and powers them off.",
+    "card": "assets/cards/unipcs.webp"
+  },
+  {
+    "id": "heat",
+    "order": 14,
+    "name": "Heat",
+    "handle": "@Heat",
+    "cardNameplate": "HEAT",
+    "archetype": "Blazing Warrior / All-rounder",
+    "playstyle": "A brooding soldier who runs hot. Every hit raises the temperature.",
+    "specials": [
+      {
+        "name": "Fire Blast",
+        "description": "Pushes a fireball forward."
+      },
+      {
+        "name": "Meltdown Strike",
+        "description": "An overhead smash that bounces the opponent off the floor."
+      },
+      {
+        "name": "Heat Wave",
+        "description": "Surrounds himself with heat: extra speed and damage."
+      }
+    ],
+    "fatality": "Overheat: The temperature climbs until the opponent melts into a puddle.",
+    "card": "assets/cards/heat.webp"
+  },
+  {
+    "id": "dylaneth",
+    "order": 15,
+    "name": "Dylaneth",
+    "handle": "@dylansdegens",
+    "cardNameplate": "DYLANETH",
+    "archetype": "Flame Mystic / Trickster",
+    "playstyle": "Hair of pink fire, eyes of purple light. Plays tricks and burns the degens.",
+    "specials": [
+      {
+        "name": "Pink Flame",
+        "description": "Throws a ball of pink fire that hits twice."
+      },
+      {
+        "name": "Flicker",
+        "description": "Leaves a fake copy behind and slips away."
+      },
+      {
+        "name": "Degen Dive",
+        "description": "Teleports above the opponent and dives down."
+      }
+    ],
+    "fatality": "Gold Rush: Buries the opponent in sparks of gold until only a pile is left.",
+    "card": "assets/cards/dylaneth.webp"
+  },
+  {
+    "id": "midtermdev",
+    "order": 16,
+    "name": "Midtermdev",
+    "handle": "@Midtermdev",
+    "cardNameplate": "MIDTERMDEV",
+    "archetype": "Hamster Dev / Defensive",
+    "playstyle": "A hamster in a hoodie who ships code at 3 a.m. and debugs your whole game plan.",
+    "specials": [
+      {
+        "name": "Code Push",
+        "description": "Fires a block of code that disables the opponent’s specials."
+      },
+      {
+        "name": "Hotfix",
+        "description": "A quick fix: heals and gains armour."
+      },
+      {
+        "name": "Debug Counter",
+        "description": "Catches the bug and throws it back."
+      }
+    ],
+    "fatality": "Midterm Exam: Hands the opponent an exam they can’t pass. They fail. Hard.",
+    "card": "assets/cards/midtermdev.webp"
+  },
+  {
+    "id": "alon",
+    "order": 17,
+    "name": "Alon",
+    "handle": "@a1lon9",
+    "cardNameplate": "ALON",
+    "archetype": "Vegas High Roller / Trickster",
+    "playstyle": "A tiny high roller in white shades. Fast hands, faster money, always on a heater.",
+    "specials": [
+      {
+        "name": "Snake Eyes",
+        "description": "Rolls the dice: every throw does something different."
+      },
+      {
+        "name": "Pool Dive",
+        "description": "Dives forward low and slides under attacks."
+      },
+      {
+        "name": "Jackpot",
+        "description": "Hits the jackpot: coins rain from above."
+      }
+    ],
+    "fatality": "Cashed Out: Buys the opponent out of the game, then tips the dealer.",
+    "card": "assets/cards/alon.webp"
+  },
+  {
+    "id": "ansem",
+    "order": 18,
+    "name": "Ansem",
+    "handle": "@blknoiz06",
+    "cardNameplate": "ANSEM",
+    "archetype": "Market Mover / All-rounder",
+    "playstyle": "Calls the top, calls the bottom and calls your bluff. When he moves, the chart moves.",
+    "specials": [
+      {
+        "name": "Green Candle",
+        "description": "Summons a green candle that rises under the opponent."
+      },
+      {
+        "name": "Call the Top",
+        "description": "Throws a red candle that sends the opponent tumbling."
+      },
+      {
+        "name": "Send It",
+        "description": "A full-speed charge with armour."
+      }
+    ],
+    "fatality": "Market Maker: Draws the opponent’s chart in real time. It only goes down.",
+    "card": "assets/cards/ansem.webp"
+  },
+  {
+    "id": "seyong",
+    "order": 19,
+    "name": "Seyong",
+    "handle": "@seyong",
+    "cardNameplate": "SEYONG",
+    "archetype": "Beach Fighter / All-rounder",
+    "playstyle": "Calm as a sunset, quick as a wave. Never in a hurry, never out of position.",
+    "specials": [
+      {
+        "name": "Wave Kick",
+        "description": "A sweeping kick that sends a wave along the ground."
+      },
+      {
+        "name": "Sunset Combo",
+        "description": "A smooth four-hit combo that launches."
+      },
+      {
+        "name": "Riptide",
+        "description": "A counter that pulls the opponent under."
+      }
+    ],
+    "fatality": "Low Tide: A tidal wave rolls in and the opponent washes out to sea.",
+    "card": "assets/cards/seyong.webp"
+  },
+  {
+    "id": "ethan-prosper",
+    "order": 20,
+    "name": "Ethan Prosper",
+    "handle": "@pr6spr",
+    "cardNameplate": "ETHAN PROSPER",
+    "archetype": "Lightning / Rushdown",
+    "playstyle": "Thunder in a uniform. Strikes first, strikes fast and leaves a scorch mark.",
+    "specials": [
+      {
+        "name": "Thunderclap",
+        "description": "A lightning-fast dash strike."
+      },
+      {
+        "name": "Bolt",
+        "description": "Calls down a bolt of lightning on the opponent."
+      },
+      {
+        "name": "Prosper",
+        "description": "Charges up with electricity: faster and stronger."
+      }
+    ],
+    "fatality": "Storm Front: The sky opens up: bolt after bolt until nothing is left standing.",
+    "card": "assets/cards/ethan-prosper.webp"
+  },
+  {
+    "id": "orangie",
+    "order": 21,
+    "name": "Orangie",
+    "handle": "@orangie",
+    "cardNameplate": "ORANGIE",
+    "archetype": "Streamer / Zoner",
+    "playstyle": "Thinks three moves ahead on stream. Every chat message is a projectile.",
+    "specials": [
+      {
+        "name": "Live Chat",
+        "description": "A burst of chat messages that fly at the opponent."
+      },
+      {
+        "name": "Clip It",
+        "description": "Freezes the opponent on a counter-hit."
+      },
+      {
+        "name": "Raid",
+        "description": "Sends a raid: viewers drop in from above."
+      }
+    ],
+    "fatality": "Stream Ended: Ends the stream on the opponent. The screen goes black.",
+    "card": "assets/cards/orangie.webp"
+  },
+  {
+    "id": "kimchi",
+    "order": 22,
+    "name": "Kimchi",
+    "handle": "@kimchi1x",
+    "cardNameplate": "KIMCHI",
+    "archetype": "Jet Setter / All-rounder",
+    "playstyle": "Private jets and spicy hands. Smooth, calm, and the heat comes later.",
+    "specials": [
+      {
+        "name": "Spice Shot",
+        "description": "Fires a chilli that burns on hit."
+      },
+      {
+        "name": "First Class",
+        "description": "A smooth dash through the opponent."
+      },
+      {
+        "name": "Fermented",
+        "description": "Lets it build: gains damage over time."
+      }
+    ],
+    "fatality": "Extra Spicy: One bite of kimchi and the opponent breathes fire until they’re gone.",
+    "card": "assets/cards/kimchi.webp"
+  },
+  {
+    "id": "lynk",
+    "order": 23,
+    "name": "Lynk",
+    "handle": "@lynk0x",
+    "cardNameplate": "LYNK",
+    "archetype": "Sky Scout / Trickster",
+    "playstyle": "A small scout with a big grin. Links combos from the sky and never lands where you expect.",
+    "specials": [
+      {
+        "name": "Sky Link",
+        "description": "Dashes up and dives at an angle."
+      },
+      {
+        "name": "Chain Link",
+        "description": "A fast chain of hits that speeds up."
+      },
+      {
+        "name": "Cloud Step",
+        "description": "Teleports behind the opponent."
+      }
+    ],
+    "fatality": "Broken Link: Cuts the opponent’s connection. They lag, buffer, then disconnect.",
+    "card": "assets/cards/lynk.webp"
+  },
+  {
+    "id": "sling",
+    "order": 24,
+    "name": "Sling",
+    "handle": "@slingoorio",
+    "cardNameplate": "SLING",
+    "archetype": "Wind Fighter / Rushdown",
+    "playstyle": "Rainbow shades, a big grin and the wind at his back. Slings himself at you from anywhere.",
+    "specials": [
+      {
+        "name": "Slingshot",
+        "description": "Launches himself forward like a slingshot."
+      },
+      {
+        "name": "Gust",
+        "description": "A gust of wind that pushes and hits."
+      },
+      {
+        "name": "Tornado Kick",
+        "description": "A spinning kick that hits several times."
+      }
+    ],
+    "fatality": "Hurricane: Spins up a hurricane and slings the opponent off the screen.",
+    "card": "assets/cards/sling.webp"
+  },
+  {
+    "id": "daumen",
+    "order": 25,
+    "name": "Daumen",
+    "handle": "@daumenxyz",
+    "cardNameplate": "DAUMEN",
+    "archetype": "Chick / Tank",
+    "playstyle": "A fluffy chick with an unsettling human smile. Gives a thumbs-up, then takes everything.",
+    "specials": [
+      {
+        "name": "Thumbs Up",
+        "description": "A counter that knocks the opponent flat."
+      },
+      {
+        "name": "Peck Peck",
+        "description": "A fast flurry of pecks."
+      },
+      {
+        "name": "Fluff Up",
+        "description": "Puffs up: armour and heals while blocking."
+      }
+    ],
+    "fatality": "Big Smile: Smiles wider and wider until the opponent runs off screen screaming.",
+    "card": "assets/cards/daumen.webp"
+  },
+  {
+    "id": "yenni",
+    "order": 26,
+    "name": "Yenni",
+    "handle": "@Yennii56",
+    "cardNameplate": "YENNI",
+    "archetype": "Pink Cat / Trickster",
+    "playstyle": "A small pink cat with big eyebrows and bigger attitude. Pounces, scratches and is gone.",
+    "specials": [
+      {
+        "name": "Pounce",
+        "description": "Leaps forward claws first."
+      },
+      {
+        "name": "Pink Orb",
+        "description": "A bouncy orb of pink energy."
+      },
+      {
+        "name": "Nine Lives",
+        "description": "Leaves a decoy and slips away."
+      }
+    ],
+    "fatality": "Cat Nap: Curls up for a nap on top of the knocked-out opponent.",
+    "card": "assets/cards/yenni.webp"
+  },
+  {
+    "id": "jack-duval",
+    "order": 27,
+    "name": "Jack Duval",
+    "handle": "@jackduval",
+    "cardNameplate": "JACK DUVAL",
+    "archetype": "Mountain Brawler / All-rounder",
+    "playstyle": "Rugged and steady. Throws real punches, real energy blasts and never backs down.",
+    "specials": [
+      {
+        "name": "Energy Blast",
+        "description": "Pushes out a wide ball of blue energy."
+      },
+      {
+        "name": "Rockslide",
+        "description": "Rocks fall on the opponent."
+      },
+      {
+        "name": "Ridge Breaker",
+        "description": "A heavy overhead with armour."
+      }
+    ],
+    "fatality": "Avalanche: An avalanche roars down the mountain and buries the opponent.",
+    "card": "assets/cards/jack-duval.webp"
+  },
+  {
+    "id": "smokez",
+    "order": 28,
+    "name": "Smokez",
+    "handle": "@SmokezXBT",
+    "cardNameplate": "SMOKEZ",
+    "archetype": "Emerald Bull / Powerhouse",
+    "playstyle": "A massive crystal bull with a cigar. Slow, heavy and impossible to push around.",
+    "specials": [
+      {
+        "name": "Bull Rush",
+        "description": "Charges horns-first with armour."
+      },
+      {
+        "name": "Smoke Cloud",
+        "description": "Blows a cloud of smoke that hits several times."
+      },
+      {
+        "name": "Ground Pound",
+        "description": "Slams the ground: a heavy hit that knocks down."
+      }
+    ],
+    "fatality": "Up in Smoke: Takes one long puff and the opponent goes up in a cloud of green smoke.",
+    "card": "assets/cards/smokez.webp"
+  },
+  {
+    "id": "rektober",
+    "order": 29,
+    "name": "Rektober",
+    "handle": "@rektober",
+    "cardNameplate": "REKTOBER",
+    "archetype": "Shinobi / Zoner",
+    "playstyle": "A ninja of the red month. Every October he shows up, and every chart goes down.",
+    "specials": [
+      {
+        "name": "Red Candle Rain",
+        "description": "Red candles fall from the sky."
+      },
+      {
+        "name": "Leaf Shuriken",
+        "description": "Throws spinning autumn leaves."
+      },
+      {
+        "name": "Shadow Clone",
+        "description": "A clone walks at the opponent and explodes."
+      }
+    ],
+    "fatality": "Red October: The whole month goes red. So does the opponent’s portfolio.",
+    "card": "assets/cards/rektober.webp"
+  },
+  {
+    "id": "marcell",
+    "order": 30,
+    "name": "Marcell",
+    "handle": "@MarcellxMarcell",
+    "cardNameplate": "MARCELL",
+    "archetype": "Glitch / Trickster",
+    "playstyle": "A shadow outlined in rainbow glitch. Flickers in and out of the frame.",
+    "specials": [
+      {
+        "name": "Glitch Step",
+        "description": "Teleports in front of the opponent with a strike."
+      },
+      {
+        "name": "Neon Bolt",
+        "description": "Fires a bolt of rainbow light."
+      },
+      {
+        "name": "Lag Spike",
+        "description": "Sends a wave that lags the opponent’s inputs."
+      }
+    ],
+    "fatality": "Corrupted: Glitches the opponent until they break into pixels.",
+    "card": "assets/cards/marcell.webp"
+  },
+  {
+    "id": "imsheepsol",
+    "order": 31,
+    "name": "ImSheepSol",
+    "handle": "@imsheepsol",
+    "cardNameplate": "IMSHEEPSOL",
+    "archetype": "Storm Sheep / Defensive",
+    "playstyle": "A small sheep girl with curled horns and a storm behind her. Soft to look at, hard to hit.",
+    "specials": [
+      {
+        "name": "Ram",
+        "description": "Charges horns-first."
+      },
+      {
+        "name": "Wool Wall",
+        "description": "Fluffs up: blocks projectiles and gains armour."
+      },
+      {
+        "name": "Golden Storm",
+        "description": "Lightning falls from the golden clouds."
+      }
+    ],
+    "fatality": "Counting Sheep: Puts the opponent to sleep. Forever.",
+    "card": "assets/cards/imsheepsol.webp"
+  },
+  {
+    "id": "chairman",
+    "order": 32,
+    "name": "Chairman",
+    "handle": "@Chairman_DN",
+    "cardNameplate": "CHAIRMAN",
+    "archetype": "Digital Ghost / Zoner",
+    "playstyle": "A hooded figure with a halo of light and a face of shadow. Runs the board from another dimension.",
+    "specials": [
+      {
+        "name": "Pixel Blast",
+        "description": "Fires a ball of blue pixels."
+      },
+      {
+        "name": "Board Vote",
+        "description": "A wave that disables the opponent’s specials."
+      },
+      {
+        "name": "Phase Out",
+        "description": "Dissolves into pixels and reappears behind the opponent."
+      }
+    ],
+    "fatality": "Motion Denied: The board votes. The opponent is removed.",
+    "card": "assets/cards/chairman.webp"
+  },
+  {
+    "id": "the-detective",
+    "order": 33,
+    "name": "The Detective",
+    "handle": "@MemeRetire",
+    "cardNameplate": "THE DETECTIVE",
+    "archetype": "Noir Detective / Trickster",
+    "playstyle": "A shadow in a fedora with glowing eyes. Investigates, finds the clue and closes the case.",
+    "specials": [
+      {
+        "name": "Magnifier",
+        "description": "Spots the weakness: marks the opponent to take extra damage."
+      },
+      {
+        "name": "Into the Shadows",
+        "description": "Vanishes into the dark and strikes from behind."
+      },
+      {
+        "name": "Interrogation",
+        "description": "Grabs the opponent for questioning."
+      }
+    ],
+    "fatality": "Case Closed: Lays out the evidence. Stamps the file. The opponent is retired.",
+    "card": "assets/cards/the-detective.webp"
+  },
+  {
+    "id": "the-solstice",
+    "order": 34,
+    "name": "The Solstice",
+    "handle": "@The__Solstice",
+    "cardNameplate": "THE SOLSTICE",
+    "archetype": "Crimson Eclipse / All-rounder",
+    "playstyle": "A sharp suit and living crimson blades. The longest night falls when he fights.",
+    "specials": [
+      {
+        "name": "Crimson Lash",
+        "description": "Crimson blades lash out in front of him."
+      },
+      {
+        "name": "Eclipse",
+        "description": "Teleports above the opponent and drives down."
+      },
+      {
+        "name": "Blood Moon",
+        "description": "A counter that drains the opponent."
+      }
+    ],
+    "fatality": "Total Eclipse: The sun goes out. When it comes back, the opponent is gone.",
+    "card": "assets/cards/the-solstice.webp"
+  },
+  {
+    "id": "appie",
+    "order": 35,
+    "name": "Appie",
+    "handle": "@AppieWeb3",
+    "cardNameplate": "APPIE",
+    "archetype": "Street Panda / Powerhouse",
+    "playstyle": "A panda in a beanie and chains, blowing bubble gum. Arms crossed until it’s time to swing.",
+    "specials": [
+      {
+        "name": "Bubble Pop",
+        "description": "Blows a bubble that pops in the opponent’s face."
+      },
+      {
+        "name": "Bear Hug",
+        "description": "A crushing panda hug."
+      },
+      {
+        "name": "Chain Swing",
+        "description": "Swings the chains: a heavy strike with armour."
+      }
+    ],
+    "fatality": "Bubble Trouble: Blows a giant bubble around the opponent and pops it.",
+    "card": "assets/cards/appie.webp"
+  },
+  {
+    "id": "scharo",
+    "order": 36,
+    "name": "Scharo",
+    "handle": "@XScharo",
+    "cardNameplate": "SCHARO",
+    "archetype": "Collector / Zoner",
+    "playstyle": "A masked collector who never fights alone: his designer bear does half the work.",
+    "specials": [
+      {
+        "name": "Bear Toss",
+        "description": "Throws the designer bear at the opponent."
+      },
+      {
+        "name": "Bear Guard",
+        "description": "The bear walks forward and explodes on contact."
+      },
+      {
+        "name": "Mask Off",
+        "description": "A counter: the mask comes off and so do the gloves."
+      }
+    ],
+    "fatality": "Sold Out: Lists the opponent for sale. Nobody bids.",
+    "card": "assets/cards/scharo.webp"
+  },
+  {
+    "id": "pattyice",
+    "order": 37,
+    "name": "Pattyice",
+    "handle": "@Pattyice",
+    "cardNameplate": "PATTYICE",
+    "archetype": "Ice Bull / Powerhouse",
+    "playstyle": "A bull carved from blue ice with a mullet and shades. Freezes you, then charges.",
+    "specials": [
+      {
+        "name": "Glacier Charge",
+        "description": "Charges with icy armour."
+      },
+      {
+        "name": "Frost Breath",
+        "description": "Breathes ice that freezes on hit."
+      },
+      {
+        "name": "Ice Quake",
+        "description": "Stomps the ground: icicles shoot up."
+      }
+    ],
+    "fatality": "Deep Freeze: Freezes the opponent into a block of ice and shatters it with one tap.",
+    "card": "assets/cards/pattyice.webp"
+  },
+  {
+    "id": "bancrypto",
+    "order": 38,
+    "name": "Bancrypto",
+    "handle": "@Bancrypto__",
+    "cardNameplate": "BANCRYPTO",
+    "archetype": "Wild Brawler / Rushdown",
+    "playstyle": "Silver hair, red eyes, a grin full of teeth. Steals your health and laughs about it.",
+    "specials": [
+      {
+        "name": "Steal",
+        "description": "A grab that takes the opponent’s health for himself."
+      },
+      {
+        "name": "Wild Rush",
+        "description": "A reckless dash with a flurry of punches."
+      },
+      {
+        "name": "Undying",
+        "description": "Regenerates health over time."
+      }
+    ],
+    "fatality": "Banned: Slaps a ban on the opponent. They vanish from the platform.",
+    "card": "assets/cards/bancrypto.webp"
+  },
+  {
+    "id": "latuche",
+    "order": 39,
+    "name": "Latuche",
+    "handle": "@Latuche95",
+    "cardNameplate": "LATUCHE",
+    "archetype": "Rooftop Runner / Trickster",
+    "playstyle": "A hooded runner on the edge of a skyscraper. Jumps from roof to roof and lands on you.",
+    "specials": [
+      {
+        "name": "Rooftop Dive",
+        "description": "Dives at an angle from above."
+      },
+      {
+        "name": "Parkour",
+        "description": "Vaults over the opponent and strikes from behind."
+      },
+      {
+        "name": "Sunset Kick",
+        "description": "A kick that sends a wave of sunset light."
+      }
+    ],
+    "fatality": "Leap of Faith: Leaps off the skyscraper. The opponent follows. Only one lands.",
+    "card": "assets/cards/latuche.webp"
+  },
+  {
+    "id": "dani-worldwide",
+    "order": 40,
+    "name": "Dani Worldwide",
+    "handle": "@DaniWorldwide",
+    "cardNameplate": "DANI WORLDWIDE",
+    "archetype": "Living Statue / Powerhouse",
+    "playstyle": "A marble giant who has fought on every continent. Every move is a monument.",
+    "specials": [
+      {
+        "name": "Marble Fist",
+        "description": "A crushing punch with armour."
+      },
+      {
+        "name": "World Tour",
+        "description": "Grabs the opponent and spins them around the globe."
+      },
+      {
+        "name": "Monument",
+        "description": "Becomes a statue: armour and no flinching."
+      }
+    ],
+    "fatality": "Set in Stone: Turns the opponent into a marble statue and puts them in a museum.",
+    "card": "assets/cards/dani-worldwide.webp"
+  },
+  {
+    "id": "realist",
+    "order": 41,
+    "name": "Realist",
+    "handle": "@rrealist",
+    "cardNameplate": "REALIST",
+    "archetype": "Battle-Hardened / Rushdown",
+    "playstyle": "A soldier who has seen every cycle. No hype, no hopium, just the cold truth and a fist.",
+    "specials": [
+      {
+        "name": "Reality Check",
+        "description": "A heavy punch that knocks the opponent down."
+      },
+      {
+        "name": "Steam Burst",
+        "description": "Releases a blast of steam around him."
+      },
+      {
+        "name": "Hardened",
+        "description": "Shrugs off damage: armour and regeneration."
+      }
+    ],
+    "fatality": "Cold Truth: Tells the opponent the truth about their bags. They do not survive it.",
+    "card": "assets/cards/realist.webp"
+  },
+  {
+    "id": "cap100x",
+    "order": 42,
+    "name": "Cap100x",
+    "handle": "@cap100x",
+    "cardNameplate": "CAP100X",
+    "archetype": "Pixel Ninja / Trickster",
+    "playstyle": "A masked ninja dissolving into blue pixels. Strikes, splits and is gone.",
+    "specials": [
+      {
+        "name": "Pixel Dash",
+        "description": "Dashes through the opponent in a stream of pixels."
+      },
+      {
+        "name": "Data Shuriken",
+        "description": "Throws three pixel stars."
+      },
+      {
+        "name": "Split",
+        "description": "Splits into a decoy and reappears behind the opponent."
+      }
+    ],
+    "fatality": "100x: Hits the opponent a hundred times in one frame.",
+    "card": "assets/cards/cap100x.webp"
+  },
+  {
+    "id": "sanity100x",
+    "order": 43,
+    "name": "Sanity100x",
+    "handle": "@Sanity100x",
+    "cardNameplate": "SANITY100X",
+    "archetype": "Mad Rabbit / Trickster",
+    "playstyle": "A sleepy white rabbit in a waistcoat who is always late and always somewhere else.",
+    "specials": [
+      {
+        "name": "Pocket Watch",
+        "description": "Stops time: freezes the opponent."
+      },
+      {
+        "name": "Rabbit Hole",
+        "description": "Drops down a hole and pops out behind the opponent."
+      },
+      {
+        "name": "Hop Kick",
+        "description": "Hops forward and kicks."
+      }
+    ],
+    "fatality": "Down the Rabbit Hole: The opponent falls down the rabbit hole and doesn’t come back up.",
+    "card": "assets/cards/sanity100x.webp"
+  },
+  {
+    "id": "deecayz",
+    "order": 44,
+    "name": "Deecayz",
+    "handle": "@deecayz",
+    "cardNameplate": "DEECAYZ",
+    "archetype": "Thunder Kid / Rushdown",
+    "playstyle": "A grumpy kid in a yellow electric raincoat. Small, fast and full of sparks.",
+    "specials": [
+      {
+        "name": "Thunder Shock",
+        "description": "A quick bolt of electricity."
+      },
+      {
+        "name": "Spark Rush",
+        "description": "Rushes forward wrapped in sparks."
+      },
+      {
+        "name": "Static",
+        "description": "Builds static: faster, and hits harder."
+      }
+    ],
+    "fatality": "Thunderstorm: Calls a thunderstorm and the opponent gets struck over and over.",
+    "card": "assets/cards/deecayz.webp"
+  },
+  {
+    "id": "solana-dave",
+    "order": 45,
+    "name": "Solana Dave",
+    "handle": "@solana_dave2",
+    "cardNameplate": "SOLANA DAVE",
+    "archetype": "Suited Frog / All-rounder",
+    "playstyle": "A frog in a sharp suit who only trades on Solana. Fast blocks, fast hands, low fees.",
+    "specials": [
+      {
+        "name": "Fast Finality",
+        "description": "An instant energy push that hits before you react."
+      },
+      {
+        "name": "Frog Leap",
+        "description": "Leaps high and dives down."
+      },
+      {
+        "name": "Validator",
+        "description": "Validates his own block: armour and heals."
+      }
+    ],
+    "fatality": "Network Congestion: Spams so many transactions the opponent never confirms again.",
+    "card": "assets/cards/solana-dave.webp"
   }
 ]

@@ -1,6 +1,6 @@
 # Trenches Kombat
 
-A 2D anime-style fighting game in the spirit of Mortal Kombat, starring fighters from the Crypto Twitter trenches: Promise.sol, Onepeterr, Skroot, Evansofweb3, Arlecchino and Mystayor. Pick a fighter, fight the CPU or a friend, then **FINISH THEM**.
+A 2D anime-style fighting game in the spirit of Mortal Kombat, starring 45 fighters from the Crypto Twitter trenches. Pick a fighter, fight the CPU or a friend, then **FINISH THEM**.
 
 Built with TypeScript, Vite and Phaser 3. It runs in a desktop browser (keyboard or gamepad) and on phones (touch controls, landscape). The full design brief is in [`SPEC.md`](SPEC.md).
 
@@ -125,7 +125,7 @@ public/
   assets/cards/<id>.webp      downscaled fighter cards (select, VS and win screens)
   assets/thumbs/<id>.webp     select-grid thumbnails
   assets/fighters/<id>.png    background-removed cut-outs used in fights (Phase A puppets)
-  assets/sprites/<id>.webp    Phase B pose atlas per fighter (20 hand-drawn poses) + <id>.json frame data
+  assets/sprites/<id>.webp    Phase B pose atlas per fighter (up to 40 hand-drawn poses) + <id>.json frame data
   assets/sprites/manifest.json  which fighters have pose atlases
   assets/voice/<id>.mp3       announcer lines for the intro
   assets/music/theme.mp3      the theme song (intro, menus and fights)
@@ -179,23 +179,27 @@ Each card's frame is cropped, the nameplate is cut off (the legs fade out there 
 
 ### Phase B: real sprites
 
-Every fighter has 20 hand-drawn poses (idle, walk, crouch, jump, block, light, heavy, kick, sweep,
-uppercut, overhead, special, cast, dash, grab, hit, dizzy, knockdown, getup, win). They come from
-one generated sheet per fighter, made with the prompt in `docs/POSE_PROMPTS.md` and kept in
-`source/sheets/<id>.jpg`.
+Every fighter has up to 40 hand-drawn poses: the 20 the fight animations use (idle, walk, crouch,
+jump, block, light, heavy, kick, sweep, uppercut, overhead, special, cast, dash, grab, hit, dizzy,
+knockdown, getup, win) and 20 variants the sprite view picks from context: a second breathing
+stance, a two-step walk and a step back, rising and landing jumps, air punch and kick, crouch punch
+and block, back kick, knee, elbow, charge, throw, ground slam, gut punch, blown back, toss, taunt
+and the arms-crossed entrance pose held until START. They come from one generated 40-pose sheet
+per fighter (prompt in `docs/SPRITE_PROMPTS_BATCH5.md`), kept in `source/sheets40/<id>.jpg`.
 
-`scripts/slice_sheets.py` cuts each sheet into its 20 figures, removes the white background, scales
-every pose so the idle pose is the same height for everyone, works out where the feet are under the
-body and packs the poses into one atlas per fighter (`public/assets/sprites/<id>.webp` + `.json`):
+The generator doesn't keep to one layout, so cutting is two steps. `detect` finds and numbers
+every figure (text labels on the sheet are left out); `scripts/sheet_labels40.json` says which
+numbered figure is which pose (wrong-character figures are simply not listed). `build` cuts them,
+scales every pose so the idle pose is the same height for everyone, works out where the feet are
+under the body and packs one atlas per fighter (`public/assets/sprites/<id>.webp` + `.json`):
 
 ```bash
-python3 scripts/slice_sheets.py debug /tmp/check   # labelled previews: check every sheet split into 5 x 4
-python3 scripts/slice_sheets.py build              # write the atlases and manifest.json
+python3 scripts/slice_sheets40.py detect /tmp/check   # numbered previews of every sheet
+python3 scripts/slice_sheets40.py build [id ...]      # write the atlases and manifest.json
 ```
 
-If a sheet has an extra figure or a bad pose, list it in `scripts/sheet_fixes.json`
-(`drop` ignores a figure by row and position, `skip` leaves a pose out so the game borrows another).
-To redo one fighter, replace their sheet and run `build` again.
+A missing pose falls back to the closest one the fighter has. To redo one fighter, replace their
+sheet, run `detect`, update their labels and run `build` for them.
 
 Combat code only talks to the `FighterView` interface, so the renderer is swappable. `SpriteView`
 (poses) is used when a fighter has an atlas, then `RigView` (skeletal rig of the card), then

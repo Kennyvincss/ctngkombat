@@ -264,6 +264,8 @@ export class FightScene extends Phaser.Scene implements World {
       return;
     }
     const final = this.round === 3;
+    // both stand in their entrance pose (arms crossed) until START
+    for (const f of this.fighters) f.view.hold?.('intro');
     this.events.emit('announce', final ? 'FINAL ROUND' : `ROUND ${ROUND_WORDS[this.round] ?? this.round}`, 1500);
     void sfx.clip(voice(final ? 'final' : `round${this.round}`));
     // START waits for the slow round call (up to ~1.5 s) to finish
@@ -273,6 +275,7 @@ export class FightScene extends Phaser.Scene implements World {
       void sfx.clip(voice('start'));
       this.cameras.main.flash(120, 255, 200, 120);
       for (const f of this.fighters) {
+        f.view.hold?.(null);
         f.locked = false;
         f.setState('idle');
       }
