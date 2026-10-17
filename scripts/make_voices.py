@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""Generate the intro announcer: a deep, menacing voice saying every fighter's name.
+"""Generate the announcer: one deep, steady, bold voice saying every fighter's name and the
+fight calls.
 
-Text-to-speech is Piper (https://github.com/rhasspy/piper) with the "Ryan (high)" US English
-voice (dataset licence CC BY-NC-SA 4.0: fine for this non-commercial fan game, credited in the
-README). Piper speaks slowly and steadily; ffmpeg then makes it deep and menacing (pitch down,
-a growl an octave below, saturation, a dark reverb) while keeping the consonants clear.
+Text-to-speech is Piper (https://github.com/rhasspy/piper) with its LibriTTS (high) US English
+model, speaker 436 (dataset: LibriTTS, CC BY 4.0, credited in the README). The voice is kept a
+single voice, with no doubled or octave layers (those sounded like auto-tune):
+  1. Piper speaks the line slowly and steadily.
+  2. Praat (via parselmouth) moves the pitch down to ~70 Hz and flattens most of its rise and
+     fall (PSOLA keeps the vowels and consonants clear), like a movie-trailer announcer.
+  3. ffmpeg makes it bold: a heavier low end, light saturation, hard compression, a short room.
 
 Usage:
-  python3 scripts/make_voices.py <piper-dir> <voice.onnx> [id ...]
+  pip install praat-parselmouth
+  python3 scripts/make_voices.py <piper-dir> <libritts.onnx> [id ...]
 
-  piper-dir:  the unpacked piper_linux_x86_64 release (contains the `piper` binary)
-  voice.onnx: en-us-ryan-high.onnx from the piper v0.0.2 release
+  piper-dir:     the unpacked piper_linux_x86_64 release (contains the `piper` binary)
+  libritts.onnx: en-us-libritts-high.onnx from the piper v0.0.2 release (voice-en-us-libritts-high)
 
 Writes public/assets/voice/<id>.mp3 and <id>-wins.mp3 for every fighter, the intro's title.mp3
 and enter.mp3, and the fight announcer (round1-5, final, start, ko, draw, finish, fatality).
@@ -19,12 +24,10 @@ import json
 import subprocess
 import sys
 import tempfile
-import wave
 from pathlib import Path
 
-import numpy as np
-from scipy.io import wavfile
-from scipy.signal import butter, sosfilt
+import parselmouth
+from parselmouth.praat import call
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "public" / "assets" / "voice"
@@ -99,91 +102,47 @@ EXTRA = {
     "fatality": "Fatality!",
 }
 
-# Bold, scary and still clear:
-#  - deep: ~6.5 semitones down in total. A small resample shift (x0.86) lowers pitch AND formants
-#    a little, for a bigger, darker body; the rest is a formant-preserving pitch shift, so the
-#    vowels keep their shape (shifting the formants all the way, as before, made words mushy).
-#  - menace: a growl one octave below, low-passed under 800 Hz so it never covers consonants.
-#  - bold: soft saturation and heavy compression.
-#  - clear: a lift at 3.2 kHz (consonants), a cut at 450 Hz (mud), and a dark hall reverb with
-#    25 ms of pre-delay in place of the old slap echo, so the words stay dry and on top.
+SPEAKER = 436
+PITCH_HZ = 70          # where the voice sits
+KEEP = 0.25            # how much of its natural rise and fall is kept (0 = a flat monotone)
+PIPER_ARGS = ["--speaker", str(SPEAKER), "--length_scale", "1.65", "--noise_scale", "0.5", "--noise_w", "0.4", "--sentence_silence", "0.3"]
+
+# bold: a heavier body, a cut in the boxy mids, presence for the consonants, light saturation
+# for grit, hard compression so every word hits, a short room
 FILTER = (
-    "[0:a]apad=pad_dur=1.5,asetrate=22050*0.86,aresample=44100,"
-    "rubberband=pitch=0.80:formant=preserved:transients=crisp,highpass=f=55,asplit=3[m][g][r];"
-    "[g]rubberband=pitch=0.5:formant=preserved,lowpass=f=800,volume=0.25[gl];"
-    "[r]volume=0.18[rin];[rin][1:a]afir=dry=0:wet=1[rv];"
-    "[m][gl][rv]amix=inputs=3:duration=first:normalize=0,"
-    "lowshelf=g=4:f=140,equalizer=f=450:t=q:w=1:g=-2,equalizer=f=3200:t=q:w=1.1:g=4,"
-    "volume=1.8,asoftclip=type=tanh,volume=0.556,"
-    "acompressor=threshold=-22dB:ratio=5:attack=4:release=160,"
-    "loudnorm=I=-11:TP=-1,aresample=44100,"
-    # drop the padding again (keeping the reverb tail)
-    "areverse,silenceremove=start_periods=1:start_threshold=-50dB,afade=t=in:d=0.03,areverse"
+    "apad=pad_dur=1.2,aresample=44100,atempo=0.92,highpass=f=50,"
+    "lowshelf=g=6:f=115,equalizer=f=340:t=q:w=1.2:g=-3,equalizer=f=2600:t=q:w=1:g=4,highshelf=g=1.5:f=6500,"
+    "acompressor=threshold=-28dB:ratio=8:attack=2:release=110:makeup=2,"
+    "volume=1.9,asoftclip=type=tanh,volume=0.62,"
+    "aecho=0.85:0.22:26|44:0.16|0.08,"
+    "acompressor=threshold=-14dB:ratio=4:attack=1:release=80,"
+    "loudnorm=I=-11:TP=-0.8,aresample=44100,"
+    # trim the silence at both ends (keeping the room tail)
+    "areverse,silenceremove=start_periods=1:start_threshold=-55dB,afade=t=in:d=0.04,areverse,"
+    "silenceremove=start_periods=1:start_threshold=-55dB"
 )
 
 
-def make_ir(path: Path):
-    """impulse response for the reverb: 1.6 s of dark, decaying noise after a 25 ms pre-delay"""
-    sr = 44100
-    t = np.arange(int(sr * 1.6)) / sr
-    ir = np.random.default_rng(7).standard_normal(len(t)) * np.exp(-t / 0.38)
-    ir = sosfilt(butter(2, 2500, "lp", fs=sr, output="sos"), ir)
-    ir[: int(sr * 0.025)] = 0
-    wavfile.write(str(path), sr, (ir / np.abs(ir).max() * 0.5).astype(np.float32))
-
-
-# slow, steady delivery: longer phonemes, less random variation (the x0.86 resample above
-# slows it a little more)
-PIPER_ARGS = ["--length_scale", "1.75", "--noise_scale", "0.5", "--noise_w", "0.5", "--sentence_silence", "0.05"]
-
-
-# Piper squeezes and clips a line that ends right after a short word ("Lahka!" came out in a
-# quarter of a second, cut mid-vowel). So every line is spoken with a throwaway word after a
-# comma, and the audio is cut in the pause before it: the line keeps its full length and ends
-# on a natural decay.
-CARRIER = ", go."
-
-
-def last_pause(path: Path) -> float | None:
-    """start (seconds) of the last pause of 80 ms or more inside the clip"""
-    with wave.open(str(path)) as w:
-        sr = w.getframerate()
-        a = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(float)
-    hop = sr // 100
-    env = np.array([np.sqrt(np.mean(a[i : i + hop] ** 2)) for i in range(0, len(a) - hop, hop)])
-    quiet = env < env.max() * 0.02
-    found, i = None, 1
-    while i < len(quiet):
-        if quiet[i]:
-            j = i
-            while j < len(quiet) and quiet[j]:
-                j += 1
-            if j - i >= 8 and j < len(quiet):
-                found = i / 100
-            i = j
-        else:
-            i += 1
-    return found
+def steady(src: Path, out: Path):
+    """PSOLA: move the pitch to PITCH_HZ and keep only KEEP of its rise and fall (one voice)"""
+    snd = parselmouth.Sound(str(src))
+    manip = call(snd, "To Manipulation", 0.01, 50, 300)
+    tier = call(manip, "Extract pitch tier")
+    median = call(snd.to_pitch(), "Get quantile", 0, 0, 0.5, "Hertz")
+    call(tier, "Formula", f"{PITCH_HZ} * (self / {median}) ^ {KEEP}")
+    call([tier, manip], "Replace pitch tier")
+    res = call(manip, "Get resynthesis (overlap-add)")
+    res.scale_peak(0.95)
+    res.save(str(out), "WAV")
 
 
 def synth(piper: Path, model: Path, text: str, out: Path):
     with tempfile.TemporaryDirectory() as td:
         raw = Path(td) / "raw.wav"
-        subprocess.run(
-            [str(piper / "piper"), "--model", str(model), *PIPER_ARGS, "--output_file", str(raw)],
-            input=(text.rstrip("!.") + CARRIER).encode(),
-            check=True,
-            capture_output=True,
-        )
-        cut = last_pause(raw)
-        if cut is None:
-            raise SystemExit(f"no pause before the carrier word in {out.name}")
-        ir = Path(td) / "ir.wav"
-        make_ir(ir)
-        subprocess.run(
-            ["ffmpeg", "-y", "-loglevel", "error", "-t", f"{cut + 0.05:.2f}", "-i", str(raw), "-i", str(ir), "-filter_complex", FILTER, "-ac", "1", "-b:a", "80k", str(out)],
-            check=True,
-        )
+        flat = Path(td) / "flat.wav"
+        subprocess.run([str(piper / "piper"), "--model", str(model), *PIPER_ARGS, "--output_file", str(raw)], input=text.encode(), check=True, capture_output=True)
+        steady(raw, flat)
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(flat), "-af", FILTER, "-ac", "1", "-b:a", "96k", str(out)], check=True)
 
 
 def main():
