@@ -164,12 +164,12 @@ Look: a battle-hardened young soldier with short dark undercut hair, glowing whi
 Energy: white steam and grey smoke. Background: a smoky ruined battlefield.
 
 #36 CAP100X
-Look: a white rabbit with a pink nose, droopy half-closed eyes, round teal glasses, a red jacket, a yellow waistcoat and a purple bow tie.
-Energy: pink. Background: a twilight wonderland meadow with floating pocket watches.
-
-#37 SANITY100X
 Look: a ninja in a blue beanie and a blue face mask with white eyes, the back of his body dissolving into blue pixels.
 Energy: electric blue. Background: a dark digital void with falling blue pixels.
+
+#37 SANITY100X
+Look: a white rabbit with a pink nose, droopy half-closed eyes, round teal glasses, a red jacket, a yellow waistcoat and a purple bow tie.
+Energy: pink. Background: a twilight wonderland meadow with floating pocket watches.
 
 #38 DEECAYZ
 Look: a chibi-style girl with a big round head, a black bob with a straight fringe, a grumpy frown and a tiny fang, wearing a yellow raincoat with a hood that has pointed black-tipped ears and red circles on the cheeks.
