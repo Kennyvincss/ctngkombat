@@ -128,12 +128,12 @@ Look: a mysterious figure in a white hooded robe, face hidden behind a black vis
 Energy: blue digital light. Background: a dark boardroom with a long table and a tall leather chair.
 
 #27 THE DETECTIVE
-Look: a sharp young man with neat black hair, a calm knowing smile, a dark suit and white shirt, with living red tendrils ending in blades rising behind him.
-Energy: crimson. Background: a dark city alley at night lit in red.
+Look: a shadowy secret detective in a black fedora and a long black trench coat with the collar turned up, his face hidden in darkness except for two glowing yellow eyes.
+Energy: yellow. Background: a rainy black-and-white film-noir street at night, with a giant glowing circle-and-slash "no" symbol behind him.
 
 #28 THE SOLSTICE
-Look: a mysterious fighter in a long cloak, half gold like the sun and half midnight blue like the moon, glowing eyes, a sun-and-moon emblem on the chest.
-Energy: gold on one side, silver-blue on the other. Background: a sky where the sun and moon meet.
+Look: a sharp young man with neat black hair, a calm knowing smile, a dark suit and white shirt, with living red tendrils ending in blades rising behind him.
+Energy: crimson. Background: a crimson eclipse sky over a dark city, where the sun and moon meet.
 
 #29 APPIE
 Look: a panda with a red beanie, black-framed glasses, blowing a pink bubble-gum bubble, silver chains, a white T-shirt, arms crossed with attitude.
