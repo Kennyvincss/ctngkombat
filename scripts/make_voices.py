@@ -77,7 +77,7 @@ SAY = {
     "headboy": "Headboy!",
     "digitek": "Digitek!",
     "100x-arc": "Hundred X Arc!",
-    "mystayor": "Mistayor!",
+    "mystayor": "My stay or!",
     "evansofweb3": "Evans of Web Three!",
     "codexbt": "Code X B T!",
     "swazy": "Swazee!",
