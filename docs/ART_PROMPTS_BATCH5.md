@@ -156,12 +156,12 @@ Look: a hooded man in dark streetwear, face mostly in shadow, standing on the ed
 Energy: sunset orange and gold. Background: a city skyline at sunset seen from a rooftop edge.
 
 #34 DANI WORLDWIDE
-Look: a green cartoon frog with a wide grin, round red-tinted glasses, a sharp black suit and a gold chain.
-Energy: green. Background: a glowing world map with flight paths circling the globe.
+Look: a huge muscular man like a living marble statue: curly short hair, a beard, broad powerful back and shoulders, marble-white skin.
+Energy: gold. Background: a dark ancient temple with a giant glowing globe and flight paths circling it.
 
 #35 REALIST
-Look: a chibi-style girl with a big round head, a black bob with a straight fringe, a grumpy frown and a tiny fang, wearing a yellow raincoat with a hood that has pointed black-tipped ears and red circles on the cheeks.
-Energy: yellow electric sparks. Background: a painted landscape with a river under a stormy sky.
+Look: a battle-hardened young soldier with short dark undercut hair, glowing white eyes, face streaked with battle soot, a tattered military jacket, steam rising around him.
+Energy: white steam and grey smoke. Background: a smoky ruined battlefield.
 
 #36 CAP100X
 Look: a white rabbit with a pink nose, droopy half-closed eyes, round teal glasses, a red jacket, a yellow waistcoat and a purple bow tie.
@@ -172,12 +172,12 @@ Look: a ninja in a blue beanie and a blue face mask with white eyes, the back of
 Energy: electric blue. Background: a dark digital void with falling blue pixels.
 
 #38 DEECAYZ
-Look: a battle-hardened young soldier with short dark undercut hair, glowing white eyes, face streaked with battle soot, a tattered military jacket, steam rising around him.
-Energy: white steam and grey smoke. Background: a smoky ruined battlefield.
+Look: a chibi-style girl with a big round head, a black bob with a straight fringe, a grumpy frown and a tiny fang, wearing a yellow raincoat with a hood that has pointed black-tipped ears and red circles on the cheeks.
+Energy: yellow electric sparks. Background: a painted landscape with a river under a stormy sky.
 
 #39 SOLANA DAVE
-Look: a huge muscular man like a living marble statue: curly short hair, a beard, broad powerful back and shoulders, marble-white skin.
-Energy: Solana purple-to-green gradient light. Background: a dark ancient temple with purple and green light.
+Look: a green cartoon frog with a wide grin, round red-tinted glasses, a sharp black suit and a gold chain.
+Energy: Solana purple-to-green gradient light. Background: a trading floor glowing in purple and green.
 
 Start with #1 CUPSEY now.
 ```
