@@ -27,14 +27,18 @@ export class TitleScene extends Phaser.Scene {
       { y: 760, scale: 1.0, speed: 0.4, alpha: 0.55, depth: 3 },
     ];
     rows.forEach((row, ri) => {
+      // enough cut-outs to fill the row, cycling the roster, then a seamless wrap
+      const step = 210 * row.scale + 40;
+      const n = Math.ceil((GAME_W + 520) / step);
       let x = -200 + ri * 120;
-      ids.slice(ri * 12, ri * 12 + 16).forEach((id) => {
+      for (let k = 0; k < n; k++) {
+        const id = ids[(k + ri * Math.ceil(ids.length / 2)) % ids.length];
         const img = this.add.image(x, row.y, `fighter-${id}`).setOrigin(0.5, 1).setDepth(row.depth);
         img.setScale((330 / img.height) * row.scale).setAlpha(row.alpha);
         img.setTint(0x222222, 0x222222, tuningFor(id).accent, tuningFor(id).accent);
-        img.setData('speed', row.speed);
-        x += 210 * row.scale + 40;
-      });
+        img.setData('speed', row.speed).setData('wrap', n * step);
+        x += step;
+      }
     });
 
     const shade = this.add.graphics().setDepth(4);
@@ -93,7 +97,7 @@ export class TitleScene extends Phaser.Scene {
       const sp = img.getData?.('speed');
       if (!sp) continue;
       img.x -= sp;
-      if (img.x < -220) img.x += GAME_W + 520;
+      if (img.x < -220) img.x += img.getData('wrap');
     }
   }
 }

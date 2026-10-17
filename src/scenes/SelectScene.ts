@@ -9,11 +9,21 @@ import { controlDevice, specialCommand } from '../ui/controlHelp';
 import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton, fitCamera, showDisconnected } from '../ui/ui';
 import { net } from '../net/Net';
 
-const COLS = 10;
-const TILE = 66;
 const GAP = 5;
-const GRID_X = GAME_W / 2 - (COLS * TILE + (COLS - 1) * GAP) / 2 + TILE / 2;
-const GRID_Y = 132;
+const GRID_TOP = 132;
+/** the space between the two side previews that the grid gets */
+const GRID_W = 720;
+const GRID_H = 430;
+
+/** big portraits while the roster is small, shrinking to fit (up to 10 across) as it grows */
+function gridLayout(count: number) {
+  const cols = count <= 8 ? Math.ceil(count / 2) : Math.min(10, count);
+  const rows = Math.ceil(count / cols);
+  const tile = Math.min(130, Math.floor((GRID_W - (cols - 1) * GAP) / cols), Math.floor((GRID_H - (rows - 1) * GAP) / rows));
+  const x0 = GAME_W / 2 - (cols * tile + (cols - 1) * GAP) / 2 + tile / 2;
+  const y0 = GRID_TOP + (GRID_H - (rows * tile + (rows - 1) * GAP)) / 2;
+  return { cols, rows, tile, x0, y0 };
+}
 const P_COLORS = [0xff3b3b, 0x3b9dff];
 
 interface Cursor {
@@ -40,6 +50,7 @@ export class SelectScene extends Phaser.Scene {
   private sides: Side[] = [];
   private inputs: MenuInput[] = [];
   private tiles: Phaser.GameObjects.Container[] = [];
+  private grid = gridLayout(1);
   private title!: Phaser.GameObjects.Text;
   private leaving = false;
   /** which cursor the mouse/touch and solo keyboard drive */
@@ -85,6 +96,8 @@ export class SelectScene extends Phaser.Scene {
     back.on('pointerdown', () => this.back());
 
     // grid
+    this.grid = gridLayout(this.count);
+    const TILE = this.grid.tile;
     for (let i = 0; i < this.count; i++) {
       const { x, y } = this.tilePos(i);
       const c = this.add.container(x, y);
@@ -140,7 +153,7 @@ export class SelectScene extends Phaser.Scene {
         .setPadding(4, 0, 4, 0)
         .setOrigin(0.5)
         .setDepth(6);
-      this.cursors.push({ index: p === 0 ? 0 : Math.min(COLS - 1, this.count - 1), locked: false, pick: null, frame, tag });
+      this.cursors.push({ index: p === 0 ? 0 : Math.min(this.grid.cols - 1, this.count - 1), locked: false, pick: null, frame, tag });
     }
     // In 1-player modes the second cursor appears after P1 locks in.
     if (this.mode !== 'versus' && !this.online) this.setCursorVisible(1, false);
@@ -171,9 +184,12 @@ export class SelectScene extends Phaser.Scene {
   }
 
   private tilePos(i: number) {
-    const col = i % COLS;
-    const row = Math.floor(i / COLS);
-    return { x: GRID_X + col * (TILE + GAP), y: GRID_Y + row * (TILE + GAP) + TILE / 2 };
+    const { cols, tile, x0, y0 } = this.grid;
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    // a short last row sits centred
+    const inRow = Math.min(cols, this.count - row * cols);
+    return { x: x0 + ((cols - inRow) * (tile + GAP)) / 2 + col * (tile + GAP), y: y0 + row * (tile + GAP) + tile / 2 };
   }
 
   private setCursorVisible(p: number, v: boolean) {
@@ -199,12 +215,12 @@ export class SelectScene extends Phaser.Scene {
   private step(p: number, dx: number, dy: number) {
     const c = this.cursors[p];
     if (c.locked) return;
-    let col = c.index % COLS;
-    let row = Math.floor(c.index / COLS);
-    const rows = Math.ceil(this.count / COLS);
-    col = (col + dx + COLS) % COLS;
+    const { cols, rows } = this.grid;
+    let col = c.index % cols;
+    let row = Math.floor(c.index / cols);
+    col = (col + dx + cols) % cols;
     row = (row + dy + rows) % rows;
-    let i = row * COLS + col;
+    let i = row * cols + col;
     if (i >= this.count) i = dy !== 0 ? col : this.count - 1;
     this.move(p, i);
   }
@@ -396,9 +412,9 @@ export class SelectScene extends Phaser.Scene {
       const { x, y } = this.tilePos(c.index);
       const both = this.cursors[0].index === this.cursors[1].index && this.cursors[1].frame.visible;
       c.frame.setPosition(x, y);
-      c.frame.setSize(TILE + 6 + (both && p === 1 ? 8 : 0), TILE + 6 + (both && p === 1 ? 8 : 0));
+      c.frame.setSize(this.grid.tile + 6 + (both && p === 1 ? 8 : 0), this.grid.tile + 6 + (both && p === 1 ? 8 : 0));
       c.frame.setStrokeStyle(4, P_COLORS[p], c.locked ? 1 : 0.9);
-      c.tag.setPosition(x + (p === 0 ? -TILE / 4 : TILE / 4), y - TILE / 2 - 6);
+      c.tag.setPosition(x + (p === 0 ? -this.grid.tile / 4 : this.grid.tile / 4), y - this.grid.tile / 2 - 6);
       if (!c.locked) this.showFighter(p, c.index < game.roster.length ? game.roster[c.index].id : null);
     }
   }

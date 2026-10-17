@@ -20,6 +20,8 @@ const SEGMENT_MS = 2 * BAR_MS;
 const TITLE_MS = FIRST_BAR_MS + 2 * BAR_MS;
 /** fighters whose pose atlases are loaded ahead of time */
 const PRELOAD_AHEAD = 2;
+/** the two sparring partners the fighters show their moves on (each other when it's their turn) */
+const SPARRING = ['onepeterr', 'skroot'];
 
 /** most eye-catching mechanics first: the intro shows each fighter's two best */
 const SHOWINESS: SpecialSpec['mech'][] = ['super', 'drop', 'projectile', 'rush', 'teleport', 'string', 'strike', 'grab', 'status', 'random', 'trap', 'decoy', 'mobility', 'buff', 'counter'];
@@ -150,18 +152,18 @@ export class IntroScene extends Phaser.Scene {
       const id = game.roster[i].id;
       if (game.sprites[id] && !this.textures.exists(`sprites-${id}`)) this.load.atlas(`sprites-${id}`, `assets/sprites/${id}.webp`, `assets/sprites/${id}.json`);
     }
-    for (const dummy of ['laka', 'rex']) {
+    for (const dummy of SPARRING) {
       if (game.sprites[dummy] && !this.textures.exists(`sprites-${dummy}`)) this.load.atlas(`sprites-${dummy}`, `assets/sprites/${dummy}.webp`, `assets/sprites/${dummy}.json`);
     }
     if (!this.load.isLoading()) this.load.start();
     // keep the fighter on screen (from - 1) and the one before it (its scene may still be closing)
     // (both possible sparring partners always stay loaded)
-    const keep = new Set([...game.roster.slice(Math.max(0, from - 2), from + PRELOAD_AHEAD + 1).map((f) => f.id), 'laka', 'rex']);
+    const keep = new Set([...game.roster.slice(Math.max(0, from - 2), from + PRELOAD_AHEAD + 1).map((f) => f.id), ...SPARRING]);
     for (const f of game.roster) if (!keep.has(f.id) && this.textures.exists(`sprites-${f.id}`) && game.lastSetup?.p1 !== f.id && game.lastSetup?.p2 !== f.id) this.textures.remove(`sprites-${f.id}`);
   }
 
   private dummyFor(id: string) {
-    return id === 'laka' ? 'rex' : 'laka';
+    return id === SPARRING[0] ? SPARRING[1] : SPARRING[0];
   }
 
   // ---------------------------------------------------------------- cards

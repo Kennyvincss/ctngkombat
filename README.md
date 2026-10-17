@@ -1,6 +1,6 @@
 # Trenches Kombat
 
-A 2D anime-style fighting game in the spirit of Mortal Kombat, starring 50 fighters from the Crypto Twitter trenches. Pick a fighter, fight the CPU or a friend, then **FINISH THEM**.
+A 2D anime-style fighting game in the spirit of Mortal Kombat, starring fighters from the Crypto Twitter trenches: Promise.sol, Onepeterr, Skroot, Evansofweb3, Arlecchino and Mystayor. Pick a fighter, fight the CPU or a friend, then **FINISH THEM**.
 
 Built with TypeScript, Vite and Phaser 3. It runs in a desktop browser (keyboard or gamepad) and on phones (touch controls, landscape). The full design brief is in [`SPEC.md`](SPEC.md).
 
@@ -137,13 +137,13 @@ src/
   data/
     tuning.ts                 per-fighter health, speed, damage, accent colour, win quote; CPU difficulty
     normals.ts                frame data for punches and kicks, physics constants
-    moves.ts                  all 150 specials, each configured from the mechanic catalog
+    moves.ts                  every fighter's 3 specials, each configured from the mechanic catalog
     moveTypes.ts              the mechanic catalog's data shapes
   fight/
     Fighter.ts                state machine, movement, blocking, hit reactions, juggles, buffs, status effects
     mechanics.ts              the 14 shared special mechanics (projectile, drop, rush, teleport, grab, counter, ...)
     entities.ts               projectiles, falling objects, clones, traps, waves, screen hazards
-    fatalities.ts             50 cartoon fatalities (popups, confetti, stamps; no gore)
+    fatalities.ts             one cartoon fatality per fighter (popups, confetti, stamps; no gore)
     ai.ts                     CPU opponent (3 difficulties, archetype-aware)
     FighterView.ts            FighterView interface, PuppetView (Phase A) and SpriteView (Phase B)
     art.ts                    code-drawn effect art (SOL coins, wallets, Cybertruck, garri, candles, ...)
@@ -204,8 +204,6 @@ Combat code only talks to the `FighterView` interface, so the renderer is swappa
 ## Decisions on the spec's open questions
 
 - Title: **Trenches Kombat** (set in `src/config.ts`)
-- Laka's handle: @Iaksalter
-- The five names that differed between the roster and the cards: the cards were right. Those fighters are Crypto Hako, Amin, Shalli, Ugly and Praise (their ids and handles are unchanged).
 - Several cards are based on existing anime/comic characters and NFT collections. Fine for a private fan project; they'd need original art before any public or commercial release.
 
 This is a fan-made parody. It isn't affiliated with any game studio and uses no Mortal Kombat logos, fonts or audio.
