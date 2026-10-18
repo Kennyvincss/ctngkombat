@@ -834,13 +834,17 @@ export class Fighter {
     if (want !== this.facing && Math.abs(this.opp.x - this.x) > 4) this.facing = want;
   }
 
+  /** drawn offset from the fighter's position, for cinematics only (not part of the simulation) */
+  readonly show = { dx: 0, dy: 0 };
+
   syncView() {
     this.view.setFacing(this.facing);
-    this.view.setPosition(this.x, this.y);
+    this.view.setPosition(this.x + this.show.dx, this.y + this.show.dy);
     this.view.tick();
   }
 
   resetForRound(x: number, facing: 1 | -1) {
+    this.show.dx = this.show.dy = 0;
     this.x = x;
     this.y = this.world.groundY;
     this.vx = this.vy = 0;

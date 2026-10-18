@@ -23,21 +23,27 @@ const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
 class Kit {
   readonly L: Phaser.GameObjects.Image;
   readonly Wn: Phaser.GameObjects.Image;
-  readonly lx: number;
-  readonly ly: number;
-  readonly top: number;
+  /** every script's timings start this many ms in (after the beatdown) */
+  offset = 0;
   constructor(readonly c: FatalityCtx) {
     this.L = c.loser.view.display;
     this.Wn = c.winner.view.display;
-    this.lx = c.loser.x;
-    this.ly = c.loser.y;
-    this.top = c.loser.y - 300;
+  }
+  /** where the loser is drawn (the beatdown knocks them back) */
+  get lx() {
+    return this.c.loser.x + this.c.loser.show.dx;
+  }
+  get ly() {
+    return this.c.loser.y;
+  }
+  get top() {
+    return this.ly - 300;
   }
   get s() {
     return this.c.scene;
   }
   at(ms: number, fn: () => void) {
-    this.s.time.delayedCall(ms, fn);
+    this.s.time.delayedCall(ms + this.offset, fn);
   }
   /** many social-media popup cards around the loser */
   popups(texts: string[], color: number, start: number, count: number, every = 90, spreadX = 260, spreadY = 300) {
@@ -695,10 +701,97 @@ const DEFAULT: Script = (k) => {
   k.winPose(1600);
 };
 
-/** Runs a fatality. Resolves after the script (~3.4 s). */
+/**
+ * The serious part of every finisher: the winner closes the distance and beats the loser down
+ * with a real combo (jab, power punch, kick, uppercut that launches them, a slam on the way down)
+ * before the fighter's own finisher plays. Drawn only: the fight's simulation is already over.
+ * Returns how long it takes (ms).
+ */
+/** how long the beatdown takes (ms); the fight keeps drawing the fighters' movement until then */
+export const BEATDOWN_MS = 1750;
+
+function beatdown(c: FatalityCtx): number {
+  const { scene: s, fx, sfx, winner: W, loser: L } = c;
+  const dir = Math.sign(L.x - W.x) || 1;
+  const close = (Math.abs(L.x - W.x) - 160) * dir;
+  const cam = s.cameras.main;
+  const at = (ms: number, fn: () => void) => s.time.delayedCall(ms, fn);
+  const move = (f: typeof W, dx: number, dy: number, ms: number, ease = 'Cubic.easeOut') =>
+    // only the axes that move, so a sideways drift doesn't pin a launch or a leap to the ground
+    s.tweens.add({ targets: f.show, ...(dx ? { dx: f.show.dx + dx } : {}), ...(dy ? { dy: f.show.dy + dy } : {}), duration: ms, ease });
+  /** a hit landing on the loser: sparks at the impact, the loser recoils */
+  const impact = (pose: Parameters<typeof W.view.play>[0], height: number, push: number, big: boolean, color = 0xffffff) => {
+    W.view.play(pose, { restart: true });
+    at(70, () => {
+      fx.spark(L.x + L.show.dx - dir * 30, L.y + L.show.dy - height, big ? 0xffd23f : color, big);
+      L.view.play('hit', { restart: true });
+      L.view.flash(0xffffff, 3);
+      move(L, push * dir, 0, 160);
+      sfx.play(big ? 'hitHeavy' : 'hit');
+      cam.shake(big ? 160 : 90, big ? 0.012 : 0.006);
+    });
+  };
+  // 1. close in
+  W.view.play('dash', { restart: true });
+  fx.speedLines(W.x, W.y - 150, dir, W.accent);
+  sfx.play('dash');
+  move(W, close, 0, 220, 'Quad.easeOut');
+  // 2. the combo, getting heavier
+  at(240, () => impact('light', 230, 14, false));
+  at(400, () => impact('heavy', 210, 22, false));
+  at(580, () => impact('kick', 170, 30, true));
+  at(780, () => {
+    // 3. uppercut: the loser is launched into the air
+    W.view.play('uppercut', { restart: true });
+    at(70, () => {
+      fx.spark(L.x + L.show.dx - dir * 20, L.y - 260, 0xffd23f, true);
+      fx.shockwave(L.x + L.show.dx, L.y - 220, W.accent, 1.2);
+      L.view.play('knockdown', { restart: true });
+      sfx.play('hitHeavy');
+      sfx.play('whoosh');
+      cam.shake(200, 0.016);
+      cam.flash(90, 255, 255, 255);
+      s.tweens.add({ targets: L.show, dy: -250, duration: 280, ease: 'Quad.easeOut' });
+      move(L, 70 * dir, 0, 700, 'Sine.easeOut');
+    });
+  });
+  // 4. the winner leaps after them and slams them back down
+  at(1000, () => {
+    W.view.play('jump', { restart: true });
+    s.tweens.add({ targets: W.show, dy: -200, duration: 180, ease: 'Quad.easeOut' });
+    move(W, 60 * dir, 0, 400);
+    sfx.play('jump');
+  });
+  at(1180, () => {
+    // both come crashing down together
+    W.view.play('overhead', { restart: true });
+    s.tweens.add({ targets: [L.show, W.show], dy: 0, duration: 160, ease: 'Quad.easeIn' });
+  });
+  at(1340, () => {
+    // impact with the floor
+    fx.shockwave(L.x + L.show.dx, L.y - 10, W.accent, 1.8);
+    fx.dust(L.x + L.show.dx, L.y);
+    fx.spark(L.x + L.show.dx, L.y - 60, 0xff3b30, true);
+    L.view.play('knockdown', { restart: true });
+    sfx.play('thud');
+    sfx.play('hitHeavy');
+    cam.shake(320, 0.025);
+    cam.flash(160, 200, 20, 20);
+    fx.popup(L.x + L.show.dx, L.y - 330, '5 HIT  BRUTAL', 0xff3b30, 40, 70, 1100);
+  });
+  // 5. the winner stands over them
+  at(1560, () => W.view.play('win', { restart: true }));
+  return BEATDOWN_MS;
+}
+
+/** Runs a fatality: the beatdown, then the fighter's finisher. Returns how long it all takes (ms). */
 export function runFatality(ctx: FatalityCtx): number {
+  // the winner's own state stops replaying their idle pose, so the beatdown's poses hold
+  ctx.winner.setState('win');
+  const lead = beatdown(ctx);
   const k = new Kit(ctx);
-  ctx.sfx.play('fatality');
+  k.offset = lead;
+  ctx.scene.time.delayedCall(lead, () => ctx.sfx.play('fatality'));
   (SCRIPTS[ctx.winner.id] ?? DEFAULT)(k);
-  return 3600;
+  return lead + 3600;
 }

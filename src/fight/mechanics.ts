@@ -1124,8 +1124,15 @@ export function startSpecial(u: Fighter, spec: SpecialSpec, n: 1 | 2 | 3, intent
   const name = u.data.specials[n - 1]?.name ?? '';
   w.callout(u, (ex ? 'EX ' : '') + (spec.shout ?? name).toUpperCase(), ex ? 0xffd23f : spec.color ?? u.accent);
   if (ex) {
+    // the FINISHER button's power version: a burst of light, an aura and a jolt (drawn only)
     u.view.flash(0xffd23f, 6);
     w.fx.shockwave(u.x, u.y - 150, 0xffd23f, 1.2);
+    w.fx.aura(u.x, u.y, u.accent);
+    w.fx.speedLines(u.x, u.y - 150, u.facing, 0xffd23f);
+    const cam = w.phaser.cameras.main;
+    cam.flash(140, 255, 210, 80);
+    cam.shake(180, 0.01);
+    w.sfx.play('charge');
   }
   const b = intent.specialButton;
   switch (spec.mech) {

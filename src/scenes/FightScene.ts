@@ -10,7 +10,7 @@ import { Effects } from '../fight/Effects';
 import { Fighter } from '../fight/Fighter';
 import { GROUND_SHADOW_Y, PuppetView, SpriteView, type FighterView } from '../fight/FighterView';
 import { RigView, type RigData } from '../fight/RigView';
-import { runFatality } from '../fight/fatalities';
+import { BEATDOWN_MS, runFatality } from '../fight/fatalities';
 import { buildStage } from '../fight/stages';
 import type { ActiveHit, Entity, HitInfo, HitResult, World } from '../fight/types';
 import { Controller, GamepadSource, KeyboardSource, KEYMAP_P1, KEYMAP_P2, KEYMAP_SOLO_EXTRA, MergedSource, ScriptedSource, type InputSource } from '../systems/input';
@@ -374,6 +374,7 @@ export class FightScene extends Phaser.Scene implements World {
     this.tweens.add({ targets: this.cameras.main, zoom: 1.25, duration: 500, ease: 'Sine.easeInOut' });
     const cx = (winner.x + loser.x) / 2;
     this.cameras.main.pan(cx, this.groundY - 240, 500, 'Sine.easeInOut');
+    this.beatdownEnd = this.time.now + BEATDOWN_MS;
     const ms = runFatality({ scene: this, fx: this.fx, sfx, winner, loser });
     this.time.delayedCall(ms, () => {
       this.events.emit('announce', 'FATALITY', 2400, true);
@@ -428,6 +429,8 @@ export class FightScene extends Phaser.Scene implements World {
     this.updateCamera();
   }
   private desyncShown = false;
+  /** scene time when a fatality's beatdown ends */
+  private beatdownEnd = 0;
 
   /** one fixed simulation tick */
   private runTick() {
@@ -470,6 +473,8 @@ export class FightScene extends Phaser.Scene implements World {
   }
 
   private step() {
+    // the beatdown that opens a fatality moves the fighters' drawings, so keep drawing them through it
+    if (this.phase === 'fatality' && this.time.now < this.beatdownEnd) this.syncViews();
     if (this.phase === 'fatality' || this.phase === 'over') return;
     if (this.stopFrames > 0) {
       this.stopFrames--;

@@ -308,6 +308,15 @@ export interface SpriteSet {
 
 /** animations without their own drawing borrow another pose */
 const BORROW: Partial<Record<AnimKey, AnimKey>> = { flip: 'jump', flipBack: 'jump', stance: 'crouch' };
+/** the nearest drawings to use when a sheet has no drawing for a pose (instead of standing in guard) */
+const STAND_IN: Record<string, string[]> = {
+  knockdown: ['blown', 'ko', 'getup', 'gut', 'hit'],
+  blown: ['knockdown', 'ko', 'hit'],
+  ko: ['knockdown', 'blown', 'hit'],
+  getup: ['crouch', 'knockdown'],
+  dizzy: ['gut', 'hit'],
+  gut: ['hit'],
+};
 
 /**
  * Extra drawings from the 40-pose sheets, picked from context (in the air, crouched, moving
@@ -392,7 +401,8 @@ export class SpriteView implements FighterView {
 
   private show(...poses: string[]) {
     if (this.held) poses = [this.held];
-    const pose = poses.find((p) => this.has(p)) ?? 'idle';
+    const pose =
+      poses.find((p) => this.has(p)) ?? poses.flatMap((p) => STAND_IN[p] ?? []).find((p) => this.has(p)) ?? 'idle';
     if (pose === this.pose) return;
     this.pose = pose;
     this.display.setFrame(pose);
