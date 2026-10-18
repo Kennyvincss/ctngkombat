@@ -68,14 +68,19 @@ export class BootScene extends Phaser.Scene {
     } catch {
       /* fall back to Impact */
     }
-    generateArt(this);
-    generateStages(this);
-    // fighters this player made, kept on this device
-    game.customs = CREATE_FIGHTER ? loadCustoms() : [];
-    const ok = await Promise.all(game.customs.map((f) => register(this, f).then(() => true, () => false)));
-    game.customs = game.customs.filter((_, i) => ok[i]);
-    // everything else downloads while the player is on the title and menus
-    startBackgroundArt(this.textures, lineUp(game.roster).map((f) => f.id));
+    // whatever goes wrong here, the game still goes on to the title (a black screen helps no one)
+    try {
+      generateArt(this);
+      generateStages(this);
+      // fighters this player made, kept on this device
+      game.customs = CREATE_FIGHTER ? loadCustoms() : [];
+      const ok = await Promise.all(game.customs.map((f) => register(this, f).then(() => true, () => false)));
+      game.customs = game.customs.filter((_, i) => ok[i]);
+      // everything else downloads while the player is on the title and menus
+      startBackgroundArt(this.game, lineUp(game.roster).map((f) => f.id));
+    } catch (e) {
+      console.error('boot step failed', e);
+    }
     this.scene.start('Title');
   }
 }

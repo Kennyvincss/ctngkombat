@@ -16,9 +16,30 @@ interface Item {
 }
 
 /** downloads at once in the background (a request for art a screen is waiting on skips the line) */
-const PARALLEL = 4;
+const PARALLEL = 3;
+/** how often to look again while a screen's own loading has the line */
+const YIELD_MS = 400;
 
 let textures: Phaser.Textures.TextureManager | null = null;
+let phaser: Phaser.Game | null = null;
+let waiting = false;
+/** downloads that go first (the theme song the entry video is timed to) */
+const priority = new Set<Promise<unknown>>();
+
+/** a screen is downloading what it needs right now (the intro's fighters, a match's poses) */
+function screenLoading() {
+  return priority.size > 0 || (!!phaser && phaser.scene.getScenes(true).some((s) => s.load?.isLoading()));
+}
+
+/** hold the background downloads until this one is done (or 15 s, whichever comes first) */
+export function goesFirst(p: Promise<unknown>) {
+  const done = Promise.race([p.catch(() => {}), new Promise((r) => setTimeout(r, 15000))]);
+  priority.add(done);
+  void done.then(() => {
+    priority.delete(done);
+    pump();
+  });
+}
 const queue: Item[] = [];
 const inflight = new Map<string, Promise<void>>();
 let active = 0;
@@ -57,6 +78,17 @@ function fetchItem(it: Item): Promise<void> {
 }
 
 function pump() {
+  // background downloads wait while a screen loads its own files, so they never slow it down
+  if (queue.length && screenLoading()) {
+    if (!waiting) {
+      waiting = true;
+      setTimeout(() => {
+        waiting = false;
+        pump();
+      }, YIELD_MS);
+    }
+    return;
+  }
   while (active < PARALLEL && queue.length) {
     const it = queue.shift()!;
     if (!have(it.key) && !inflight.has(it.key)) void fetchItem(it);
@@ -64,8 +96,9 @@ function pump() {
 }
 
 /** start downloading every fighter's thumbnail, then card, then cut-out, in this order of fighters */
-export function startBackgroundArt(tm: Phaser.Textures.TextureManager, ids: string[]) {
-  textures = tm;
+export function startBackgroundArt(g: Phaser.Game, ids: string[]) {
+  phaser = g;
+  textures = g.textures;
   for (const kind of ['thumb', 'card', 'fighter'] as Kind[])
     for (const id of ids) {
       const it = item(id, kind);

@@ -3,6 +3,7 @@ import { GAME_H, GAME_SUBTITLE, GAME_TITLE, GAME_W } from '../config';
 import { sfx } from '../audio/Sfx';
 import { tuningFor } from '../data/tuning';
 import { game } from '../state';
+import { goesFirst } from '../systems/artLoader';
 import { bodyText, fadeTo, fitCamera, goFullscreen, goldText, homeScreenTip, menuBackdrop, muteButton } from '../ui/ui';
 
 export class TitleScene extends Phaser.Scene {
@@ -18,7 +19,8 @@ export class TitleScene extends Phaser.Scene {
     this.cameras.main.fadeIn(400);
     menuBackdrop(this, 0x3d0c04);
     // start downloading the intro's soundtrack now so it's ready when the player taps
-    if (!game.introPlayed) void fetch('assets/music/theme.mp3').catch(() => {});
+    // (the fighter art streaming in the background waits for it)
+    if (!game.introPlayed) goesFirst(fetch('assets/music/theme.mp3').then((r) => r.blob()));
 
     // slow parallax parade of fighter cut-outs
     // (the cut-outs loaded so far: a dozen before the title, the rest stream in)

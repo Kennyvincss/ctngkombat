@@ -483,10 +483,14 @@ const ART: Record<string, [number, number, Draw]> = {
   }],
   // Jelitics: a drawing stylus, tip forward, and a glowing sketch stroke
   stylus: [90, 20, (c) => {
-    c.fillStyle = '#1a1a22';
+    // a rounded barrel, drawn as a thick round-capped line (canvas roundRect needs iOS 16+)
+    c.strokeStyle = '#1a1a22';
+    c.lineCap = 'round';
+    c.lineWidth = 10;
     c.beginPath();
-    c.roundRect(4, 5, 66, 10, 5);
-    c.fill();
+    c.moveTo(9, 10);
+    c.lineTo(65, 10);
+    c.stroke();
     c.fillStyle = '#3a3a48';
     c.fillRect(14, 6, 30, 3);
     c.fillStyle = '#2be0ff';
@@ -886,8 +890,13 @@ export function generateArt(scene: Phaser.Scene) {
     if (scene.textures.exists(key)) continue;
     const tex = scene.textures.createCanvas(key, w, h);
     if (!tex) continue;
-    const ctx = tex.getContext();
-    draw(ctx, w, h);
+    // one drawing failing (a canvas feature an older browser lacks) leaves that effect blank,
+    // never the whole game stuck on the loading screen
+    try {
+      draw(tex.getContext(), w, h);
+    } catch (e) {
+      console.warn('art failed:', key, e);
+    }
     tex.refresh();
   }
 }

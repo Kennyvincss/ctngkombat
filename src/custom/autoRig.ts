@@ -499,6 +499,17 @@ const shade = (c: number, k: number) => {
 };
 const INK = '#0d0806';
 
+/** a rounded rectangle path (canvas roundRect needs iOS 16+) */
+function rrect(x: CanvasRenderingContext2D, rx: number, ry: number, w: number, h: number, r: number) {
+  r = Math.min(r, w / 2, h / 2);
+  x.moveTo(rx + r, ry);
+  x.arcTo(rx + w, ry, rx + w, ry + h, r);
+  x.arcTo(rx + w, ry + h, rx, ry + h, r);
+  x.arcTo(rx, ry + h, rx, ry, r);
+  x.arcTo(rx, ry, rx + w, ry, r);
+  x.closePath();
+}
+
 /** a thick limb segment with an ink outline */
 function limb(x: CanvasRenderingContext2D, pts: P[], width: number, fill: string) {
   x.lineCap = 'round';
@@ -542,11 +553,11 @@ function leg(x: CanvasRenderingContext2D, hp: P, kn: P, an: P, pants: string, sh
   const y = BODY_H - 4;
   x.fillStyle = INK;
   x.beginPath();
-  x.roundRect(an.x - 30, an.y - 16, 74, y - an.y + 20, 12);
+  rrect(x, an.x - 30, an.y - 16, 74, y - an.y + 20, 12);
   x.fill();
   x.fillStyle = shoe;
   x.beginPath();
-  x.roundRect(an.x - 25, an.y - 11, 64, y - an.y + 9, 9);
+  rrect(x, an.x - 25, an.y - 11, 64, y - an.y + 9, 9);
   x.fill();
   x.fillStyle = stripe;
   x.fillRect(an.x - 14, an.y + 2, 34, 6);
@@ -584,11 +595,11 @@ export function madeBody(head: HTMLCanvasElement, accent: number): { layers: Lay
   // hips and the top of the joggers
   x.fillStyle = INK;
   x.beginPath();
-  x.roundRect(j.rhip.x - 30, j.rhip.y - 26, j.lhip.x - j.rhip.x + 60, 58, 16);
+  rrect(x, j.rhip.x - 30, j.rhip.y - 26, j.lhip.x - j.rhip.x + 60, 58, 16);
   x.fill();
   x.fillStyle = pants;
   x.beginPath();
-  x.roundRect(j.rhip.x - 25, j.rhip.y - 21, j.lhip.x - j.rhip.x + 50, 48, 13);
+  rrect(x, j.rhip.x - 25, j.rhip.y - 21, j.lhip.x - j.rhip.x + 50, 48, 13);
   x.fill();
   x.lineWidth = 9;
   x.strokeStyle = INK;
