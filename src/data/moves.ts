@@ -242,4 +242,14 @@ export const MOVES: Record<string, FighterMoves> = {
     { mech: 'status', startup: 12, recovery: 20, status: 'lag', frames: 200, delivery: 'wave', damage: 45, ai: 'far' },
     { mech: 'string', startup: 5, hits: 4, interval: 6, damage: 18, advance: 5, recovery: 18, ender: 'launch', enderDamage: 65, ai: 'close' },
   ],
+  jelitics: [
+    { mech: 'projectile', art: 'sketch', startup: 10, recovery: 16, damage: 65, speed: 14, scale: 1.1, ai: 'far' },
+    { mech: 'projectile', art: 'stylus', startup: 8, recovery: 14, damage: 40, speed: 18, hits: 2, hitEvery: 6, ai: 'far' },
+    { mech: 'teleport', startup: 6, vanish: 12, dest: 'behind', recovery: 14, attack: { damage: 70, type: 'mid', box: { x: 0, y: -260, w: 150, h: 240 }, active: 4, anim: 'heavy' }, ai: 'mid' },
+  ],
+  cz: [
+    { mech: 'projectile', art: 'goldcoin', startup: 10, recovery: 16, damage: 22, speed: 13, shots: 3, interval: 6, spreadY: 50, spin: 0.3, ai: 'far' },
+    { mech: 'buff', startup: 8, recovery: 8, heal: 70, buffs: [{ kind: 'armor', amount: 3, frames: 300 }], art: 'shield', ai: 'buff' },
+    { mech: 'counter', startup: 3, window: 26, recovery: 24, damage: 95, effect: 'knockdown', projectiles: true, popup: '4', ai: 'defense' },
+  ],
 };

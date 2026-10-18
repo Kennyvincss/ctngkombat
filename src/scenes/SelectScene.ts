@@ -9,6 +9,7 @@ import { controlDevice, specialCommand } from '../ui/controlHelp';
 import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton, fitCamera, showDisconnected } from '../ui/ui';
 import { net } from '../net/Net';
 import { selectable } from '../custom/customFighters';
+import { needArt, preloadArt } from '../systems/artLoader';
 
 const GAP = 4;
 const GRID_TOP = 94;
@@ -88,6 +89,11 @@ export class SelectScene extends Phaser.Scene {
     this.roster = selectable(this.mode === 'online', this.mode === 'online' ? net.localSide : 0);
   }
 
+  /** the grid's thumbnails (usually already streamed in on the title and menus) */
+  preload() {
+    preloadArt(this, this.roster.map((f) => f.id), ['thumb']);
+  }
+
   private get online() {
     return this.mode === 'online';
   }
@@ -142,7 +148,7 @@ export class SelectScene extends Phaser.Scene {
     // previews + info for both sides
     for (const s of [0, 1] as const) {
       const cx = s === 0 ? 118 : GAME_W - 118;
-      const card = this.add.image(cx, 250, `card-${this.roster[0].id}`).setDisplaySize(200, 300);
+      const card = this.setCard(this.add.image(cx, 250, '__WHITE'), this.roster[0].id, 200, 300);
       const name = goldText(this, cx, 436, '', 38);
       const sub = bodyText(this, s === 0 ? 20 : GAME_W - 20, 500, '', 22, '#d8cdb0').setOrigin(s === 0 ? 0 : 1, 0);
       const specials = this.add
@@ -259,7 +265,7 @@ export class SelectScene extends Phaser.Scene {
     const layer = this.add.container(0, 0).setDepth(50);
     const dim = this.add.rectangle(GAME_W / 2, 360, GAME_W + 1600, 720 + 800, 0x000000, 0.7).setInteractive();
     const panel = this.add.rectangle(GAME_W / 2, 360, 640, 400, 0x0a0705, 0.96).setStrokeStyle(4, accent);
-    const card = this.add.image(GAME_W / 2 - 180, 352, `card-${id}`).setDisplaySize(200, 300);
+    const card = this.setCard(this.add.image(GAME_W / 2 - 180, 352, '__WHITE'), id, 200, 300);
     const question =
       this.mode === 'versus'
         ? `PLAYER ${p + 1}: PLAY AS`
@@ -507,7 +513,7 @@ export class SelectScene extends Phaser.Scene {
   private showFighter(p: number, id: string | null) {
     const side = this.sides[p];
     if (!id) {
-      side.card.setTexture('card-' + this.roster[0].id).setTint(0x111111);
+      this.setCard(side.card, this.roster[0].id, 200, 300).setTint(0x111111);
       side.name.setText('RANDOM');
       side.sub.setText('Feeling lucky?');
       side.specials.setText('');
@@ -517,13 +523,29 @@ export class SelectScene extends Phaser.Scene {
     if (side.shownId === id) return;
     side.shownId = id;
     const f = this.roster.find((r) => r.id === id) as FighterData;
-    side.card.setTexture(`card-${id}`).clearTint().setDisplaySize(200, 300);
+    this.setCard(side.card, id, 200, 300).clearTint();
     side.name.setText(f.name.toUpperCase());
     const handle = f.handle ?? '';
     side.sub.setText(`${handle}${handle ? '  ·  ' : ''}${f.archetype}`);
     const dev = controlDevice(this);
     side.specials.setText(f.specials.map((s, i) => `${s.name.toUpperCase()}  [${specialCommand(dev, i)}]\n   ${s.description}`).join('\n'));
     this.tweens.add({ targets: side.card, scaleX: { from: side.card.scaleX * 0.9, to: side.card.scaleX }, duration: 120 });
+  }
+
+  /**
+   * Show a fighter's card on an image. Cards download in the background after the title: until
+   * this one is in, the fighter's thumbnail stands in, and the card replaces it when it lands.
+   */
+  private setCard(img: Phaser.GameObjects.Image, id: string, w: number, h: number) {
+    img.setData('card', id);
+    if (this.textures.exists(`card-${id}`)) return img.setTexture(`card-${id}`).setDisplaySize(w, h);
+    img.setTexture(`thumb-${id}`).setDisplaySize(w, w);
+    void needArt([id]).then(() => {
+      if (!img.active || img.getData('card') !== id || !this.textures.exists(`card-${id}`)) return;
+      this.tweens.killTweensOf(img);
+      img.setTexture(`card-${id}`).setDisplaySize(w, h);
+    });
+    return img;
   }
 
   private refresh() {

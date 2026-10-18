@@ -622,6 +622,22 @@ const SCRIPTS: Record<string, Script> = {
     k.fadeLoser(2100, 600);
     k.winPose(2700);
   },
+  jelitics: (k) => {
+    k.banner('CTRL + Z', 0x2be0ff, 200);
+    k.popups(['undo', 'erase', 'layer deleted', 'redraw?', 'ctrl+z'], 0x2be0ff, 500, 10, 110);
+    k.pixelate(1300, [0x2be0ff, 0x0a0a1a, 0xffffff]);
+    k.stamp('ERASED', 0x2be0ff, 1900);
+    k.fadeLoser(2000, 700);
+    k.winPose(2700);
+  },
+  cz: (k) => {
+    k.banner('FUNDS ARE SAFU', 0xf3ba2f, 200);
+    k.rain('goldcoin', 300, 36, 40, 260, 1.4);
+    k.popups(['FUD', '4', 'ignore', 'SAFU', 'withdrawals paused'], 0xf3ba2f, 600, 10, 110);
+    k.stamp('DELISTED', 0xea3943, 1900);
+    k.fadeLoser(2100, 600);
+    k.winPose(2700);
+  },
 };
 
 /** finishers a player can give the fighter they made (see custom/customFighters.ts) */

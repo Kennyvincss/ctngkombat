@@ -301,6 +301,20 @@ F = [
    ('Take Profit', 'A fast four-hit combo that ends by launching the opponent.', "{ mech: 'string', startup: 5, hits: 4, interval: 6, damage: 18, advance: 5, recovery: 18, ender: 'launch', enderDamage: 65, ai: 'close' }")],
   ('Margin Call', 'Opens a giant short on the opponent and watches them get liquidated.',
    ["k.banner('MARGIN CALL', 0x2bff88, 200);", "k.chart(500, false);", "k.popups(['margin call', '-100%', 'liquidated', 'stop loss hit', 'rekt'], 0xea3943, 700, 12, 100);", "k.stamp('LIQUIDATED', 0xea3943, 1900);", "k.fadeLoser(2100, 600);", "k.winPose(2700);"]), 'T J R!'),
+ ('jelitics', 'Jelitics', '@Jelitics', 'zoner', 960, 3.9, 1.0, 0x2be0ff, 'Digital Artist / Zoner',
+  'A screen-faced artist with a stylus for a sword. Draws attacks into existence and erases whoever is left.', 'Sketched it. Shipped it. Signed it.',
+  [('Sketch Line', 'Draws a glowing line in the air that flies at the opponent.', "{ mech: 'projectile', art: 'sketch', startup: 10, recovery: 16, damage: 65, speed: 14, scale: 1.1, ai: 'far' }"),
+   ('Stylus Dart', 'Throws the stylus like a dart: fast, and it hits twice.', "{ mech: 'projectile', art: 'stylus', startup: 8, recovery: 14, damage: 40, speed: 18, hits: 2, hitEvery: 6, ai: 'far' }"),
+   ('Ctrl+Z', 'Undoes their position: vanishes and redraws behind the opponent with a strike.', "{ mech: 'teleport', startup: 6, vanish: 12, dest: 'behind', recovery: 14, attack: { damage: 70, type: 'mid', box: { x: 0, y: -260, w: 150, h: 240 }, active: 4, anim: 'heavy' }, ai: 'mid' }")],
+  ('Eraser Tool', 'Selects the opponent like a layer and deletes them, pixel by pixel.',
+   ["k.banner('CTRL + Z', 0x2be0ff, 200);", "k.popups(['undo', 'erase', 'layer deleted', 'redraw?', 'ctrl+z'], 0x2be0ff, 500, 10, 110);", "k.pixelate(1300, [0x2be0ff, 0x0a0a1a, 0xffffff]);", "k.stamp('ERASED', 0x2be0ff, 1900);", "k.fadeLoser(2000, 700);", "k.winPose(2700);"]), 'Jelitics!'),
+ ('cz', 'CZ', '@cz_binance', 'defensive', 1080, 3.7, 1.05, 0xf3ba2f, 'Exchange Boss / Defensive',
+  'Calm, unshakeable and always in control. Holds up four fingers at the FUD and lets the coins do the talking.', 'Funds are SAFU. Yours are not.',
+  [('Coin Flick', 'Flicks a spread of gold coins at the opponent.', "{ mech: 'projectile', art: 'goldcoin', startup: 10, recovery: 16, damage: 22, speed: 13, shots: 3, interval: 6, spreadY: 50, spin: 0.3, ai: 'far' }"),
+   ('SAFU', 'Raises a golden shield: heals and shrugs off a few hits.', "{ mech: 'buff', startup: 8, recovery: 8, heal: 70, buffs: [{ kind: 'armor', amount: 3, frames: 300 }], art: 'shield', ai: 'buff' }"),
+   ('4', 'Holds up four fingers: ignores the FUD, catches any attack or projectile and knocks the opponent down.', "{ mech: 'counter', startup: 3, window: 26, recovery: 24, damage: 95, effect: 'knockdown', projectiles: true, popup: '4', ai: 'defense' }")],
+  ('Funds Are SAFU', 'Buries the opponent in gold coins, ignores the FUD and delists them.',
+   ["k.banner('FUNDS ARE SAFU', 0xf3ba2f, 200);", "k.rain('goldcoin', 300, 36, 40, 260, 1.4);", "k.popups(['FUD', '4', 'ignore', 'SAFU', 'withdrawals paused'], 0xf3ba2f, 600, 10, 110);", "k.stamp('DELISTED', 0xea3943, 1900);", "k.fadeLoser(2100, 600);", "k.winPose(2700);"]), 'C Z!'),
 ]
 
 

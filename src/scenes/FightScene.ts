@@ -12,6 +12,7 @@ import { GROUND_SHADOW_Y, PuppetView, SpriteView, type FighterView } from '../fi
 import { RigView, type RigData } from '../fight/RigView';
 import { BEATDOWN_MS, runFatality } from '../fight/fatalities';
 import { ensureRig } from '../custom/customFighters';
+import { preloadArt } from '../systems/artLoader';
 import { buildStage } from '../fight/stages';
 import type { ActiveHit, Entity, HitInfo, HitResult, World } from '../fight/types';
 import { Controller, GamepadSource, KeyboardSource, KEYMAP_P1, KEYMAP_P2, KEYMAP_SOLO_EXTRA, MergedSource, ScriptedSource, type InputSource } from '../systems/input';
@@ -113,6 +114,8 @@ export class FightScene extends Phaser.Scene implements World {
 
   /** load the pose atlases (or skeletal rigs) for the two fighters in this match */
   preload() {
+    // the cut-outs: fighters without pose sheets are drawn from them, and effects (ghosts) use them
+    preloadArt(this, [this.setup.p1, this.setup.p2], ['fighter', 'thumb']);
     for (const id of new Set([this.setup.p1, this.setup.p2])) {
       if (game.sprites[id]) {
         if (!this.textures.exists(`sprites-${id}`)) this.load.atlas(`sprites-${id}`, `assets/sprites/${id}.webp`, `assets/sprites/${id}.json`);

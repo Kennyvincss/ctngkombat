@@ -7,8 +7,16 @@ import { generateArt } from '../fight/art';
 import { generateStages } from '../fight/stages';
 import { detectTouch, game } from '../state';
 import { loadCustoms, register } from '../custom/customFighters';
+import { lineUp } from '../data/lineup';
+import { startBackgroundArt } from '../systems/artLoader';
 
-/** Loads fighters.json, every card / thumbnail / cut-out, fonts and generated art. */
+/** the title screen's parade of fighters: this many cut-outs load before the title (the rest stream in) */
+const TITLE_FIGHTERS = 8;
+
+/**
+ * Loads fighters.json, a few cut-outs for the title, fonts and generated art. Thumbnails, cards
+ * and the other cut-outs stream in after the title shows (artLoader).
+ */
 export class BootScene extends Phaser.Scene {
   constructor() {
     super('Boot');
@@ -30,12 +38,8 @@ export class BootScene extends Phaser.Scene {
     this.load.json('fighters', 'fighters.json');
     this.load.on('filecomplete-json-fighters', (_k: string, _t: string, data: FighterData[]) => {
       game.roster = [...data].sort((a, b) => a.order - b.order);
-      for (const f of game.roster) {
-        this.load.image(`card-${f.id}`, f.card);
-        this.load.image(`thumb-${f.id}`, `assets/thumbs/${f.id}.webp`);
-        // WebP copies of the PNG cut-outs: ~5x smaller downloads for players on phones
-        this.load.image(`fighter-${f.id}`, `assets/fighters/${f.id}.webp`);
-      }
+      // WebP copies of the PNG cut-outs: ~5x smaller downloads for players on phones
+      for (const f of Phaser.Utils.Array.Shuffle([...game.roster]).slice(0, TITLE_FIGHTERS)) this.load.image(`fighter-${f.id}`, `assets/fighters/${f.id}.webp`);
     });
     // Phase B pose atlases (loaded per match by the fight scene)
     this.load.json('sprites', 'assets/sprites/manifest.json');
@@ -70,6 +74,8 @@ export class BootScene extends Phaser.Scene {
     game.customs = CREATE_FIGHTER ? loadCustoms() : [];
     const ok = await Promise.all(game.customs.map((f) => register(this, f).then(() => true, () => false)));
     game.customs = game.customs.filter((_, i) => ok[i]);
+    // everything else downloads while the player is on the title and menus
+    startBackgroundArt(this.textures, lineUp(game.roster).map((f) => f.id));
     this.scene.start('Title');
   }
 }

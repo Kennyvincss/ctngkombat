@@ -7,11 +7,22 @@ import { sfx } from '../audio/Sfx';
 import { fighterById } from '../state';
 import { bodyText, fadeTo, goldText, menuBackdrop, fitCamera, showDisconnected } from '../ui/ui';
 import { net } from '../net/Net';
+import { preloadArt } from '../systems/artLoader';
 
 /** Both cards slide in, "VS" slams down, hold, then fight. */
 export class VersusScene extends Phaser.Scene {
   constructor() {
     super('Versus');
+  }
+
+  private setup!: MatchSetup;
+
+  init(setup: MatchSetup) {
+    this.setup = setup;
+  }
+
+  preload() {
+    preloadArt(this, [this.setup.p1, this.setup.p2]);
   }
 
   create(setup: MatchSetup) {

@@ -21,7 +21,8 @@ export class TitleScene extends Phaser.Scene {
     if (!game.introPlayed) void fetch('assets/music/theme.mp3').catch(() => {});
 
     // slow parallax parade of fighter cut-outs
-    const ids = Phaser.Utils.Array.Shuffle(game.roster.map((f) => f.id));
+    // (the cut-outs loaded so far: a dozen before the title, the rest stream in)
+    const ids = Phaser.Utils.Array.Shuffle(game.roster.map((f) => f.id).filter((id) => this.textures.exists(`fighter-${id}`)));
     const rows = [
       { y: 735, scale: 0.75, speed: 0.22, alpha: 0.38, depth: 2 },
       { y: 760, scale: 1.0, speed: 0.4, alpha: 0.55, depth: 3 },

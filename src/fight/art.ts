@@ -463,6 +463,52 @@ const ART: Record<string, [number, number, Draw]> = {
     c.quadraticCurveTo(110, 20, 0, 60);
     c.fill();
   }],
+  // CZ: a plain gold coin (no symbol)
+  goldcoin: [44, 44, (c) => {
+    const g = c.createLinearGradient(0, 0, 44, 44);
+    g.addColorStop(0, '#fff1a8');
+    g.addColorStop(0.5, '#f3ba2f');
+    g.addColorStop(1, '#b07a0c');
+    c.fillStyle = g;
+    c.beginPath();
+    c.arc(22, 22, 20, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = '#fff6d0';
+    c.lineWidth = 2;
+    c.stroke();
+    c.strokeStyle = 'rgba(120,80,0,0.6)';
+    c.beginPath();
+    c.arc(22, 22, 13, 0, Math.PI * 2);
+    c.stroke();
+  }],
+  // Jelitics: a drawing stylus, tip forward, and a glowing sketch stroke
+  stylus: [90, 20, (c) => {
+    c.fillStyle = '#1a1a22';
+    c.beginPath();
+    c.roundRect(4, 5, 66, 10, 5);
+    c.fill();
+    c.fillStyle = '#3a3a48';
+    c.fillRect(14, 6, 30, 3);
+    c.fillStyle = '#2be0ff';
+    c.beginPath();
+    c.moveTo(70, 5);
+    c.lineTo(88, 10);
+    c.lineTo(70, 15);
+    c.closePath();
+    c.fill();
+  }],
+  sketch: [200, 80, (c) => {
+    c.lineCap = 'round';
+    c.strokeStyle = 'rgba(43,224,255,0.35)';
+    c.lineWidth = 14;
+    c.beginPath();
+    c.moveTo(10, 58);
+    c.bezierCurveTo(60, 10, 120, 70, 190, 20);
+    c.stroke();
+    c.strokeStyle = '#d8fbff';
+    c.lineWidth = 5;
+    c.stroke();
+  }],
   flame: [48, 72, (c) => {
     const g = c.createRadialGradient(24, 52, 2, 24, 44, 34);
     g.addColorStop(0, '#fff6d0');

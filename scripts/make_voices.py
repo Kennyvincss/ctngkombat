@@ -81,6 +81,8 @@ SAY = {
     "solana-dave": "Solana Dave!",
     "eezzy": "Easy!",
     "tjr": "T J R!",
+    "jelitics": "Jelitics!",
+    "cz": "C Z!",
     # end batch 5
     "evansofweb3": "Evans of Web Three!",
 }

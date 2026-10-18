@@ -1172,5 +1172,55 @@
     ],
     "fatality": "Margin Call: Opens a giant short on the opponent and watches them get liquidated.",
     "card": "assets/cards/tjr.webp"
+  },
+  {
+    "id": "jelitics",
+    "order": 48,
+    "name": "Jelitics",
+    "handle": "@Jelitics",
+    "cardNameplate": "JELITICS",
+    "archetype": "Digital Artist / Zoner",
+    "playstyle": "A screen-faced artist with a stylus for a sword. Draws attacks into existence and erases whoever is left.",
+    "specials": [
+      {
+        "name": "Sketch Line",
+        "description": "Draws a glowing line in the air that flies at the opponent."
+      },
+      {
+        "name": "Stylus Dart",
+        "description": "Throws the stylus like a dart: fast, and it hits twice."
+      },
+      {
+        "name": "Ctrl+Z",
+        "description": "Undoes their position: vanishes and redraws behind the opponent with a strike."
+      }
+    ],
+    "fatality": "Eraser Tool: Selects the opponent like a layer and deletes them, pixel by pixel.",
+    "card": "assets/cards/jelitics.webp"
+  },
+  {
+    "id": "cz",
+    "order": 49,
+    "name": "CZ",
+    "handle": "@cz_binance",
+    "cardNameplate": "CZ",
+    "archetype": "Exchange Boss / Defensive",
+    "playstyle": "Calm, unshakeable and always in control. Holds up four fingers at the FUD and lets the coins do the talking.",
+    "specials": [
+      {
+        "name": "Coin Flick",
+        "description": "Flicks a spread of gold coins at the opponent."
+      },
+      {
+        "name": "SAFU",
+        "description": "Raises a golden shield: heals and shrugs off a few hits."
+      },
+      {
+        "name": "4",
+        "description": "Holds up four fingers: ignores the FUD, catches any attack or projectile and knocks the opponent down."
+      }
+    ],
+    "fatality": "Funds Are SAFU: Buries the opponent in gold coins, ignores the FUD and delists them.",
+    "card": "assets/cards/cz.webp"
   }
 ]

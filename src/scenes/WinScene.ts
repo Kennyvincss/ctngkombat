@@ -7,6 +7,7 @@ import { sfx } from '../audio/Sfx';
 import { fighterById, game } from '../state';
 import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera, screenEdges, showDisconnected } from '../ui/ui';
 import { addressRow } from '../ui/tip';
+import { preloadArt } from '../systems/artLoader';
 import { canShareFile, cardFile, cardFileName, cardShareText, downloadCard, drawResultCard, shareCard, type CardInfo } from '../ui/resultCard';
 import { net } from '../net/Net';
 
@@ -29,6 +30,15 @@ export class WinScene extends Phaser.Scene {
 
   constructor() {
     super('Win');
+  }
+
+  init(data: WinData) {
+    this.result = data;
+  }
+
+  /** both cards: the winner's on screen, both on the shareable result card */
+  preload() {
+    preloadArt(this, [this.result.winner, this.result.setup.p1, this.result.setup.p2]);
   }
 
   create(data: WinData) {
