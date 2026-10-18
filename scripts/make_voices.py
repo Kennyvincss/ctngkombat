@@ -46,7 +46,7 @@ SAY = {
     "dior": "Dior!",
     "poorgoat": "Poor goat!",
     "otta": "Otta!",
-    "unipcs": "Uni P C S!",
+    "unipcs": "Bonk Guy!",
     "heat": "Heat!",
     "dylaneth": "Dylan eth!",
     "midtermdev": "Midterm dev!",
@@ -80,6 +80,7 @@ SAY = {
     "deecayz": "Dee kays!",
     "solana-dave": "Solana Dave!",
     "eezzy": "Easy!",
+    "tjr": "T J R!",
     # end batch 5
     "evansofweb3": "Evans of Web Three!",
 }

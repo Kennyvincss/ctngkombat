@@ -237,4 +237,9 @@ export const MOVES: Record<string, FighterMoves> = {
     { mech: 'rush', startup: 5, speed: 17, frames: 18, recovery: 16, damage: 85, type: 'low', anim: 'dash', invuln: 'projectile', knockdown: true, ai: 'mid' },
     { mech: 'strike', startup: 13, active: 5, recovery: 22, damage: 115, type: 'overhead', box: { x: 0, y: -300, w: 170, h: 300 }, anim: 'overhead', armor: true, knockdown: true, lunge: 3, ai: 'close' },
   ],
+  tjr: [
+    { mech: 'projectile', art: 'candleG', startup: 12, recovery: 18, damage: 75, speed: 13, scale: 1.3, ai: 'far' },
+    { mech: 'status', startup: 12, recovery: 20, status: 'lag', frames: 200, delivery: 'wave', damage: 45, ai: 'far' },
+    { mech: 'string', startup: 5, hits: 4, interval: 6, damage: 18, advance: 5, recovery: 18, ender: 'launch', enderDamage: 65, ai: 'close' },
+  ],
 };

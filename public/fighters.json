@@ -301,9 +301,9 @@
   {
     "id": "unipcs",
     "order": 13,
-    "name": "Unipcs",
+    "name": "Bonk Guy",
     "handle": "@theunipcs",
-    "cardNameplate": "UNIPCS",
+    "cardNameplate": "BONK GUY",
     "archetype": "Robot / Zoner",
     "playstyle": "A cheerful yellow robot that fires lasers, deploys drones and never runs out of battery.",
     "specials": [
@@ -1147,5 +1147,30 @@
     ],
     "fatality": "Directors Cut: Pauses the fight with the remote, freezes the opponent solid and rolls the credits.",
     "card": "assets/cards/eezzy.webp"
+  },
+  {
+    "id": "tjr",
+    "order": 47,
+    "name": "TJR",
+    "handle": "@_TJRTrades",
+    "cardNameplate": "TJR",
+    "archetype": "Masked Trader / All-rounder",
+    "playstyle": "Shield shades, face covered, hair in the wind. Reads the chart, calls the top and takes profit on you.",
+    "specials": [
+      {
+        "name": "Long Position",
+        "description": "Throws a glowing green candle like a javelin."
+      },
+      {
+        "name": "Solar Flare",
+        "description": "Blasts a beam of sunlight that leaves the opponent seeing spots."
+      },
+      {
+        "name": "Take Profit",
+        "description": "A fast four-hit combo that ends by launching the opponent."
+      }
+    ],
+    "fatality": "Margin Call: Opens a giant short on the opponent and watches them get liquidated.",
+    "card": "assets/cards/tjr.webp"
   }
 ]

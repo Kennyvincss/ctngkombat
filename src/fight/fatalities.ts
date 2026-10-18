@@ -614,6 +614,14 @@ const SCRIPTS: Record<string, Script> = {
     k.scroll(['THE END', 'starring: Eezzy', 'special thanks: you, for losing'], '#4fb8ff', 1100, 1800);
     k.winPose(3000);
   },
+  tjr: (k) => {
+    k.banner('MARGIN CALL', 0x2bff88, 200);
+    k.chart(500, false);
+    k.popups(['margin call', '-100%', 'liquidated', 'stop loss hit', 'rekt'], 0xea3943, 700, 12, 100);
+    k.stamp('LIQUIDATED', 0xea3943, 1900);
+    k.fadeLoser(2100, 600);
+    k.winPose(2700);
+  },
 };
 
 /** finishers a player can give the fighter they made (see custom/customFighters.ts) */
