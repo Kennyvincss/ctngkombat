@@ -6,7 +6,7 @@ import { STAGES } from '../fight/stages';
 import { sfx } from '../audio/Sfx';
 import { fighterById, game } from '../state';
 import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera, screenEdges, showDisconnected } from '../ui/ui';
-import { walletRow } from '../ui/tip';
+import { addressRow } from '../ui/tip';
 import { canShareFile, cardFile, cardFileName, cardShareText, downloadCard, drawResultCard, shareCard, type CardInfo } from '../ui/resultCard';
 import { net } from '../net/Net';
 
@@ -152,13 +152,13 @@ export class WinScene extends Phaser.Scene {
     });
   }
 
-  // ---------------------------------------------------------------- tip the creator
-  /** after every match: the creator's wallet with a COPY button (C on the keyboard) */
+  // ---------------------------------------------------------------- contract address
+  /** after every match: the contract address with a COPY button (C on the keyboard) */
   private tipStrip() {
-    const title = goldText(this, 900, 628, 'TIP THE CREATOR  ·  SOLANA', 24);
-    const row = walletRow(this, 900, 672, 17, (ok) => {
-      title.setText(ok ? 'COPIED!  THANK YOU' : 'TIP THE CREATOR  ·  SOLANA');
-      this.time.delayedCall(2200, () => title.active && title.setText('TIP THE CREATOR  ·  SOLANA'));
+    const title = goldText(this, 900, 628, 'CONTRACT ADDRESS', 24);
+    const row = addressRow(this, 900, 672, 17, (r) => {
+      title.setText(r === 'copied' ? 'COPIED!' : r === 'empty' ? 'COMING SOON' : 'CONTRACT ADDRESS');
+      this.time.delayedCall(2200, () => title.active && title.setText('CONTRACT ADDRESS'));
     });
     void row;
     this.input.keyboard?.on('keydown-C', () => row.copy());

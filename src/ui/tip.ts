@@ -1,10 +1,14 @@
 import Phaser from 'phaser';
-import { GOLD_HEX, TIP_WALLET } from '../config';
+import { CONTRACT_ADDRESS, GOLD_HEX } from '../config';
 import { sfx } from '../audio/Sfx';
 import { copyText, goldText } from './ui';
 
-// The creator's wallet address in a box with a small COPY button beside it, shared by the
-// TIP CREATOR panel (menu) and the tip strip on the results screen.
+// The contract address in a box with a small COPY button beside it, shared by the
+// CONTRACT ADDRESS panel (menu) and the strip on the results screen. While the address is empty
+// the box stays empty (address-sized) and COPY says it's coming soon.
+
+/** what happened on COPY */
+export type CopyResult = 'copied' | 'failed' | 'empty';
 
 export interface WalletRow {
   objects: Phaser.GameObjects.GameObject[];
@@ -13,15 +17,16 @@ export interface WalletRow {
 }
 
 /**
- * @param onCopied called with whether the copy worked (to show a message)
+ * @param onCopied called with what happened (to show a message)
  */
-export function walletRow(scene: Phaser.Scene, cx: number, y: number, fontSize: number, onCopied: (ok: boolean) => void): WalletRow {
-  // a font with lowercase letters: Solana addresses are case-sensitive (the game's fonts are all caps)
+export function addressRow(scene: Phaser.Scene, cx: number, y: number, fontSize: number, onCopied: (r: CopyResult) => void): WalletRow {
+  // a font with lowercase letters: addresses are case-sensitive (the game's fonts are all caps)
   const addr = scene.add
-    .text(0, 0, TIP_WALLET, { fontFamily: '"Courier New", ui-monospace, Menlo, Consolas, monospace', fontSize: `${fontSize}px`, fontStyle: 'bold', color: '#ffffff' })
+    .text(0, 0, CONTRACT_ADDRESS, { fontFamily: '"Courier New", ui-monospace, Menlo, Consolas, monospace', fontSize: `${fontSize}px`, fontStyle: 'bold', color: '#ffffff' })
     .setOrigin(0, 0.5);
   const h = Math.round(fontSize * 2.4);
-  const boxW = addr.width + fontSize * 1.6;
+  // an empty box is as wide as a Solana address would be
+  const boxW = (CONTRACT_ADDRESS ? addr.width : fontSize * 0.6 * 44) + fontSize * 1.6;
   const btnW = Math.round(fontSize * 5);
   const total = boxW + 10 + btnW;
   const x0 = cx - total / 2;
@@ -33,10 +38,15 @@ export function walletRow(scene: Phaser.Scene, cx: number, y: number, fontSize: 
   const btn = scene.add.rectangle(bx, y, btnW, h, 0x2a1d05, 1).setStrokeStyle(2, GOLD_HEX).setInteractive({ useHandCursor: true });
   const label = goldText(scene, bx, y, 'COPY', Math.round(fontSize * 1.15));
   const copy = () => {
-    void copyText(TIP_WALLET).then((ok) => {
+    if (!CONTRACT_ADDRESS) {
+      sfx.play('select');
+      onCopied('empty');
+      return;
+    }
+    void copyText(CONTRACT_ADDRESS).then((ok) => {
       sfx.play(ok ? 'confirm' : 'select');
       if (label.active) label.setText(ok ? 'COPIED ✓' : 'COPY');
-      onCopied(ok);
+      onCopied(ok ? 'copied' : 'failed');
       scene.time.delayedCall(2000, () => label.active && label.setText('COPY'));
     });
   };

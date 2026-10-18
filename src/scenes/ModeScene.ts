@@ -4,7 +4,7 @@ import type { Difficulty, GameMode } from '../data/types';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
 import { controlDevice, controlsLine } from '../ui/controlHelp';
-import { walletRow } from '../ui/tip';
+import { addressRow } from '../ui/tip';
 import { bodyText, fadeTo, goldText, ListMenu, menuBackdrop, MenuInput, muteButton, fitCamera } from '../ui/ui';
 
 export class ModeScene extends Phaser.Scene {
@@ -32,7 +32,7 @@ export class ModeScene extends Phaser.Scene {
       { label: 'PLAY ONLINE', mode: 'online', hint: 'Fight a friend on their own device with a room code.' },
       { label: 'TRAINING', mode: 'training', hint: 'Infinite health and meter, with the move list on screen.' },
       { label: 'CREATE FIGHTER', mode: 'create', hint: 'Upload a picture and turn it into your own fighter.' },
-      { label: 'TIP CREATOR', mode: 'tip', hint: 'Enjoying the game? Send the creator a tip in SOL.' },
+      { label: 'CONTRACT ADDRESS', mode: 'tip', hint: 'The $TK contract address, with a button to copy it.' },
     ];
     this.menu = new ListMenu(this, GAME_W / 2, 176, modes.map((m) => m.label), (i) => {
       const m = modes[i].mode;
@@ -82,7 +82,7 @@ export class ModeScene extends Phaser.Scene {
     this.diffMenu.select(1);
   }
 
-  // ---------------------------------------------------------------- tip the creator
+  // ---------------------------------------------------------------- contract address
   private tip: { layer: Phaser.GameObjects.Container; copy: () => void } | null = null;
 
   private openTip() {
@@ -90,14 +90,13 @@ export class ModeScene extends Phaser.Scene {
     this.menu.setVisible(false);
     const c = this.add.container(0, 0).setDepth(50);
     c.add(this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W + 1600, GAME_H + 800, 0x050303, 1).setInteractive());
-    c.add(goldText(this, GAME_W / 2, 170, 'TIP THE CREATOR', 64));
-    c.add(bodyText(this, GAME_W / 2, 238, 'Enjoying Trenches Kombat? Tips keep new fighters coming.', 26, '#d8cdb0').setOrigin(0.5));
-    c.add(bodyText(this, GAME_W / 2, 300, 'SOLANA WALLET  (SOL or any Solana token)', 24, '#ff9a4a').setOrigin(0.5));
+    c.add(goldText(this, GAME_W / 2, 200, 'CONTRACT ADDRESS', 64));
+    c.add(bodyText(this, GAME_W / 2, 280, '$TK', 30, '#ff9a4a').setOrigin(0.5));
 
     const status = bodyText(this, GAME_W / 2, 430, '', 24, '#7dff9a').setOrigin(0.5);
-    const row = walletRow(this, GAME_W / 2, 360, 24, (ok) => {
-      status.setColor(ok ? '#7dff9a' : '#ffb35a');
-      status.setText(ok ? 'Copied! Paste it in your wallet app to send a tip. Thank you!' : "Couldn't copy on this device: the address is shown above.");
+    const row = addressRow(this, GAME_W / 2, 360, 24, (r) => {
+      status.setColor(r === 'copied' ? '#7dff9a' : '#ffb35a');
+      status.setText(r === 'copied' ? 'Copied!' : r === 'empty' ? 'The contract address is coming soon.' : "Couldn't copy on this device: the address is shown above.");
     });
     c.add([...row.objects, status]);
     const copy = row.copy;
