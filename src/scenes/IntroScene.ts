@@ -6,6 +6,7 @@ import type { SpecialSpec } from '../data/moveTypes';
 import { tuningFor } from '../data/tuning';
 import type { FighterData, MatchSetup } from '../data/types';
 import { STAGES } from '../fight/stages';
+import { lineUp } from '../data/lineup';
 import type { FightScene } from './FightScene';
 import { game } from '../state';
 import { bodyText, fitCamera, goldText, screenEdges } from '../ui/ui';
@@ -22,23 +23,7 @@ const TITLE_MS = FIRST_BAR_MS + 2 * BAR_MS;
 const PRELOAD_AHEAD = 2;
 /** the two sparring partners the fighters show their moves on (each other when it's their turn) */
 const SPARRING = ['onepeterr', 'skroot'];
-/** the intro opens with these, in this order */
-const OPENERS = ['alon', 'ansem'];
-/** the original six come in the middle, from this place in the line-up (0-based: 10th) */
-const ORIGINALS_AT = 9;
 
-/**
- * The intro's running order: the openers, then the newer fighters in roster order, with the
- * original six (roster order 1-6) together in the middle.
- */
-function introOrder(roster: FighterData[]): FighterData[] {
-  const originals = roster.filter((f) => f.order <= 6);
-  const openers = OPENERS.map((id) => roster.find((f) => f.id === id)).filter((f): f is FighterData => !!f);
-  const rest = roster.filter((f) => !originals.includes(f) && !openers.includes(f));
-  const line = [...openers, ...rest];
-  line.splice(Math.min(ORIGINALS_AT, line.length), 0, ...originals);
-  return line;
-}
 
 /** most eye-catching mechanics first: the intro shows each fighter's two best */
 const SHOWINESS: SpecialSpec['mech'][] = ['super', 'drop', 'projectile', 'rush', 'teleport', 'string', 'strike', 'grab', 'status', 'random', 'trap', 'decoy', 'mobility', 'buff', 'counter'];
@@ -92,7 +77,7 @@ export class IntroScene extends Phaser.Scene {
     this.wrapMs = 0;
     this.lastClock = -1;
     this.lastMoved = performance.now();
-    this.line = introOrder(game.roster);
+    this.line = lineUp(game.roster);
   }
 
   create() {
@@ -104,7 +89,7 @@ export class IntroScene extends Phaser.Scene {
 
     const skip = this.add.container(e.right - 110, e.top + 50).setDepth(50).setName('skip');
     const bg = this.add.rectangle(0, 0, 170, 52, 0x000000, 0.6).setStrokeStyle(2, GOLD_HEX).setInteractive({ useHandCursor: true });
-    skip.add([bg, goldText(this, 0, 0, 'SKIP ▶', 30)]);
+    skip.add([bg, goldText(this, 0, 0, 'SKIP ►', 30)]);
     bg.on('pointerup', () => this.finish());
     for (const k of ['ESC', 'ENTER', 'SPACE']) this.input.keyboard?.once(`keydown-${k}`, () => this.finish());
     this.input.gamepad?.once('down', () => this.finish());

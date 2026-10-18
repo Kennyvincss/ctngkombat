@@ -270,7 +270,7 @@ export class ListMenu {
       });
       this.items.push(t);
     });
-    this.marker = goldText(scene, 0, 0, '▶', size * 0.6);
+    this.marker = goldText(scene, 0, 0, '►', size * 0.6);
     this.select(0, true);
   }
 

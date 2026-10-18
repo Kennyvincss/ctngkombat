@@ -121,8 +121,8 @@ export function drawMove(scene: Phaser.Scene, spot: Spot, label = true): MovePar
   const d = 58;
   const size = 62;
   const arrows: [number, number, string][] = [
-    [-d, 0, '◀'],
-    [d, 0, '▶'],
+    [-d, 0, '◄'],
+    [d, 0, '►'],
     [0, -d, '▲'],
     [0, d, '▼'],
   ];

@@ -47,7 +47,7 @@ export class OnlineScene extends Phaser.Scene {
     menuBackdrop(this, 0x0a1a2a);
     goldText(this, GAME_W / 2, 80, 'PLAY ONLINE', 64);
     this.status = bodyText(this, GAME_W / 2, GAME_H - 60, '', 24, '#d8cdb0').setOrigin(0.5).setAlign('center').setWordWrapWidth(1100);
-    const back = bodyText(this, 30, 30, '◀ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+    const back = bodyText(this, 30, 30, '◄ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
     back.on('pointerdown', () => this.back());
     muteButton(this);
     this.input0 = new MenuInput(this, 0);

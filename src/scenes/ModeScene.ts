@@ -68,7 +68,7 @@ export class ModeScene extends Phaser.Scene {
     }
     muteButton(this);
 
-    const back = bodyText(this, 30, 30, '◀ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+    const back = bodyText(this, 30, 30, '◄ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
     back.on('pointerdown', () => this.back());
 
     this.hints = modes.map((m) => m.hint);

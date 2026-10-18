@@ -61,12 +61,17 @@ export class CreateScene extends Phaser.Scene {
     this.sel = 1;
     this.slot = game.customs.length < MAX_CUSTOM ? game.customs.length : 0;
 
-    const back = bodyText(this, 30, 30, '◀ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+    const back = bodyText(this, 30, 30, '◄ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
     back.on('pointerdown', () => this.back());
     muteButton(this);
 
-    this.add.rectangle(250, 372, 330, 495, 0x1a1210).setStrokeStyle(3, 0x6b4d16);
-    this.card = this.add.image(250, 372, '__WHITE').setDisplaySize(330, 495).setVisible(false);
+    // (the scene object is reused between visits: drop the last visit's placeholder)
+    this.placeholderText = null;
+    // the card area: tapping it (before there's a card) uploads a picture
+    const cardArea = this.add.rectangle(250, 372, 330, 495, 0x1a1210).setStrokeStyle(3, 0x6b4d16).setInteractive({ useHandCursor: true });
+    cardArea.on('pointerdown', () => this.uploadFromCard());
+    this.card = this.add.image(250, 372, '__WHITE').setDisplaySize(330, 495).setVisible(false).setInteractive({ useHandCursor: true });
+    this.card.on('pointerdown', () => this.uploadFromCard());
     this.help = bodyText(this, 840, 618, '', 21, '#d8cdb0').setOrigin(0.5, 0).setAlign('center').setWordWrapWidth(700);
     this.status = bodyText(this, GAME_W / 2, GAME_H - 26, '', 22, '#7dff9a').setOrigin(0.5);
 
@@ -196,21 +201,21 @@ export class CreateScene extends Phaser.Scene {
       save: d.id ? 'Save your changes.' : 'Save this fighter. Then pick them at the end of the select screen.',
       delete: 'Delete this fighter from this device.',
     };
-    this.help.setText(text[key] + (this.isCycler(key) ? '\n◀ ▶ to change' : ''));
+    this.help.setText(text[key] + (this.isCycler(key) ? '\n◄ ► to change' : ''));
   }
 
   private refresh() {
     const d = this.draft;
     const val: Partial<Record<RowKey, string>> = {
-      slot: `◀ ${this.slot < game.customs.length ? game.customs[this.slot].name.toUpperCase() : 'NEW FIGHTER'} ▶`,
+      slot: `◄ ${this.slot < game.customs.length ? game.customs[this.slot].name.toUpperCase() : 'NEW FIGHTER'} ►`,
       picture: d.name ? d.name.toUpperCase() + (d.handle ? `  @${d.handle}` : '') : 'TAP TO UPLOAD',
-      cut: `◀ ${d.photo ? CUT_LABEL[d.cut] : '—'} ▶`,
-      style: `◀ ${STYLES[d.style].label} ▶`,
-      m0: `◀ ${SPECIALS[d.moves[0]].name.toUpperCase()} ▶`,
-      m1: `◀ ${SPECIALS[d.moves[1]].name.toUpperCase()} ▶`,
-      m2: `◀ ${SPECIALS[d.moves[2]].name.toUpperCase()} ▶`,
-      finisher: `◀ ${FINISHERS[d.finisher].name.toUpperCase()} ▶`,
-      colour: `◀ ${HUES[d.hue] < 0 ? 'AUTO' : '●'} ▶`,
+      cut: `◄ ${d.photo ? CUT_LABEL[d.cut] : '—'} ►`,
+      style: `◄ ${STYLES[d.style].label} ►`,
+      m0: `◄ ${SPECIALS[d.moves[0]].name.toUpperCase()} ►`,
+      m1: `◄ ${SPECIALS[d.moves[1]].name.toUpperCase()} ►`,
+      m2: `◄ ${SPECIALS[d.moves[2]].name.toUpperCase()} ►`,
+      finisher: `◄ ${FINISHERS[d.finisher].name.toUpperCase()} ►`,
+      colour: `◄ ${HUES[d.hue] < 0 ? 'AUTO' : '●'} ►`,
     };
     for (const r of this.rows) {
       r.value.setText(val[r.key] ?? '');
@@ -240,10 +245,14 @@ export class CreateScene extends Phaser.Scene {
       .text(250, 372, 'UPLOAD A\nPICTURE', { fontFamily: FONT_BODY, fontSize: '40px', color: '#6b4d16', align: 'center' })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
-    this.placeholderText.on('pointerdown', () => {
-      this.select(this.rows.findIndex((r) => r.key === 'picture'));
-      void this.activate();
-    });
+    this.placeholderText.on('pointerdown', () => this.uploadFromCard());
+  }
+
+  private uploadFromCard() {
+    if (this.busy || this.leaving) return;
+    sfx.unlock();
+    this.select(this.rows.findIndex((r) => r.key === 'picture'), true);
+    void this.activate();
   }
 
   private say(text: string, color = '#7dff9a') {

@@ -3,6 +3,7 @@ import { FONT_BODY, FONT_DISPLAY } from '../config';
 import type { FighterData, FightClass } from '../data/types';
 import type { SpecialSpec } from '../data/moveTypes';
 import { MOVES } from '../data/moves';
+import { lineUp } from '../data/lineup';
 import { setTuning } from '../data/tuning';
 import { FINISHERS, setFinisher } from '../fight/fatalities';
 import { game, setCustomDataMaker } from '../state';
@@ -188,7 +189,7 @@ export function selectable(online = false, side: 0 | 1 = 0): FighterData[] {
   const made = online ? (side === 0 ? [...game.customs, ...game.remoteCustoms] : [...game.remoteCustoms, ...game.customs]) : game.customs;
   const seen = new Set<string>();
   const extra = made.filter((f) => !seen.has(f.id) && seen.add(f.id)).map((f, i) => fighterData(f, 1000 + i));
-  return [...game.roster, ...extra];
+  return [...lineUp(game.roster), ...extra];
 }
 
 // ---------------------------------------------------------------- card and thumbnail

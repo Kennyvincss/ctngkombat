@@ -69,7 +69,7 @@ export class TitleScene extends Phaser.Scene {
       game.introPlayed = true;
       this.time.delayedCall(250, () => fadeTo(this, intro ? 'Intro' : 'Mode', intro ? { next: 'Mode' } : undefined));
     };
-    const watch = bodyText(this, GAME_W / 2, 560, '▶  WATCH INTRO', 26, '#bfb59a').setOrigin(0.5).setDepth(10).setInteractive({ useHandCursor: true });
+    const watch = bodyText(this, GAME_W / 2, 560, '►  WATCH INTRO', 26, '#bfb59a').setOrigin(0.5).setDepth(10).setInteractive({ useHandCursor: true });
     watch.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, e: Phaser.Types.Input.EventData) => {
       e.stopPropagation();
       if (this.started) return;

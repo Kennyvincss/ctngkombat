@@ -10,11 +10,11 @@ import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton, fitCam
 import { net } from '../net/Net';
 import { selectable } from '../custom/customFighters';
 
-const GAP = 5;
-const GRID_TOP = 132;
+const GAP = 4;
+const GRID_TOP = 94;
 /** the space between the two side previews that the grid gets */
-const GRID_W = 720;
-const GRID_H = 430;
+const GRID_W = 820;
+const GRID_H = 400;
 
 /** big portraits while the roster is small, shrinking to fit (up to 10 across) as it grows */
 function gridLayout(count: number) {
@@ -96,7 +96,7 @@ export class SelectScene extends Phaser.Scene {
     menuBackdrop(this, 0x240804);
     this.title = goldText(this, GAME_W / 2, 50, 'SELECT YOUR FIGHTER', 54);
     muteButton(this);
-    const back = bodyText(this, 30, 30, '◀ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+    const back = bodyText(this, 30, 30, '◄ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
     back.on('pointerdown', () => this.back());
 
     // grid
@@ -130,14 +130,14 @@ export class SelectScene extends Phaser.Scene {
 
     // previews + info for both sides
     for (const s of [0, 1] as const) {
-      const cx = s === 0 ? 148 : GAME_W - 148;
-      const card = this.add.image(cx, 262, `card-${this.roster[0].id}`).setDisplaySize(240, 360);
-      const name = goldText(this, cx, 470, '', 38);
+      const cx = s === 0 ? 118 : GAME_W - 118;
+      const card = this.add.image(cx, 250, `card-${this.roster[0].id}`).setDisplaySize(200, 300);
+      const name = goldText(this, cx, 436, '', 38);
       const sub = bodyText(this, s === 0 ? 20 : GAME_W - 20, 500, '', 22, '#d8cdb0').setOrigin(s === 0 ? 0 : 1, 0);
       const specials = this.add
         .text(s === 0 ? 20 : GAME_W - 20, 530, '', { fontFamily: FONT_BODY, fontSize: '19px', color: '#e8e2d0', lineSpacing: 3, wordWrap: { width: 600 }, align: s === 0 ? 'left' : 'right' })
         .setOrigin(s === 0 ? 0 : 1, 0);
-      const lockText = goldText(this, cx, 262, '', 46).setAngle(-8).setVisible(false);
+      const lockText = goldText(this, cx, 250, '', 46).setAngle(-8).setVisible(false);
       this.sides.push({ card, name, sub, specials, lockText, shownId: '' });
     }
 
@@ -401,7 +401,7 @@ export class SelectScene extends Phaser.Scene {
     if (side.shownId === id) return;
     side.shownId = id;
     const f = this.roster.find((r) => r.id === id) as FighterData;
-    side.card.setTexture(`card-${id}`).clearTint().setDisplaySize(240, 360);
+    side.card.setTexture(`card-${id}`).clearTint().setDisplaySize(200, 300);
     side.name.setText(f.name.toUpperCase());
     const handle = f.handle ?? '';
     side.sub.setText(`${handle}${handle ? '  ·  ' : ''}${f.archetype}`);
