@@ -4,7 +4,7 @@ import { sfx } from '../audio/Sfx';
 import { MOVES } from '../data/moves';
 import type { SpecialSpec } from '../data/moveTypes';
 import { tuningFor } from '../data/tuning';
-import type { MatchSetup } from '../data/types';
+import type { FighterData, MatchSetup } from '../data/types';
 import { STAGES } from '../fight/stages';
 import type { FightScene } from './FightScene';
 import { game } from '../state';
@@ -22,6 +22,23 @@ const TITLE_MS = FIRST_BAR_MS + 2 * BAR_MS;
 const PRELOAD_AHEAD = 2;
 /** the two sparring partners the fighters show their moves on (each other when it's their turn) */
 const SPARRING = ['onepeterr', 'skroot'];
+/** the intro opens with these, in this order */
+const OPENERS = ['alon', 'ansem'];
+/** the original six come in the middle, from this place in the line-up (0-based: 10th) */
+const ORIGINALS_AT = 9;
+
+/**
+ * The intro's running order: the openers, then the newer fighters in roster order, with the
+ * original six (roster order 1-6) together in the middle.
+ */
+function introOrder(roster: FighterData[]): FighterData[] {
+  const originals = roster.filter((f) => f.order <= 6);
+  const openers = OPENERS.map((id) => roster.find((f) => f.id === id)).filter((f): f is FighterData => !!f);
+  const rest = roster.filter((f) => !originals.includes(f) && !openers.includes(f));
+  const line = [...openers, ...rest];
+  line.splice(Math.min(ORIGINALS_AT, line.length), 0, ...originals);
+  return line;
+}
 
 /** most eye-catching mechanics first: the intro shows each fighter's two best */
 const SHOWINESS: SpecialSpec['mech'][] = ['super', 'drop', 'projectile', 'rush', 'teleport', 'string', 'strike', 'grab', 'status', 'random', 'trap', 'decoy', 'mobility', 'buff', 'counter'];
@@ -57,6 +74,8 @@ export class IntroScene extends Phaser.Scene {
   /** when the song's position last moved (to notice a stall) */
   private lastClock = -1;
   private lastMoved = 0;
+  /** the fighters in the order the intro shows them */
+  private line: FighterData[] = [];
 
   constructor() {
     super('Intro');
@@ -73,6 +92,7 @@ export class IntroScene extends Phaser.Scene {
     this.wrapMs = 0;
     this.lastClock = -1;
     this.lastMoved = performance.now();
+    this.line = introOrder(game.roster);
   }
 
   create() {
@@ -92,7 +112,7 @@ export class IntroScene extends Phaser.Scene {
 
     // voices: decode them all up front (small files); atlases: a couple of fighters ahead
     sfx.unlock();
-    for (const f of game.roster) sfx.loadClip(`assets/voice/${f.id}.mp3`);
+    for (const f of this.line) sfx.loadClip(`assets/voice/${f.id}.mp3`);
     sfx.loadClip('assets/voice/title.mp3');
     sfx.loadClip('assets/voice/enter.mp3');
     this.preload(0);
@@ -148,8 +168,8 @@ export class IntroScene extends Phaser.Scene {
 
   /** queue pose atlases for the next fighters, and free ones already shown */
   private preload(from: number) {
-    for (let i = from; i < Math.min(game.roster.length, from + PRELOAD_AHEAD + 1); i++) {
-      const id = game.roster[i].id;
+    for (let i = from; i < Math.min(this.line.length, from + PRELOAD_AHEAD + 1); i++) {
+      const id = this.line[i].id;
       if (game.sprites[id] && !this.textures.exists(`sprites-${id}`)) this.load.atlas(`sprites-${id}`, `assets/sprites/${id}.webp`, `assets/sprites/${id}.json`);
     }
     for (const dummy of SPARRING) {
@@ -158,8 +178,8 @@ export class IntroScene extends Phaser.Scene {
     if (!this.load.isLoading()) this.load.start();
     // keep the fighter on screen (from - 1) and the one before it (its scene may still be closing)
     // (both possible sparring partners always stay loaded)
-    const keep = new Set([...game.roster.slice(Math.max(0, from - 2), from + PRELOAD_AHEAD + 1).map((f) => f.id), ...SPARRING]);
-    for (const f of game.roster) if (!keep.has(f.id) && this.textures.exists(`sprites-${f.id}`) && game.lastSetup?.p1 !== f.id && game.lastSetup?.p2 !== f.id) this.textures.remove(`sprites-${f.id}`);
+    const keep = new Set([...this.line.slice(Math.max(0, from - 2), from + PRELOAD_AHEAD + 1).map((f) => f.id), ...SPARRING]);
+    for (const f of this.line) if (!keep.has(f.id) && this.textures.exists(`sprites-${f.id}`) && game.lastSetup?.p1 !== f.id && game.lastSetup?.p2 !== f.id) this.textures.remove(`sprites-${f.id}`);
   }
 
   private dummyFor(id: string) {
@@ -173,7 +193,7 @@ export class IntroScene extends Phaser.Scene {
     c.add(this.add.rectangle(GAME_W / 2, GAME_H / 2, e.right - e.left + 20, e.bottom - e.top + 20, 0x050303));
     const logo = goldText(this, GAME_W / 2, GAME_H / 2 - 20, 'TRENCHES KOMBAT', 130, { strokeThickness: 14 }).setScale(3).setAlpha(0);
     logo.setShadow(0, 0, '#ff4500', 36, true, true);
-    const sub = bodyText(this, GAME_W / 2, GAME_H / 2 + 80, `${game.roster.length} FIGHTERS FROM THE CRYPTO TWITTER TRENCHES`, 30, '#ff9a4a').setOrigin(0.5).setAlpha(0);
+    const sub = bodyText(this, GAME_W / 2, GAME_H / 2 + 80, `${this.line.length} FIGHTERS FROM THE CRYPTO TWITTER TRENCHES`, 30, '#ff9a4a').setOrigin(0.5).setAlpha(0);
     c.add([logo, sub]);
     // the logo slams down on the song's second beat
     this.atClock(FIRST_BAR_MS + BAR_MS / 4 - 260, () => {
@@ -193,29 +213,29 @@ export class IntroScene extends Phaser.Scene {
     const c = this.add.container(0, 0).setDepth(20);
     const e = screenEdges(this);
     c.add(this.add.rectangle(GAME_W / 2, GAME_H / 2, e.right - e.left + 20, e.bottom - e.top + 20, 0x050303));
-    const a = goldText(this, GAME_W / 2, GAME_H / 2 - 60, `${game.roster.length} FIGHTERS. ONE TRENCH.`, 76).setAlpha(0);
+    const a = goldText(this, GAME_W / 2, GAME_H / 2 - 60, `${this.line.length} FIGHTERS. ONE TRENCH.`, 76).setAlpha(0);
     const b = goldText(this, GAME_W / 2, GAME_H / 2 + 40, 'ENTER THE TRENCHES', 96, { strokeThickness: 12 }).setScale(2).setAlpha(0);
     b.setShadow(0, 0, '#ff4500', 30, true, true);
     c.add([a, b]);
     this.tweens.add({ targets: a, alpha: 1, duration: 400 });
     // ENTER THE TRENCHES slams on the next downbeat
-    this.atClock(TITLE_MS + SEGMENT_MS * game.roster.length + BAR_MS - 240, () => {
+    this.atClock(TITLE_MS + SEGMENT_MS * this.line.length + BAR_MS - 240, () => {
       this.tweens.add({ targets: b, scale: 1, alpha: 1, duration: 240, ease: 'Quad.easeIn' });
       this.at(240, () => this.cameras.main.shake(300, 0.012));
       void sfx.clip('assets/voice/enter.mp3', 1.2);
     });
-    this.atClock(TITLE_MS + SEGMENT_MS * game.roster.length + BAR_MS + 2600, () => this.finish());
+    this.atClock(TITLE_MS + SEGMENT_MS * this.line.length + BAR_MS + 2600, () => this.finish());
   }
 
   // ---------------------------------------------------------------- fighters
   private nextFighter() {
     if (this.done) return;
     this.index++;
-    if (this.index >= game.roster.length) {
+    if (this.index >= this.line.length) {
       this.endCard();
       return;
     }
-    const f = game.roster[this.index];
+    const f = this.line[this.index];
     this.preload(this.index + 1);
     const start = () => {
       if (this.done) return;
@@ -241,9 +261,9 @@ export class IntroScene extends Phaser.Scene {
 
   private perform(fight: FightScene, id: string) {
     if (this.done) return;
-    const f = game.roster.find((r) => r.id === id)!;
+    const f = this.line.find((r) => r.id === id)!;
     const t = tuningFor(id);
-    this.counter.setText(`${String(this.index + 1).padStart(2, '0')} / ${game.roster.length}`);
+    this.counter.setText(`${String(this.index + 1).padStart(2, '0')} / ${this.line.length}`);
     this.cameras.main.flash(140, 255, 255, 255);
     this.at(120, () => void sfx.clip(`assets/voice/${id}.mp3`));
 
