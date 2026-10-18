@@ -4,7 +4,9 @@ import { sfx } from '../audio/Sfx';
 import { game } from '../state';
 import { FINISHERS } from '../fight/fatalities';
 import { accentOf, cutOut, hsv, loadImage, portrait, type CutLevel } from '../custom/cutout';
-import { drawCard, MAX_CUSTOM, newId, register, saveCustoms, SPECIALS, STYLES, styleOf, type CustomFighter } from '../custom/customFighters';
+import { BODIES, drawCard, MAX_CUSTOM, newId, register, saveCustoms, SPECIALS, STYLES, styleOf, type BodyKind, type CustomFighter } from '../custom/customFighters';
+import { guessJoints, JOINT_NAMES, madeBody, mirror, type Joints } from '../custom/autoRig';
+import { openRigEditor } from '../custom/rigEditor';
 import { openPictureForm } from '../custom/pictureForm';
 import { bodyText, fadeTo, fitCamera, goldText, menuBackdrop, MenuInput, muteButton } from '../ui/ui';
 
@@ -12,10 +14,13 @@ import { bodyText, fadeTo, fitCamera, goldText, menuBackdrop, MenuInput, muteBut
 // and a colour, and saves it to this device. It then shows up at the end of the select screen in
 // every mode (online, the other player gets it for that match).
 
-type RowKey = 'slot' | 'picture' | 'cut' | 'style' | 'm0' | 'm1' | 'm2' | 'finisher' | 'colour' | 'save' | 'delete';
+type RowKey = 'slot' | 'picture' | 'cut' | 'body' | 'moves' | 'style' | 'm0' | 'm1' | 'm2' | 'finisher' | 'colour' | 'save' | 'delete';
 
 const CUTS: CutLevel[] = ['soft', 'strong', 'off'];
 const CUT_LABEL: Record<CutLevel, string> = { soft: 'REMOVED', strong: 'REMOVED (STRONG)', off: 'KEPT' };
+const BODY_LABEL: Record<BodyKind, string> = { drawn: 'FIGHTER BODY', own: 'MY PICTURE’S BODY', classic: 'CLASSIC' };
+/** a picture this much taller than wide shows a whole body (else it's a PFP: it gets a drawn body) */
+const FULL_BODY_RATIO = 1.8;
 /** colour choices: auto (from the picture), then a ring of hues */
 const HUES = [-1, 0, 0.08, 0.15, 0.3, 0.45, 0.55, 0.62, 0.75, 0.85];
 
@@ -32,6 +37,11 @@ interface Draft {
   /** the cut-out for the current picture and background choice */
   art: HTMLCanvasElement | null;
   autoAccent: number;
+  body: BodyKind;
+  /** joints on the picture, for its own body */
+  joints: Joints | null;
+  /** the picture is mirrored */
+  flip: boolean;
 }
 
 export class CreateScene extends Phaser.Scene {
@@ -72,14 +82,16 @@ export class CreateScene extends Phaser.Scene {
     cardArea.on('pointerdown', () => this.uploadFromCard());
     this.card = this.add.image(250, 372, '__WHITE').setDisplaySize(330, 495).setVisible(false).setInteractive({ useHandCursor: true });
     this.card.on('pointerdown', () => this.uploadFromCard());
-    this.help = bodyText(this, 840, 618, '', 21, '#d8cdb0').setOrigin(0.5, 0).setAlign('center').setWordWrapWidth(700);
+    this.help = bodyText(this, 840, 604, '', 20, '#d8cdb0').setOrigin(0.5, 0).setAlign('center').setWordWrapWidth(700);
     this.status = bodyText(this, GAME_W / 2, GAME_H - 26, '', 22, '#7dff9a').setOrigin(0.5);
 
-    const keys: RowKey[] = ['slot', 'picture', 'cut', 'style', 'm0', 'm1', 'm2', 'finisher', 'colour', 'save', 'delete'];
+    const keys: RowKey[] = ['slot', 'picture', 'cut', 'body', 'moves', 'style', 'm0', 'm1', 'm2', 'finisher', 'colour', 'save', 'delete'];
     const labels: Record<RowKey, string> = {
       slot: 'FIGHTER',
       picture: 'PICTURE & NAME',
       cut: 'BACKGROUND',
+      body: 'BODY',
+      moves: 'MOVES',
       style: 'STYLE',
       m0: 'SPECIAL 1',
       m1: 'SPECIAL 2',
@@ -90,11 +102,11 @@ export class CreateScene extends Phaser.Scene {
       delete: 'DELETE',
     };
     this.rows = keys.map((key, i) => {
-      const y = 118 + i * 46;
-      const hit = this.add.rectangle(840, y, 700, 42, 0x000000, 0.001).setInteractive({ useHandCursor: true });
+      const y = 104 + i * 38.5;
+      const hit = this.add.rectangle(840, y, 700, 36, 0x000000, 0.001).setInteractive({ useHandCursor: true });
       const action = key === 'save' || key === 'delete';
-      const label = action ? goldText(this, 840, y, labels[key], 32) : bodyText(this, 500, y, labels[key], 26, '#bfb59a').setOrigin(0, 0.5);
-      const value = goldText(this, 1180, y, '', 26).setOrigin(1, 0.5);
+      const label = action ? goldText(this, 840, y, labels[key], 30) : bodyText(this, 500, y, labels[key], 24, '#bfb59a').setOrigin(0, 0.5);
+      const value = goldText(this, 1180, y, '', 24).setOrigin(1, 0.5);
       hit.on('pointerdown', (p: Phaser.Input.Pointer) => {
         sfx.unlock();
         this.select(i);
@@ -126,6 +138,9 @@ export class CreateScene extends Phaser.Scene {
         hue: 0,
         art: null,
         autoAccent: c.accent,
+        body: c.body ?? 'classic',
+        joints: c.joints ?? null,
+        flip: c.flip ?? false,
       };
       // the saved cut-out is what it plays with; a picture lets them re-cut it
       void loadImage(c.art).then((img) => {
@@ -138,7 +153,22 @@ export class CreateScene extends Phaser.Scene {
         this.refresh();
       });
     } else {
-      this.draft = { id: null, name: '', handle: '', photo: '', cut: 'soft', style: 0, moves: [...STYLES[0].kit], finisher: 0, hue: 0, art: null, autoAccent: 0xf5c542 };
+      this.draft = {
+        id: null,
+        name: '',
+        handle: '',
+        photo: '',
+        cut: 'soft',
+        style: 0,
+        moves: [...STYLES[0].kit],
+        finisher: 0,
+        hue: 0,
+        art: null,
+        autoAccent: 0xf5c542,
+        body: 'drawn',
+        joints: null,
+        flip: false,
+      };
     }
     this.refresh();
   }
@@ -160,15 +190,19 @@ export class CreateScene extends Phaser.Scene {
         this.draft.cut = 'off';
       }
     }
-    this.draft.art = art ?? portrait(img);
-    this.draft.autoAccent = accentOf(this.draft.art);
+    art = art ?? portrait(img);
+    if (this.draft.flip) art = mirror(art).art;
+    this.draft.art = art;
+    this.draft.autoAccent = accentOf(art);
+    // a new cut-out: the joints are guessed again
+    this.draft.joints = this.draft.body === 'own' ? guessJoints(art) : null;
     this.refresh();
   }
 
   // ---------------------------------------------------------------- the screen
 
   private isCycler(k: RowKey) {
-    return k !== 'picture' && k !== 'save' && k !== 'delete';
+    return k !== 'picture' && k !== 'moves' && k !== 'save' && k !== 'delete';
   }
 
   private select(i: number, silent = false) {
@@ -192,6 +226,12 @@ export class CreateScene extends Phaser.Scene {
       slot: `Make up to ${MAX_CUSTOM} fighters. They're saved on this device.`,
       picture: 'Upload a picture (a PFP works) and name your fighter.',
       cut: 'Plain backgrounds cut out best. KEPT turns the picture into a framed portrait.',
+      body: {
+        drawn: 'Your picture becomes the head of a full fighter: arms, legs, punches and kicks all move. Best for PFPs.',
+        own: "Your picture's own arms and legs move. For full-body pictures: open MOVES to place the joints.",
+        classic: 'The whole picture moves as one piece.',
+      }[d.body],
+      moves: d.body === 'own' ? 'Place the joints on your picture and watch your fighter move.' : 'Watch your fighter punch, kick and jump.',
       style: styleOf(STYLES[d.style].key).blurb,
       m0: SPECIALS[d.moves[0]].description,
       m1: SPECIALS[d.moves[1]].description,
@@ -210,6 +250,8 @@ export class CreateScene extends Phaser.Scene {
       slot: `◄ ${this.slot < game.customs.length ? game.customs[this.slot].name.toUpperCase() : 'NEW FIGHTER'} ►`,
       picture: d.name ? d.name.toUpperCase() + (d.handle ? `  @${d.handle}` : '') : 'TAP TO UPLOAD',
       cut: `◄ ${d.photo ? CUT_LABEL[d.cut] : '—'} ►`,
+      body: `◄ ${BODY_LABEL[d.body]} ►`,
+      moves: d.art ? (d.body === 'own' ? 'PLACE JOINTS ►' : 'SEE THEM ►') : '—',
       style: `◄ ${STYLES[d.style].label} ►`,
       m0: `◄ ${SPECIALS[d.moves[0]].name.toUpperCase()} ►`,
       m1: `◄ ${SPECIALS[d.moves[1]].name.toUpperCase()} ►`,
@@ -223,11 +265,14 @@ export class CreateScene extends Phaser.Scene {
     }
     const del = this.rows.find((r) => r.key === 'delete')!;
     for (const o of [del.hit, del.label, del.value]) o.setVisible(!!d.id);
+    const moves = this.rows.find((r) => r.key === 'moves')!;
+    for (const o of [moves.hit, moves.label, moves.value]) o.setVisible(d.body !== 'classic');
     // the live card
     const tex = this.textures;
     if (tex.exists('card-preview')) tex.remove('card-preview');
     if (d.art) {
-      tex.addCanvas('card-preview', drawCard(d.art, d.name || 'YOUR FIGHTER', this.accent()));
+      const figure = d.body === 'drawn' ? madeBody(d.art, this.accent()).art : d.art;
+      tex.addCanvas('card-preview', drawCard(figure, d.name || 'YOUR FIGHTER', this.accent()));
       this.card.setTexture('card-preview').setDisplaySize(330, 495).setVisible(true);
     } else {
       this.card.setVisible(false);
@@ -278,6 +323,10 @@ export class CreateScene extends Phaser.Scene {
         d.cut = CUTS[wrap(CUTS.indexOf(d.cut), CUTS.length)];
         void this.recut();
         break;
+      case 'body':
+        d.body = BODIES[wrap(BODIES.indexOf(d.body), BODIES.length)];
+        if (d.body === 'own' && !d.joints && d.art) d.joints = guessJoints(d.art);
+        break;
       case 'style': {
         const was = STYLES[d.style].kit;
         d.style = wrap(d.style, STYLES.length);
@@ -326,11 +375,39 @@ export class CreateScene extends Phaser.Scene {
       if (newPicture) {
         this.draft.cut = 'soft';
         this.draft.hue = 0;
+        this.draft.flip = false;
+        this.draft.body = 'drawn';
         await this.recut();
+        // a whole-body picture moves its own limbs; a PFP gets a fighter's body
+        const a = this.draft.art;
+        if (a && (this.draft.cut as CutLevel) !== 'off' && a.height / a.width >= FULL_BODY_RATIO) {
+          this.draft.body = 'own';
+          this.draft.joints = guessJoints(a);
+        }
+        this.refresh();
       } else this.refresh();
-    } else if (key === 'save') await this.save();
+    } else if (key === 'moves') await this.editMoves();
+    else if (key === 'save') await this.save();
     else if (key === 'delete') this.remove();
     else this.change(1);
+  }
+
+  /** the MOVES screen: the fighter in action (and the joints, for their own body) */
+  private async editMoves() {
+    const d = this.draft;
+    if (!d.art || d.body === 'classic') {
+      if (!d.art) this.say('Upload a picture first.', '#ff5a5a');
+      return;
+    }
+    this.busy = true;
+    sfx.play('confirm');
+    const r = await openRigEditor(this, { art: d.art, body: d.body, joints: d.joints, accent: this.accent() }, this.input0);
+    this.busy = false;
+    if (!r || this.leaving) return;
+    d.art = r.art;
+    d.joints = r.joints;
+    if (r.flipped) d.flip = !d.flip;
+    this.refresh();
   }
 
   private async save() {
@@ -344,8 +421,11 @@ export class CreateScene extends Phaser.Scene {
     // PNG keeps the cut-out's transparency; shrink it if it's very big
     let art = d.art.toDataURL('image/webp', 0.9);
     if (!art.startsWith('data:image/webp')) art = d.art.toDataURL('image/png');
+    /** the saved picture's size against the cut-out's (joints scale with it) */
+    let k = 1;
     if (art.length > 550_000) {
       const c = document.createElement('canvas');
+      k = 0.75;
       c.width = Math.round(d.art.width * 0.75);
       c.height = Math.round(d.art.height * 0.75);
       c.getContext('2d')!.drawImage(d.art, 0, 0, c.width, c.height);
@@ -362,6 +442,9 @@ export class CreateScene extends Phaser.Scene {
       art,
       photo: d.photo,
       cut: d.cut,
+      body: d.body,
+      joints: d.body === 'own' ? scaleJoints(d.joints ?? guessJoints(d.art), k) : undefined,
+      flip: d.flip,
     };
     const list = [...game.customs];
     const at = list.findIndex((c) => c.id === f.id);
@@ -418,4 +501,10 @@ export class CreateScene extends Phaser.Scene {
     if (p.ok) void this.activate();
     if (p.back) this.back();
   }
+}
+
+function scaleJoints(J: Joints, k: number): Joints {
+  const out = {} as Joints;
+  for (const n of JOINT_NAMES) out[n] = [Math.round(J[n][0] * k), Math.round(J[n][1] * k)];
+  return out;
 }

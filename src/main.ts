@@ -12,6 +12,7 @@ import { ControlsScene } from './scenes/ControlsScene';
 import { OnlineScene } from './scenes/OnlineScene';
 import { IntroScene } from './scenes/IntroScene';
 import { CreateScene } from './scenes/CreateScene';
+import { game as state } from './state';
 import { net } from './net/Net';
 import { sfx } from './audio/Sfx';
 
@@ -42,3 +43,4 @@ const game = new Phaser.Game({
 (window as unknown as { trenches: Phaser.Game; trenchesNet: typeof net }).trenches = game;
 (window as unknown as { trenchesNet: typeof net }).trenchesNet = net;
 (window as unknown as { trenchesSfx: typeof sfx }).trenchesSfx = sfx;
+(window as unknown as { trenchesState: typeof state }).trenchesState = state;

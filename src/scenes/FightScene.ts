@@ -11,6 +11,7 @@ import { Fighter } from '../fight/Fighter';
 import { GROUND_SHADOW_Y, PuppetView, SpriteView, type FighterView } from '../fight/FighterView';
 import { RigView, type RigData } from '../fight/RigView';
 import { BEATDOWN_MS, runFatality } from '../fight/fatalities';
+import { ensureRig } from '../custom/customFighters';
 import { buildStage } from '../fight/stages';
 import type { ActiveHit, Entity, HitInfo, HitResult, World } from '../fight/types';
 import { Controller, GamepadSource, KeyboardSource, KEYMAP_P1, KEYMAP_P2, KEYMAP_SOLO_EXTRA, MergedSource, ScriptedSource, type InputSource } from '../systems/input';
@@ -190,6 +191,8 @@ export class FightScene extends Phaser.Scene implements World {
     const data = fighterById(id);
     const tuning = tuningFor(id);
     const sprites = game.sprites[id];
+    // a made fighter with moving limbs gets their rig built now
+    if (data.custom) ensureRig(this, id);
     const rig = this.cache.json.get(`rig-${id}`) as RigData | undefined;
     let view: FighterView;
     if (sprites && this.textures.exists(`sprites-${id}`)) view = new SpriteView(this, `sprites-${id}`, sprites, tuning.accent, 20 + side);

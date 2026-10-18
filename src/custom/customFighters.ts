@@ -7,6 +7,7 @@ import { lineUp } from '../data/lineup';
 import { setTuning } from '../data/tuning';
 import { FINISHERS, setFinisher } from '../fight/fatalities';
 import { game, setCustomDataMaker } from '../state';
+import { buildRig, madeBody, segment, validJoints, type Joints } from './autoRig';
 
 // Fighters made by players (CREATE FIGHTER on the mode menu). Each is kept on the player's device
 // (localStorage) and plays like any other fighter: the uploaded picture is the in-game cut-out,
@@ -29,7 +30,19 @@ export interface CustomFighter {
   photo?: string;
   /** how the background was removed */
   cut?: 'soft' | 'strong' | 'off';
+  /**
+   * how they move: 'drawn' puts the picture on a drawn fighter's body, 'own' moves the picture's
+   * own arms and legs (joints placed by the player), 'classic' (or missing) moves it as one piece
+   */
+  body?: BodyKind;
+  /** where the joints are on the picture (for 'own') */
+  joints?: Joints;
+  /** the picture was mirrored to face right (re-cutting the original picture mirrors it again) */
+  flip?: boolean;
 }
+
+export type BodyKind = 'drawn' | 'own' | 'classic';
+export const BODIES: BodyKind[] = ['drawn', 'own', 'classic'];
 
 export const MAX_CUSTOM = 6;
 const KEY = 'trenches.customFighters';
@@ -122,7 +135,9 @@ export function valid(c: unknown): c is CustomFighter {
     Number.isInteger(f.accent) &&
     typeof f.art === 'string' &&
     f.art.startsWith('data:image/') &&
-    f.art.length < 600_000
+    f.art.length < 600_000 &&
+    (f.body === undefined || BODIES.includes(f.body)) &&
+    (f.body !== 'own' || validJoints(f.joints))
   );
 }
 
@@ -165,14 +180,42 @@ export async function register(scene: Phaser.Scene, f: CustomFighter): Promise<v
   setFinisher(f.id, f.finisher);
   const art = await imageFrom(f.art);
   const tex = scene.textures;
-  for (const k of [`fighter-${f.id}`, `card-${f.id}`, `thumb-${f.id}`]) if (tex.exists(k)) tex.remove(k);
+  for (const k of [`fighter-${f.id}`, `card-${f.id}`, `thumb-${f.id}`, `rig-${f.id}`]) if (tex.exists(k)) tex.remove(k);
   const cut = document.createElement('canvas');
   cut.width = art.width;
   cut.height = art.height;
   cut.getContext('2d')!.drawImage(art, 0, 0);
-  tex.addCanvas(`fighter-${f.id}`, cut);
-  tex.addCanvas(`card-${f.id}`, drawCard(art, f.name, f.accent));
-  tex.addCanvas(`thumb-${f.id}`, drawThumb(art, f.accent));
+  // on a drawn body, the whole figure is what the card, thumbnail and effects show
+  const figure = f.body === 'drawn' ? madeBody(cut, f.accent).art : cut;
+  tex.addCanvas(`fighter-${f.id}`, figure);
+  tex.addCanvas(`card-${f.id}`, drawCard(figure, f.name, f.accent));
+  tex.addCanvas(`thumb-${f.id}`, drawThumb(figure, f.accent));
+  pictures.set(f.id, { f, cut });
+}
+
+/** made fighters' cut-outs, for building their rigs when they first fight */
+const pictures = new Map<string, { f: CustomFighter; cut: HTMLCanvasElement }>();
+
+/**
+ * Make sure a made fighter with moving limbs has its rig (texture `rig-<id>` and json `rig-<id>`).
+ * Built the first time they fight (cutting a picture into limbs takes a moment). False when the
+ * fighter moves as one piece, or the rig can't be drawn (no WebGL).
+ */
+export function ensureRig(scene: Phaser.Scene, id: string): boolean {
+  const p = pictures.get(id);
+  if (!p || !p.f.body || p.f.body === 'classic' || scene.game.renderer.type !== Phaser.WEBGL) return false;
+  if (scene.textures.exists(`rig-${id}`) && scene.cache.json.exists(`rig-${id}`)) return true;
+  try {
+    const made = p.f.body === 'drawn' ? madeBody(p.cut, p.f.accent) : null;
+    const { rig, atlas } = made ? buildRig(made.layers, made.joints) : buildRig(segment(p.cut, p.f.joints!), p.f.joints!);
+    if (scene.cache.json.exists(`rig-${id}`)) scene.cache.json.remove(`rig-${id}`);
+    scene.cache.json.add(`rig-${id}`, rig);
+    scene.textures.addCanvas(`rig-${id}`, atlas);
+    return true;
+  } catch (e) {
+    console.warn('rig failed for', id, e);
+    return false;
+  }
 }
 
 function imageFrom(src: string): Promise<HTMLImageElement> {
