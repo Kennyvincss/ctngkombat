@@ -4,7 +4,7 @@ import type { FighterTuning } from './types';
 // more health and harder normals, tricksters are faster with less health.
 // accent: the dominant glow colour of the card. artFacesRight: which way the card art faces.
 
-type Row = [cls: FighterTuning['cls'], health: number, walk: number, damage: number, artFacesRight: boolean, accent: number, quote: string];
+export type Row = [cls: FighterTuning['cls'], health: number, walk: number, damage: number, artFacesRight: boolean, accent: number, quote: string];
 
 const T: Record<string, Row> = {
   'promise-sol': ['trickster', 900, 4.4, 0.95, false, 0xff2d55, 'Like, RT and follow for a chance to win. You did not win.'],
@@ -58,6 +58,11 @@ const T: Record<string, Row> = {
 
 /** everyone moves this much faster than the walk speeds in the table (relative speeds stay) */
 const WALK_SCALE = 1.3;
+
+/** add a fighter's row at runtime (fighters made by players) */
+export function setTuning(id: string, row: Row) {
+  T[id] = row;
+}
 
 export function tuningFor(id: string): FighterTuning {
   const r = T[id] ?? ['balanced', 1000, 3.8, 1, true, 0xf5c542, 'Victory.'];

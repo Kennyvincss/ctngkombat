@@ -31,6 +31,8 @@ export interface FighterView {
 }
 
 export const FIGHTER_HEIGHT = 305;
+/** widest a cut-out fighter is drawn */
+const PUPPET_MAX_W = 250;
 
 const ease = (t: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
 const pulse = (t: number, len: number) => Math.sin(Math.min(1, t / len) * Math.PI);
@@ -60,7 +62,8 @@ export class PuppetView implements FighterView {
     this.shadow = scene.add.image(0, 0, 'shadow').setDepth(depth - 2).setScale(1.3, 1.4);
     this.display = scene.add.image(0, 0, textureKey).setOrigin(0.5, 1).setDepth(depth);
     this.shield = scene.add.image(0, 0, 'shield').setOrigin(0, 1).setDepth(depth + 1).setVisible(false).setBlendMode(Phaser.BlendModes.ADD);
-    this.baseScale = FIGHTER_HEIGHT / this.display.height;
+    // a wide picture (a player's PFP) is kept to a fighter's width rather than drawn huge
+    this.baseScale = Math.min(FIGHTER_HEIGHT / this.display.height, PUPPET_MAX_W / this.display.width);
     this.display.setScale(this.baseScale);
   }
 

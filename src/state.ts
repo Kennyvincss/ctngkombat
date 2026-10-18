@@ -1,5 +1,6 @@
 import type { SpriteSet } from './fight/FighterView';
 import type { FighterData, MatchSetup } from './data/types';
+import type { CustomFighter } from './custom/customFighters';
 
 /** Game-wide state shared between scenes. */
 export const game = {
@@ -12,12 +13,27 @@ export const game = {
   /** the intro plays once per visit (and from WATCH INTRO on the title screen) */
   introPlayed: false,
   isTouch: false,
+  /** fighters this player made (CREATE FIGHTER), kept on this device */
+  customs: [] as CustomFighter[],
+  /** the online opponent's made fighters, for this connection */
+  remoteCustoms: [] as CustomFighter[],
 };
 
 export function fighterById(id: string): FighterData {
   const f = game.roster.find((r) => r.id === id);
-  if (!f) throw new Error(`Unknown fighter ${id}`);
-  return f;
+  if (f) return f;
+  const mine = [...game.customs, ...game.remoteCustoms];
+  const c = mine.find((r) => r.id === id);
+  if (!c) throw new Error(`Unknown fighter ${id}`);
+  return customData(c, 1000 + mine.indexOf(c));
+}
+
+/** set by custom/customFighters.ts (kept out of this module's imports to avoid a cycle) */
+let customData: (f: CustomFighter, order: number) => FighterData = () => {
+  throw new Error('custom fighters not ready');
+};
+export function setCustomDataMaker(fn: typeof customData) {
+  customData = fn;
 }
 
 export function detectTouch(): boolean {

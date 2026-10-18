@@ -21,6 +21,7 @@ npm run preview    # serve dist/ locally
 - **VS Player 2**: two players on one keyboard, or two gamepads.
 - **Training**: infinite health and meter, move list on screen, and a dummy you can switch between stand, block, crouch-block, jump and CPU (`T`).
 - **Play Online**: fight a friend on their own phone or computer. One player picks CREATE ROOM and sends the 5-digit code; the other picks JOIN ROOM and types it in. Both pick fighters, then fight; after the match, REMATCH (both must accept), CHARACTER SELECT or LEAVE.
+- **CREATE FIGHTER**: upload a picture (a PFP works), name it, pick a style, three specials, a finisher and a colour. The background is cut out on the device (a flood fill from the picture's edges: plain backgrounds cut cleanly; KEPT turns a busy photo into a framed portrait), and a card and thumbnail are drawn from it. Up to 6 made fighters are kept on the device (localStorage) and appear at the end of the select screen in every mode; online, both players' made fighters are swapped when the match connects. They play as animated cut-outs, and the device's text-to-speech says their name when they win. Code: `src/custom/`, `src/scenes/CreateScene.ts`.
 
 ## Controls
 

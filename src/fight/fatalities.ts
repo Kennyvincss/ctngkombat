@@ -610,6 +610,85 @@ const SCRIPTS: Record<string, Script> = {
   },
 };
 
+/** finishers a player can give the fighter they made (see custom/customFighters.ts) */
+export const FINISHERS: { name: string; description: string; script: Script }[] = [
+  {
+    name: 'Rugged',
+    description: 'Draws the opponent’s chart. It only goes down.',
+    script: (k) => {
+      k.banner('RUGGED', 0xff2d3a, 200);
+      k.chart(400, false);
+      k.rain('candleR', 900, 14, 70, 240);
+      k.stamp('REKT', 0xff2d3a, 2100);
+      k.winPose(2700);
+    },
+  },
+  {
+    name: 'To the Moon',
+    description: 'Green candles carry the winner up while the opponent watches from the floor.',
+    script: (k) => {
+      k.banner('TO THE MOON', 0x16c784, 200);
+      k.chart(400, true);
+      k.rain('candleG', 800, 18, 60, 260);
+      k.confetti(1800);
+      k.fadeLoser(1900, 600);
+      k.winPose(2500);
+    },
+  },
+  {
+    name: 'Deep Freeze',
+    description: 'Freezes the opponent solid, then shatters the ice.',
+    script: (k) => {
+      k.freeze(200);
+      k.banner('DEEP FREEZE', 0x4fd8ff, 300);
+      k.rain('ice', 500, 24, 50, 220);
+      k.shake(1500, 400, 0.02);
+      k.fadeLoser(1700, 500);
+      k.winPose(2600);
+    },
+  },
+  {
+    name: 'Blue Screen',
+    description: 'Crashes the opponent like an old computer.',
+    script: (k) => {
+      k.banner('BLUE SCREEN', 0x2f6bff, 200);
+      k.bluescreen(500, ['FATAL ERROR', 'OPPONENT.EXE has stopped', 'Uninstalling...']);
+      k.pixelate(1700, [0x2f6bff, 0xffffff, 0x000000]);
+      k.fadeLoser(1900, 600);
+      k.winPose(2600);
+    },
+  },
+  {
+    name: 'Ratioed',
+    description: 'Buries the opponent in a comment section until they log off.',
+    script: (k) => {
+      k.banner('RATIOED', 0xe0245e, 200);
+      k.popups(['L', 'ratio', 'cope', 'skill issue', 'who asked', 'GG'], 0xe0245e, 300, 18, 70);
+      k.rain('ratio', 900, 12, 80, 240);
+      k.fadeLoser(2000, 600);
+      k.winPose(2600);
+    },
+  },
+  {
+    name: 'Thunderstruck',
+    description: 'Lightning strikes over and over until nothing is left standing.',
+    script: (k) => {
+      k.banner('THUNDERSTRUCK', 0xffe14d, 200);
+      k.rain('lightning', 300, 18, 60, 220, 1.3);
+      k.flash(600);
+      k.flash(1200);
+      k.flash(1800);
+      k.fadeLoser(2000, 500);
+      k.winPose(2600);
+    },
+  },
+];
+
+/** give a fighter one of the FINISHERS (fighters made by players) */
+export function setFinisher(id: string, finisher: number) {
+  SCRIPTS[id] = (FINISHERS[finisher] ?? FINISHERS[0]).script;
+}
+
 const DEFAULT: Script = (k) => {
   k.popups(['GG', 'EZ', 'L'], 0xf5c542, 0, 10, 100);
   k.confetti(1500);

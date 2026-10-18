@@ -17,7 +17,9 @@ export type NetMsg =
   | { t: 'sum'; m: number; f: number; h: number }
   | { t: 'rematch' }
   | { t: 'select' }
-  | { t: 'bye' };
+  | { t: 'bye' }
+  /** this player's made fighters (CREATE FIGHTER), sent once on connect */
+  | { t: 'customs'; list: unknown[] };
 
 type Handler = (msg: NetMsg) => void;
 

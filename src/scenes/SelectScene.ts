@@ -8,6 +8,7 @@ import { game } from '../state';
 import { controlDevice, specialCommand } from '../ui/controlHelp';
 import { bodyText, fadeTo, goldText, menuBackdrop, MenuInput, muteButton, fitCamera, showDisconnected } from '../ui/ui';
 import { net } from '../net/Net';
+import { selectable } from '../custom/customFighters';
 
 const GAP = 5;
 const GRID_TOP = 132;
@@ -51,6 +52,8 @@ export class SelectScene extends Phaser.Scene {
   private inputs: MenuInput[] = [];
   private tiles: Phaser.GameObjects.Container[] = [];
   private grid = gridLayout(1);
+  /** the cast, then fighters made by players (this device's, and online the opponent's) */
+  private roster: FighterData[] = [];
   private title!: Phaser.GameObjects.Text;
   private leaving = false;
   /** which cursor the mouse/touch and solo keyboard drive */
@@ -71,6 +74,7 @@ export class SelectScene extends Phaser.Scene {
     this.cursors = [];
     this.sides = [];
     this.tiles = [];
+    this.roster = selectable(this.mode === 'online', this.mode === 'online' ? net.localSide : 0);
   }
 
   private get online() {
@@ -83,7 +87,7 @@ export class SelectScene extends Phaser.Scene {
   }
 
   private get count() {
-    return game.roster.length + 1; // + random tile
+    return this.roster.length + 1; // + random tile
   }
 
   create() {
@@ -103,8 +107,8 @@ export class SelectScene extends Phaser.Scene {
       const c = this.add.container(x, y);
       const bg = this.add.rectangle(0, 0, TILE, TILE, 0x0a0705).setStrokeStyle(2, 0x6b4d16);
       c.add(bg);
-      if (i < game.roster.length) {
-        const f = game.roster[i];
+      if (i < this.roster.length) {
+        const f = this.roster[i];
         const img = this.add.image(0, 0, `thumb-${f.id}`).setDisplaySize(TILE - 4, TILE - 4);
         c.add(img);
         const strip = this.add.rectangle(0, TILE / 2 - 3, TILE - 4, 4, tuningFor(f.id).accent);
@@ -127,7 +131,7 @@ export class SelectScene extends Phaser.Scene {
     // previews + info for both sides
     for (const s of [0, 1] as const) {
       const cx = s === 0 ? 148 : GAME_W - 148;
-      const card = this.add.image(cx, 262, `card-${game.roster[0].id}`).setDisplaySize(240, 360);
+      const card = this.add.image(cx, 262, `card-${this.roster[0].id}`).setDisplaySize(240, 360);
       const name = goldText(this, cx, 470, '', 38);
       const sub = bodyText(this, s === 0 ? 20 : GAME_W - 20, 500, '', 22, '#d8cdb0').setOrigin(s === 0 ? 0 : 1, 0);
       const specials = this.add
@@ -175,8 +179,8 @@ export class SelectScene extends Phaser.Scene {
     this.inputs = [new MenuInput(this, 0, this.mode !== 'versus'), new MenuInput(this, 1)];
     // restore last picks for quick rematches
     if (game.lastSetup && game.lastSetup.mode === this.mode) {
-      const i1 = game.roster.findIndex((f) => f.id === game.lastSetup!.p1);
-      const i2 = game.roster.findIndex((f) => f.id === game.lastSetup!.p2);
+      const i1 = this.roster.findIndex((f) => f.id === game.lastSetup!.p1);
+      const i2 = this.roster.findIndex((f) => f.id === game.lastSetup!.p2);
       if (i1 >= 0) this.cursors[0].index = i1;
       if (i2 >= 0) this.cursors[1].index = i2;
     }
@@ -231,14 +235,14 @@ export class SelectScene extends Phaser.Scene {
     if (c.locked || this.leaving || this.ask) return;
     if (p === 1 && this.mode !== 'versus' && !this.online && !this.cursors[0].locked) return;
     if (this.online && p !== this.me) return;
-    const random = c.index >= game.roster.length;
-    const id = random ? Phaser.Utils.Array.GetRandom(game.roster).id : game.roster[c.index].id;
+    const random = c.index >= this.roster.length;
+    const id = random ? Phaser.Utils.Array.GetRandom(this.roster).id : this.roster[c.index].id;
     sfx.play('select');
     this.openAsk(p, id, random);
   }
 
   private openAsk(p: number, id: string, random: boolean) {
-    const f = game.roster.find((r) => r.id === id) as FighterData;
+    const f = this.roster.find((r) => r.id === id) as FighterData;
     const accent = tuningFor(id).accent;
     const layer = this.add.container(0, 0).setDepth(50);
     const dim = this.add.rectangle(GAME_W / 2, 360, GAME_W + 1600, 720 + 800, 0x000000, 0.7).setInteractive();
@@ -387,7 +391,7 @@ export class SelectScene extends Phaser.Scene {
   private showFighter(p: number, id: string | null) {
     const side = this.sides[p];
     if (!id) {
-      side.card.setTexture('card-' + game.roster[0].id).setTint(0x111111);
+      side.card.setTexture('card-' + this.roster[0].id).setTint(0x111111);
       side.name.setText('RANDOM');
       side.sub.setText('Feeling lucky?');
       side.specials.setText('');
@@ -396,7 +400,7 @@ export class SelectScene extends Phaser.Scene {
     }
     if (side.shownId === id) return;
     side.shownId = id;
-    const f = game.roster.find((r) => r.id === id) as FighterData;
+    const f = this.roster.find((r) => r.id === id) as FighterData;
     side.card.setTexture(`card-${id}`).clearTint().setDisplaySize(240, 360);
     side.name.setText(f.name.toUpperCase());
     const handle = f.handle ?? '';
@@ -415,7 +419,7 @@ export class SelectScene extends Phaser.Scene {
       c.frame.setSize(this.grid.tile + 6 + (both && p === 1 ? 8 : 0), this.grid.tile + 6 + (both && p === 1 ? 8 : 0));
       c.frame.setStrokeStyle(4, P_COLORS[p], c.locked ? 1 : 0.9);
       c.tag.setPosition(x + (p === 0 ? -this.grid.tile / 4 : this.grid.tile / 4), y - this.grid.tile / 2 - 6);
-      if (!c.locked) this.showFighter(p, c.index < game.roster.length ? game.roster[c.index].id : null);
+      if (!c.locked) this.showFighter(p, c.index < this.roster.length ? this.roster[c.index].id : null);
     }
   }
 

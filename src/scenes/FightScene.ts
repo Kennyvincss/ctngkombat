@@ -302,7 +302,9 @@ export class FightScene extends Phaser.Scene implements World {
       // "KARO WINS" / "DRAW"
       if (winner) {
         this.events.emit('announce', `${winner.data.name.toUpperCase()} WINS`, 2200);
-        void sfx.clip(voice(`${winner.id}-wins`));
+        // made fighters have no recorded line: the device's own voice says it
+        if (winner.data.custom) sfx.say(`${winner.data.name} wins!`);
+        else void sfx.clip(voice(`${winner.id}-wins`));
       } else {
         this.events.emit('announce', 'DRAW', 1000);
         void sfx.clip(voice('draw'));

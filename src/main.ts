@@ -11,6 +11,7 @@ import { WinScene } from './scenes/WinScene';
 import { ControlsScene } from './scenes/ControlsScene';
 import { OnlineScene } from './scenes/OnlineScene';
 import { IntroScene } from './scenes/IntroScene';
+import { CreateScene } from './scenes/CreateScene';
 import { net } from './net/Net';
 import { sfx } from './audio/Sfx';
 
@@ -34,7 +35,7 @@ const game = new Phaser.Game({
     powerPreference: 'high-performance',
   },
   fps: { target: 60 },
-  scene: [BootScene, TitleScene, ModeScene, SelectScene, VersusScene, FightScene, HudScene, WinScene, ControlsScene, OnlineScene, IntroScene],
+  scene: [BootScene, TitleScene, ModeScene, SelectScene, VersusScene, FightScene, HudScene, WinScene, ControlsScene, OnlineScene, IntroScene, CreateScene],
 });
 
 // handy for debugging in the console

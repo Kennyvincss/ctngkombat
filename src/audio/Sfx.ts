@@ -369,6 +369,21 @@ export class Sfx {
     );
   }
 
+  /** speak a line with the device's text-to-speech, low and slow (for names with no recording) */
+  say(text: string) {
+    if (this.muted) return;
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      u.pitch = 0.3;
+      u.rate = 0.8;
+      u.volume = 1;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    } catch {
+      /* no speech synthesis on this device */
+    }
+  }
+
   /** play a recorded clip; the music dips underneath it */
   async clip(url: string, gain = 1.1) {
     const synth = this.synth;

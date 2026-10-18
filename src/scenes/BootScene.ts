@@ -6,6 +6,7 @@ import type { SpriteSet } from '../fight/FighterView';
 import { generateArt } from '../fight/art';
 import { generateStages } from '../fight/stages';
 import { detectTouch, game } from '../state';
+import { loadCustoms, register } from '../custom/customFighters';
 
 /** Loads fighters.json, every card / thumbnail / cut-out, fonts and generated art. */
 export class BootScene extends Phaser.Scene {
@@ -65,6 +66,10 @@ export class BootScene extends Phaser.Scene {
     }
     generateArt(this);
     generateStages(this);
+    // fighters this player made, kept on this device
+    game.customs = loadCustoms();
+    const ok = await Promise.all(game.customs.map((f) => register(this, f).then(() => true, () => false)));
+    game.customs = game.customs.filter((_, i) => ok[i]);
     this.scene.start('Title');
   }
 }

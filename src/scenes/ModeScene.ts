@@ -26,24 +26,29 @@ export class ModeScene extends Phaser.Scene {
     this.input0 = new MenuInput(this, 0);
     this.diffMenu = null;
 
-    const modes: { label: string; mode: GameMode | 'tip'; hint: string }[] = [
+    const modes: { label: string; mode: GameMode | 'tip' | 'create'; hint: string }[] = [
       { label: 'VS CPU', mode: 'cpu', hint: 'Fight the computer. Pick your fighter, then your opponent.' },
       { label: 'VS PLAYER 2', mode: 'versus', hint: 'Two players on one keyboard (or two gamepads).' },
       { label: 'PLAY ONLINE', mode: 'online', hint: 'Fight a friend on their own device with a room code.' },
       { label: 'TRAINING', mode: 'training', hint: 'Infinite health and meter, with the move list on screen.' },
+      { label: 'CREATE FIGHTER', mode: 'create', hint: 'Upload a picture and turn it into your own fighter.' },
       { label: 'TIP CREATOR', mode: 'tip', hint: 'Enjoying the game? Send the creator a tip in SOL.' },
     ];
     this.menu = new ListMenu(this, GAME_W / 2, 176, modes.map((m) => m.label), (i) => {
       const m = modes[i].mode;
       if (m === 'tip') this.openTip();
+      else if (m === 'create') {
+        this.menu.enabled = false;
+        fadeTo(this, 'Create');
+      }
       else if (m === 'cpu') this.openDifficulty();
       else if (m === 'online') {
         this.menu.enabled = false;
         fadeTo(this, 'Online');
       } else this.go(m, 'normal');
-    }, 64, 50);
+    }, 56, 46);
 
-    this.hint = bodyText(this, GAME_W / 2, 496, '', 26, '#d8cdb0').setOrigin(0.5);
+    this.hint = bodyText(this, GAME_W / 2, 506, '', 26, '#d8cdb0').setOrigin(0.5);
     const controlsText = bodyText(this, GAME_W / 2, 640, '', 22, '#a89f88').setOrigin(0.5).setWordWrapWidth(1180).setAlign('center');
     // follows the device: plugging in a gamepad switches the help to its buttons
     const showControls = () => {

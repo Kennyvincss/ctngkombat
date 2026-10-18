@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { GAME_H, GAME_W, GOLD_HEX } from '../config';
 import { sfx } from '../audio/Sfx';
 import { BUILD_ID, net, type NetMsg } from '../net/Net';
+import { forNetwork, MAX_CUSTOM, register, valid, type CustomFighter } from '../custom/customFighters';
+import { game } from '../state';
 import { bodyText, copyText, fadeTo, fitCamera, goldText, ListMenu, menuBackdrop, MenuInput, muteButton } from '../ui/ui';
 
 /**
@@ -18,6 +20,10 @@ export class OnlineScene extends Phaser.Scene {
   private digitText: Phaser.GameObjects.Text | null = null;
   private mode: 'menu' | 'host' | 'join' | 'connecting' = 'menu';
   private leaving = false;
+  /** the other player's version matched */
+  private versionOk = false;
+  /** the other player's made fighters, once received */
+  private theirCustoms: CustomFighter[] | null = null;
 
   constructor() {
     super('Online');
@@ -30,6 +36,9 @@ export class OnlineScene extends Phaser.Scene {
     this.digitText = null;
     this.mode = 'menu';
     this.leaving = false;
+    this.versionOk = false;
+    this.theirCustoms = null;
+    game.remoteCustoms = [];
   }
 
   create() {
@@ -153,11 +162,19 @@ export class OnlineScene extends Phaser.Scene {
 
   /** both sides: the data channel is open, check versions */
   private connected() {
+    this.versionOk = false;
+    this.theirCustoms = null;
     this.status.setText('Connected! Checking versions…');
     net.send({ t: 'hello', v: BUILD_ID });
   }
 
   private onMessage(m: NetMsg) {
+    if (m.t === 'customs') {
+      // the other player's made fighters: playable here for this connection
+      this.theirCustoms = m.list.filter(valid).slice(0, MAX_CUSTOM);
+      this.maybeStart();
+      return;
+    }
     if (m.t !== 'hello') return;
     if (m.v !== BUILD_ID) {
       this.status.setText('You and your friend are on different versions of the game. Both refresh the page, then try again.');
@@ -165,10 +182,22 @@ export class OnlineScene extends Phaser.Scene {
       this.showMenu();
       return;
     }
+    this.versionOk = true;
+    net.send({ t: 'customs', list: game.customs.map(forNetwork) });
+    this.status.setText('Connected! Swapping fighters…');
+    this.maybeStart();
+  }
+
+  /** go to the select screen once versions match and both players' made fighters are in */
+  private async maybeStart() {
+    if (!this.versionOk || !this.theirCustoms || this.leaving) return;
+    this.leaving = true;
+    const theirs = this.theirCustoms;
+    const ok = await Promise.all(theirs.map((f) => register(this, f).then(() => true, () => false)));
+    game.remoteCustoms = theirs.filter((_, i) => ok[i]);
     sfx.play('confirm');
     this.cameras.main.flash(150, 255, 210, 120);
     this.status.setText('Connected!');
-    this.leaving = true;
     this.time.delayedCall(500, () => fadeTo(this, 'Select', { mode: 'online', difficulty: 'normal' }));
   }
 

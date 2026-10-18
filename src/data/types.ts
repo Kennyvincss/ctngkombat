@@ -17,6 +17,8 @@ export interface FighterData {
   specials: SpecialText[];
   fatality: string;
   card: string;
+  /** made by a player on the CREATE FIGHTER screen (kept on their device) */
+  custom?: boolean;
 }
 
 export type GameMode = 'cpu' | 'versus' | 'training' | 'online';
