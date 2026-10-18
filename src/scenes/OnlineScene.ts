@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_H, GAME_W, GOLD_HEX } from '../config';
+import { CREATE_FIGHTER, GAME_H, GAME_W, GOLD_HEX } from '../config';
 import { sfx } from '../audio/Sfx';
 import { BUILD_ID, net, type NetMsg } from '../net/Net';
 import { forNetwork, MAX_CUSTOM, register, valid, type CustomFighter } from '../custom/customFighters';
@@ -171,7 +171,7 @@ export class OnlineScene extends Phaser.Scene {
   private onMessage(m: NetMsg) {
     if (m.t === 'customs') {
       // the other player's made fighters: playable here for this connection
-      this.theirCustoms = m.list.filter(valid).slice(0, MAX_CUSTOM);
+      this.theirCustoms = CREATE_FIGHTER ? m.list.filter(valid).slice(0, MAX_CUSTOM) : [];
       this.maybeStart();
       return;
     }

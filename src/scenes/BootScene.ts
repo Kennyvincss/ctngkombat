@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { fitCamera } from '../ui/ui';
-import { GAME_H, GAME_W, GOLD_HEX } from '../config';
+import { CREATE_FIGHTER, GAME_H, GAME_W, GOLD_HEX } from '../config';
 import type { FighterData } from '../data/types';
 import type { SpriteSet } from '../fight/FighterView';
 import { generateArt } from '../fight/art';
@@ -67,7 +67,7 @@ export class BootScene extends Phaser.Scene {
     generateArt(this);
     generateStages(this);
     // fighters this player made, kept on this device
-    game.customs = loadCustoms();
+    game.customs = CREATE_FIGHTER ? loadCustoms() : [];
     const ok = await Promise.all(game.customs.map((f) => register(this, f).then(() => true, () => false)));
     game.customs = game.customs.filter((_, i) => ok[i]);
     this.scene.start('Title');

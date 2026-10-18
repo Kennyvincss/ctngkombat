@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_H, GAME_W, GOLD_HEX } from '../config';
+import { CREATE_FIGHTER, GAME_H, GAME_W, GOLD_HEX } from '../config';
 import type { Difficulty, GameMode } from '../data/types';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
@@ -33,7 +33,7 @@ export class ModeScene extends Phaser.Scene {
       { label: 'TRAINING', mode: 'training', hint: 'Infinite health and meter, with the move list on screen.' },
       { label: 'CREATE FIGHTER', mode: 'create', hint: 'Upload a picture and turn it into your own fighter.' },
       { label: 'CONTRACT ADDRESS', mode: 'tip', hint: 'The $TK contract address, with a button to copy it.' },
-    ];
+    ].filter((m) => CREATE_FIGHTER || m.mode !== 'create') as { label: string; mode: GameMode | 'tip' | 'create'; hint: string }[];
     this.menu = new ListMenu(this, GAME_W / 2, 176, modes.map((m) => m.label), (i) => {
       const m = modes[i].mode;
       if (m === 'tip') this.openTip();

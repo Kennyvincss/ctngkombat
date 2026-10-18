@@ -20,6 +20,12 @@ export const ROUNDS_TO_WIN = 2;
 export const ROUND_TIME = 99;
 export const FATALITY_WINDOW_S = 5;
 
+/**
+ * CREATE FIGHTER (players turning a picture into their own fighter). Off for now: the menu entry
+ * is hidden and made fighters aren't loaded or swapped online. Saved ones stay on players' devices.
+ */
+export const CREATE_FIGHTER = false;
+
 /** the token's contract address, shown under CONTRACT ADDRESS (empty until it's announced) */
 export const CONTRACT_ADDRESS = '';
 
