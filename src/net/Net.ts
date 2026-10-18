@@ -13,6 +13,8 @@ export type NetMsg =
   | { t: 'lock'; id: string }
   | { t: 'unlock' }
   | { t: 'start'; setup: MatchSetup }
+  /** the host's arena picker moved */
+  | { t: 'arena'; i: number }
   | { t: 'in'; m: number; f: number; k: number }
   | { t: 'sum'; m: number; f: number; h: number }
   | { t: 'rematch' }

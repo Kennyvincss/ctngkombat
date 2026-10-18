@@ -358,6 +358,40 @@ function makeTex(scene: Phaser.Scene, key: string, w: number, h: number, draw: (
   t.refresh();
 }
 
+/**
+ * A small picture of a stage as the fight camera first sees it (for the arena picker).
+ * Drawn on plain canvases at a reduced size, so it adds nothing to the game's textures until asked.
+ */
+export function stageThumb(scene: Phaser.Scene, id: string, tw = 480, th = 270): string {
+  const key = `stage-thumb-${id}`;
+  if (scene.textures.exists(key)) return key;
+  const [far, mid, floor] = (DRAW[id] ?? DRAW.temple) as unknown as ((c: Ctx, w: number, h: number) => void)[];
+  const layer = (draw: (c: Ctx, w: number, h: number) => void, w: number, h: number) => {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    draw(c.getContext('2d')!, w, h);
+    return c;
+  };
+  const out = document.createElement('canvas');
+  out.width = tw;
+  out.height = th;
+  const x = out.getContext('2d')!;
+  x.scale(tw / 1280, th / 720);
+  // the fight camera starts centred on the stage
+  const scrollX = PHYS.stageW / 2 - 640;
+  x.drawImage(layer(far, 960, 400), -100 - scrollX * 0.25, -40, 960 * 2.1, 400 * 2);
+  x.drawImage(layer(mid, W, H), -200 - scrollX * 0.6, 0);
+  x.drawImage(layer(floor, W, H), -200 - scrollX, 0);
+  const fog = x.createLinearGradient(0, G - 10, 0, G + 130);
+  fog.addColorStop(0, 'rgba(0,0,0,0)');
+  fog.addColorStop(1, 'rgba(0,0,0,0.55)');
+  x.fillStyle = fog;
+  x.fillRect(0, G - 10, 1280, 140);
+  scene.textures.addCanvas(key, out);
+  return key;
+}
+
 /** Nothing heavy at boot; stages are drawn when a fight starts. */
 export function generateStages(_scene: Phaser.Scene) {}
 

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { FONT_BODY, GAME_W } from '../config';
 import type { Difficulty, FighterData, GameMode, MatchSetup } from '../data/types';
 import { tuningFor } from '../data/tuning';
-import { STAGES } from '../fight/stages';
+import { STAGES, stageThumb } from '../fight/stages';
 import { sfx } from '../audio/Sfx';
 import { game } from '../state';
 import { controlDevice, specialCommand } from '../ui/controlHelp';
@@ -60,6 +60,16 @@ export class SelectScene extends Phaser.Scene {
   private active = 0;
   /** the open "PLAY AS …?" question */
   private ask: { p: number; id: string; layer: Phaser.GameObjects.Container; btns: Phaser.GameObjects.Rectangle[]; sel: number } | null = null;
+  /** the arena picker, open once both fighters are locked in (online, only the host picks) */
+  private arena: {
+    layer: Phaser.GameObjects.Container;
+    cards: Phaser.GameObjects.Container[];
+    big: Phaser.GameObjects.Image;
+    bigRandom: Phaser.GameObjects.Text;
+    name: Phaser.GameObjects.Text;
+    sel: number;
+    picking: boolean;
+  } | null = null;
 
   constructor() {
     super('Select');
@@ -71,6 +81,7 @@ export class SelectScene extends Phaser.Scene {
     this.leaving = false;
     this.active = 0;
     this.ask = null;
+    this.arena = null;
     this.cursors = [];
     this.sides = [];
     this.tiles = [];
@@ -169,6 +180,7 @@ export class SelectScene extends Phaser.Scene {
         if (m.t === 'cursor') this.move(them, m.i, true, true);
         else if (m.t === 'lock') this.lockIn(them, m.id);
         else if (m.t === 'unlock') this.unlock(them);
+        else if (m.t === 'arena') this.arenaSelect(m.i, true);
         else if (m.t === 'start') this.launch(m.setup);
       });
       net.onClose(this, () => showDisconnected(this));
@@ -319,13 +331,14 @@ export class SelectScene extends Phaser.Scene {
       this.title.setText(this.mode === 'training' ? 'CHOOSE A TRAINING DUMMY' : 'CHOOSE YOUR OPPONENT');
       this.refresh();
     }
-    if (this.cursors.every((k) => k.locked)) this.start();
+    if (this.cursors.every((k) => k.locked)) this.time.delayedCall(350, () => this.openArena());
   }
 
   /** online: a player changed their mind */
   private unlock(p: number) {
     const c = this.cursors[p];
     if (!c.locked) return;
+    this.closeArena();
     c.locked = false;
     c.pick = null;
     this.sides[p].lockText.setVisible(false);
@@ -364,13 +377,116 @@ export class SelectScene extends Phaser.Scene {
     fadeTo(this, 'Mode');
   }
 
-  private start() {
+  // ---------------------------------------------------------------- arena picker
+
+  private openArena() {
+    if (this.arena || this.leaving || !this.cursors.every((k) => k.locked)) return;
+    const picking = !this.online || net.role === 'host';
+    const n = STAGES.length + 1; // + random
+    const layer = this.add.container(0, 0).setDepth(60);
+    const dim = this.add.rectangle(GAME_W / 2, 360, GAME_W + 1600, 720 + 800, 0x000000, 0.86).setInteractive();
+    const title = goldText(this, GAME_W / 2, 46, picking ? 'SELECT THE ARENA' : 'RIVAL IS PICKING THE ARENA', 50);
+    // the chosen arena, big
+    const frame = this.add.rectangle(GAME_W / 2, 250, 584, 332, 0x000000).setStrokeStyle(4, 0xf5c542);
+    const big = this.add.image(GAME_W / 2, 250, '__WHITE').setDisplaySize(576, 324);
+    const bigRandom = goldText(this, GAME_W / 2, 250, '?', 160).setVisible(false);
+    const name = goldText(this, GAME_W / 2, 446, '', 40);
+    layer.add([dim, title, frame, big, bigRandom, name]);
+    // every arena, small
+    const CW = 200;
+    const CH = 112;
+    const GAPX = 22;
+    const x0 = GAME_W / 2 - ((n - 1) * (CW + GAPX)) / 2;
+    const cards = Array.from({ length: n }, (_, i) => {
+      const c = this.add.container(x0 + i * (CW + GAPX), 548);
+      const bg = this.add.rectangle(0, 0, CW + 8, CH + 8, 0x0a0705).setStrokeStyle(3, 0x6b4d16);
+      c.add(bg);
+      if (i < STAGES.length) c.add(this.add.image(0, 0, stageThumb(this, STAGES[i].id)).setDisplaySize(CW, CH));
+      else c.add(goldText(this, 0, -4, '?', 64));
+      c.add(bodyText(this, 0, CH / 2 + 18, i < STAGES.length ? STAGES[i].name : 'RANDOM', 17, '#d8cdb0').setOrigin(0.5));
+      bg.setInteractive({ useHandCursor: picking });
+      bg.on('pointerover', () => {
+        if (picking && !game.isTouch) this.arenaSelect(i);
+      });
+      // a tap picks the arena to look at; tapping the one already shown (or FIGHT) goes
+      bg.on('pointerdown', () => {
+        if (!picking) return;
+        sfx.unlock();
+        if (this.arena?.sel === i) this.arenaPick();
+        else this.arenaSelect(i);
+      });
+      layer.add(c);
+      return c;
+    });
+    if (picking) {
+      const go = this.add.rectangle(GAME_W / 2, 664, 220, 54, 0x8a5a00).setStrokeStyle(3, 0xf5c542).setInteractive({ useHandCursor: true });
+      go.on('pointerdown', () => this.arenaPick());
+      layer.add([go, goldText(this, GAME_W / 2, 664, 'FIGHT!', 34)]);
+    } else {
+      layer.add(bodyText(this, GAME_W / 2, 664, 'The room creator picks the arena.', 22, '#bfb59a').setOrigin(0.5));
+    }
+    const back = bodyText(this, 30, 30, '◄ BACK', 24, '#bfb59a').setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+    back.on('pointerdown', () => this.arenaBack());
+    layer.add(back);
+    layer.setAlpha(0);
+    this.tweens.add({ targets: layer, alpha: 1, duration: 160 });
+    this.title.setVisible(false);
+    const last = STAGES.findIndex((st) => st.id === game.lastSetup?.stage);
+    this.arena = { layer, cards, big, bigRandom, name, sel: -1, picking };
+    this.arenaSelect(Math.max(0, last), true);
+  }
+
+  private arenaSelect(i: number, silent = false) {
+    const a = this.arena;
+    if (!a) return;
+    const n = a.cards.length;
+    i = ((i % n) + n) % n;
+    if (i === a.sel) return;
+    a.sel = i;
+    if (!silent) sfx.play('select');
+    if (this.online && a.picking && !silent) net.send({ t: 'arena', i });
+    a.cards.forEach((c, k) => {
+      const on = k === i;
+      c.setScale(on ? 1.08 : 1).setAlpha(on ? 1 : 0.6);
+      (c.list[0] as Phaser.GameObjects.Rectangle).setStrokeStyle(on ? 5 : 3, on ? 0xffffff : 0x6b4d16);
+    });
+    const random = i >= STAGES.length;
+    a.big.setVisible(!random);
+    a.bigRandom.setVisible(random);
+    if (!random) a.big.setTexture(stageThumb(this, STAGES[i].id)).setDisplaySize(576, 324);
+    a.name.setText(random ? 'RANDOM ARENA' : STAGES[i].name);
+  }
+
+  private arenaPick() {
+    const a = this.arena;
+    if (!a || !a.picking || this.leaving) return;
+    const stage = a.sel < STAGES.length ? STAGES[a.sel].id : Phaser.Utils.Array.GetRandom(STAGES).id;
+    sfx.play('confirm');
+    this.cameras.main.flash(140, 255, 210, 120);
+    if (a.sel >= STAGES.length) this.arenaSelect(STAGES.findIndex((st) => st.id === stage), true);
+    this.start(stage);
+  }
+
+  /** back out of the arena picker: the last pick is undone */
+  private arenaBack() {
+    if (!this.arena || this.leaving) return;
+    this.closeArena();
+    this.back();
+  }
+
+  private closeArena() {
+    if (this.arena) this.title.setVisible(true);
+    this.arena?.layer.destroy();
+    this.arena = null;
+  }
+
+  private start(stage: string) {
     const setup: MatchSetup = {
       mode: this.mode,
       difficulty: this.difficulty,
       p1: this.cursors[0].pick!,
       p2: this.cursors[1].pick!,
-      stage: Phaser.Utils.Array.GetRandom(STAGES).id,
+      stage,
     };
     if (this.online) {
       // the room's creator decides the stage and the shared random seed
@@ -425,6 +541,18 @@ export class SelectScene extends Phaser.Scene {
 
   update(t: number) {
     if (this.leaving) return;
+    if (this.arena) {
+      // whoever picked the fighters picks the arena (either player in versus)
+      for (const src of this.mode === 'versus' ? this.inputs : [this.inputs[0]]) {
+        const press = src.poll();
+        if (press.back) return this.arenaBack();
+        if (!this.arena.picking) continue;
+        if (press.left) this.arenaSelect(this.arena.sel - 1);
+        if (press.right) this.arenaSelect(this.arena.sel + 1);
+        if (press.ok) return this.arenaPick();
+      }
+      return;
+    }
     if (this.ask) {
       // the player who picked answers the question (P1's controls in 1-player modes)
       const src = this.mode === 'versus' ? this.inputs[this.ask.p] : this.inputs[0];
